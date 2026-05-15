@@ -244,10 +244,9 @@ interface ScheduleImportPanelProps {
   onClose: () => void;
   onImport: (events: CalendarEvent[]) => void;
   onManualSubmit?: (result: ManualEventResult) => void;
-  defaultManualPhase?: boolean;
 }
 
-export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManualSubmit, defaultManualPhase }: ScheduleImportPanelProps) {
+export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManualSubmit }: ScheduleImportPanelProps) {
   const [phase, setPhase] = useState<Phase>('choose');
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
@@ -277,7 +276,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
   // Reset state when panel opens
   useEffect(() => {
     if (isOpen) {
-      setPhase(defaultManualPhase ? 'manual' : 'choose');
+      setPhase('choose');
       setLogEntries(0);
       setSections([]);
       setEditingEvent(null);
@@ -299,7 +298,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
       setSelectedAmenities(new Set(['camera', 'scoreboard', 'pa']));
       setIsManualSubmitting(false);
     }
-  }, [isOpen, defaultManualPhase]);
+  }, [isOpen]);
 
   // Fake paste: click the input to instantly fill the URL
   const FAKE_URL = 'https://www.nsaa-schedule.org/district/lincoln-east/fall-2026';
@@ -401,7 +400,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
       <div className="import-panel">
         {/* Header */}
         <div className="import-panel-header">
-          <h2 className="import-panel-title">{defaultManualPhase ? 'Create Event' : 'Add Event'}</h2>
+          <h2 className="import-panel-title">Add Event</h2>
           <button className="import-panel-close" onClick={onClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
@@ -631,14 +630,12 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                 {/* Phase: Manual Event */}
                 {phase === 'manual' && (
                   <div className="closure-phase-review">
-                    {!defaultManualPhase && (
-                      <div className="import-paste-header">
-                        <button className="import-back-btn" onClick={() => setPhase('choose')}>
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          Back
-                        </button>
-                      </div>
-                    )}
+                    <div className="import-paste-header">
+                      <button className="import-back-btn" onClick={() => setPhase('choose')}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        Back
+                      </button>
+                    </div>
 
                     {/* Event Type */}
                     <div className="closure-review-section">

@@ -200,16 +200,13 @@ function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, showBookingA
   );
 }
 
-function CalendarPageContent({ onOpenImport, onNewEvent, showNewEvent }: { onOpenImport: () => void; onNewEvent?: () => void; showNewEvent?: boolean }) {
-  const actions = showNewEvent
-    ? [{ label: 'Create Event', buttonStyle: 'standard' as const, onClick: onNewEvent }]
-    : [{ label: 'Add Event', buttonStyle: 'standard' as const, onClick: onOpenImport }];
+function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
   return (
     <>
       <PageHeader
         title="Calendar"
         description="View and manage camps, clinics, and events across your organization."
-        actions={actions}
+        actions={[{ label: 'Add Event', buttonStyle: 'standard' as const, onClick: onOpenImport }]}
       />
     </>
   );
@@ -253,7 +250,6 @@ export default function NavigationWrapper() {
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
   const [bookingApproved, setBookingApproved] = useState(false);
-  const [showEventCreatePanel, setShowEventCreatePanel] = useState(false);
   const [bookingRequestSubmitted, setBookingRequestSubmitted] = useState(false);
   const { showToast } = useToast();
 
@@ -290,7 +286,6 @@ export default function NavigationWrapper() {
     setComposeOverduePrograms([]);
     setShowBookingPanel(false);
     setBookingApproved(false);
-    setShowEventCreatePanel(false);
     setBookingRequestSubmitted(false);
 
     switch (activeChapter) {
@@ -517,14 +512,12 @@ export default function NavigationWrapper() {
       />
     );
   } else if (activeRoute === '/calendar') {
-    const isMariaBookingChapter = activePersona.id === 'maria' && activeChapter === 'booking-request';
     overlay = (
       <ScheduleImportPanel
-        isOpen={isMariaBookingChapter ? showEventCreatePanel : showImportPanel}
-        onClose={() => { setShowImportPanel(false); setShowEventCreatePanel(false); }}
+        isOpen={showImportPanel}
+        onClose={() => setShowImportPanel(false)}
         onImport={handleImport}
         onManualSubmit={handleEventCreate}
-        defaultManualPhase={isMariaBookingChapter}
       />
     );
   } else if (activeRoute === '/facilities' && showBookingPanel) {
@@ -555,11 +548,7 @@ export default function NavigationWrapper() {
   if (activeRoute === '/calendar') {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
-        <CalendarPageContent
-          onOpenImport={() => setShowImportPanel(true)}
-          showNewEvent={activePersona.id === 'maria' && activeChapter === 'booking-request'}
-          onNewEvent={() => setShowEventCreatePanel(true)}
-        />
+        <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
         <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );
