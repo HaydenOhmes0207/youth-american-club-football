@@ -204,6 +204,15 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
     })));
   }, []);
 
+  // Bulk accept / reject all events in a section
+  const setSectionStatus = useCallback((sport: string, status: 'accepted' | 'rejected') => {
+    setSections(prev => prev.map(s =>
+      s.sport === sport
+        ? { ...s, events: s.events.map(e => ({ ...e, status })) }
+        : s
+    ));
+  }, []);
+
   // Update event from edit view
   const updateEvent = useCallback((updated: ImportEvent) => {
     setSections(prev => prev.map(s => ({
@@ -360,6 +369,24 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                                 ? `${sectionAccepted} accepted`
                                 : `${sectionReviewed} / ${section.events.length} reviewed`}
                             </span>
+                            <div className="import-event-actions">
+                              <button
+                                className={`import-action-btn import-action-btn--accept ${sectionAccepted === section.events.length ? 'import-action-btn--active' : ''}`}
+                                onClick={() => setSectionStatus(section.sport, 'accepted')}
+                                aria-label={`Accept all ${section.teamName}`}
+                                title="Accept all"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              </button>
+                              <button
+                                className={`import-action-btn import-action-btn--reject ${sectionRejected === section.events.length ? 'import-action-btn--active' : ''}`}
+                                onClick={() => setSectionStatus(section.sport, 'rejected')}
+                                aria-label={`Reject all ${section.teamName}`}
+                                title="Reject all"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              </button>
+                            </div>
                           </div>
                           <div className="import-event-list">
                             {section.events.map(evt => (
