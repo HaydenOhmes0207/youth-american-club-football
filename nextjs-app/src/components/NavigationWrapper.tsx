@@ -1,17 +1,82 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 import LegacyNavigation from './LegacyNavigation';
 import { usePersona } from '@/lib/persona-context';
 import { mockNavItems } from '@/lib/mock-data';
+import PageHeader from './PageHeader';
+import ProgramsTable from './ProgramsTable';
+import CommunityTable from './CommunityTable';
+import type { ProgramWithStats } from '@/lib/actions/programs';
 
-export default function NavigationWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+const mockPrograms: ProgramWithStats[] = [
+  {
+    id: 'program-1',
+    title: 'Fall 2025 Football Season',
+    type: 'season',
+    eventDates: { start: '2025-08-15', end: '2025-11-30' },
+    visibility: 'public',
+    registrationStatus: 'open',
+    status: 'published',
+    registrantCount: 45,
+    programValue: 1125000,
+    createdBy: { firstName: 'David', lastName: 'Mitchell', avatar: null },
+  },
+];
+
+function HomePage() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
+    </div>
+  );
+}
+
+function SchedulesPage() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Schedules" description="View and manage game schedules, practices, and events across all teams." actions={[{ label: 'Import', buttonStyle: 'minimal' }, { label: 'Add Event', buttonStyle: 'standard' }]} />
+    </div>
+  );
+}
+
+function FacilitiesPage() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Facilities" description="Manage fields, gyms, and other facilities available for your organization." actions={[{ label: 'Add Facility', buttonStyle: 'standard' }]} />
+    </div>
+  );
+}
+
+function CommunityPage() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Community" description="Manage athletes, coaches, and staff across your organization." actions={[{ label: 'Import', buttonStyle: 'minimal' }, { label: 'Add Member', buttonStyle: 'standard' }]} />
+      <CommunityTable />
+    </div>
+  );
+}
+
+function ProgramsPage() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Programs" description="Manage your registration programs, seasons, and events." />
+      <ProgramsTable programs={mockPrograms} />
+    </div>
+  );
+}
+
+const PAGE_MAP: Record<string, React.FC> = {
+  '/': HomePage,
+  '/schedules': SchedulesPage,
+  '/facilities': FacilitiesPage,
+  '/community': CommunityPage,
+  '/programs': ProgramsPage,
+};
+
+export default function NavigationWrapper() {
   const { activePersona } = usePersona();
-
-  // Full-screen pages that hide navigation
-  const isFullScreenPage = pathname === '/teams/manage' || pathname === '/teams/assignments';
+  const [activeRoute, setActiveRoute] = useState('/');
 
   const organization = {
     id: activePersona.orgId,
@@ -53,19 +118,19 @@ export default function NavigationWrapper({ children }: { children: React.ReactN
     role: activePersona.role,
   };
 
-  if (isFullScreenPage) {
-    return <>{children}</>;
-  }
+  const ActivePage = PAGE_MAP[activeRoute] || HomePage;
 
   return (
     <LegacyNavigation
       key={activePersona.id}
-      organization={organization} 
-      teams={teams} 
+      organization={organization}
+      teams={teams}
       navItems={navItems}
       currentUser={currentUser}
+      activeRoute={activeRoute}
+      onNavigate={(route) => setActiveRoute(route)}
     >
-      {children}
+      <ActivePage />
     </LegacyNavigation>
   );
 }

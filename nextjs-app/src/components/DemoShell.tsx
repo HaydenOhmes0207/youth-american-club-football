@@ -29,15 +29,13 @@ function DemoBar() {
   );
 }
 
-export default function DemoShell({ children }: { children: React.ReactNode }) {
+export default function DemoShell() {
   return (
     <PersonaProvider>
       <div className="demo-shell">
         <DemoBar />
         <div className="demo-shell-content">
-          <NavigationWrapper>
-            {children}
-          </NavigationWrapper>
+          <NavigationWrapper />
         </div>
       </div>
     </PersonaProvider>

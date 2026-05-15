@@ -17,18 +17,12 @@ export const metadata: Metadata = {
   description: 'Youth football club management platform',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout() {
   return (
     <html lang="en" className="bg-background">
       <body className={`${barlow.className} ${barlow.variable}`}>
         <ToastProvider>
-          <DemoShell>
-            {children}
-          </DemoShell>
+          <DemoShell />
         </ToastProvider>
       </body>
     </html>

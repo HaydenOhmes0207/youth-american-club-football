@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useState } from 'react';
 import SubNavItem from './SubNavigation';
 import Button from './Button';
 import './LegacyNavigation.css';
@@ -102,11 +101,13 @@ interface CurrentUserData {
 }
 
 interface LegacyNavigationProps {
-  children?: React.ReactNode;
   organization?: OrganizationData | null;
   teams?: TeamData[];
   navItems?: NavItemData[];
   currentUser?: CurrentUserData | null;
+  activeRoute?: string;
+  onNavigate?: (route: string) => void;
+  children?: React.ReactNode;
 }
 
 function getInitials(name: string): string {
@@ -135,15 +136,14 @@ const iconMap: Record<string, string> = {
 };
 
 const LegacyNavigation: React.FC<LegacyNavigationProps> = ({ 
-  children, 
   organization,
   teams = [],
   navItems = [],
-  currentUser
+  currentUser,
+  activeRoute = '/',
+  onNavigate,
+  children,
 }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  
   const userName = currentUser 
     ? `${currentUser.firstName} ${currentUser.lastName}` 
     : 'John Smith';
@@ -152,52 +152,23 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
     : 'JS';
   const [isExpanded, setIsExpanded] = useState(true);
   
-  const getActiveItemFromPath = () => {
-    const path = pathname || '/';
-    if (path.startsWith('/team/')) {
-      const teamRouteMap: Record<string, string> = {
-        '/team/library': 'Library',
-        '/team/reports': 'Reports',
-        '/team/exchanges': 'Exchanges',
-        '/team/profile': 'Team Profile',
-        '/team/manage': 'Manage Team',
-        '/team/schedule': 'Schedule',
-        '/team/settings': 'Team Settings',
-        '/team/highlights': 'Team Highlights',
-        '/team/highlights/yours': 'Your Highlights',
-        '/team/recruiting': 'Sharing',
-        '/team/recruiting/sharing': 'Sharing',
-        '/team/recruiting/college-search': 'College Search',
-        '/team/recruiting/verify': 'Verify Athletes',
-        '/team/recruiting/settings': 'Recruiting Settings',
-      };
-      return teamRouteMap[path] || 'Library';
-    }
+  // Derive active item from activeRoute prop
+  const getActiveItemFromRoute = () => {
+    const path = activeRoute || '/';
     const pathWithoutSlash = path.replace('/', '') || '';
-    const navItem = navItems.find(item => item.route?.replace('/', '') === pathWithoutSlash);
-    if (navItem) return navItem.label;
-    for (const item of navItems) {
-      const child = item.children.find(c => c.route?.replace('/', '') === pathWithoutSlash);
-      if (child) return child.label;
-    }
-    return navItems[0]?.label || 'Programs';
+    const navItem = directorNavItems.find(item => item.route?.replace('/', '') === pathWithoutSlash);
+    if (navItem) return navItem.id;
+    return directorNavItems[0]?.id || 'Home';
   };
-  
-  const [activeItem, setActiveItem] = useState(getActiveItemFromPath());
-  
-  useEffect(() => {
-    const newActiveItem = getActiveItemFromPath();
-    setActiveItem(newActiveItem);
-  }, [pathname, navItems]);
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOrgPopoverOpen, setIsOrgPopoverOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
-  const navigateToRoute = (route: string | null | undefined) => {
-    if (route) {
-      router.push(route);
+  const handleNavigate = (route: string | null | undefined) => {
+    if (route && onNavigate) {
+      onNavigate(route);
     }
   };
 
@@ -218,56 +189,29 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
           : undefined,
       }))
     : [
-        { id: 'Programs', icon: ProgramsIcon, label: 'Programs' },
-        { id: 'Teams', icon: TeamsIcon, label: 'Teams' },
-        { id: 'Finances', icon: FinancesIcon, label: 'Finances' },
-        { id: 'Community', icon: CommunityIcon, label: 'Community' },
-        {
-          id: 'Settings',
-          icon: SettingsIcon,
-          label: 'Settings',
-          children: [
-            { id: 'Ticketing', label: 'Ticketing', hasPill: false, pillText: '' },
-            { id: 'Payments', label: 'Payments', hasPill: false, pillText: '' },
-            { id: 'Users', label: 'Users', hasPill: false, pillText: '' },
-            { id: 'Permissions', label: 'Permissions', hasPill: false, pillText: '' },
-          ],
-        },
+        { id: 'Home', icon: HomeIcon, label: 'Home', route: '/' },
       ];
 
-  const teamNavItems: NavItem[] = [
-    { id: 'Library', icon: PlaceholderIcon, label: 'Library', hasPill: false, pillText: '', route: '/team/library' },
-    { id: 'Reports', icon: PlaceholderIcon, label: 'Reports', hasPill: false, pillText: '', route: '/team/reports' },
-    { id: 'Exchanges', icon: PlaceholderIcon, label: 'Exchanges', hasPill: false, pillText: '', route: '/team/exchanges' },
-    {
-      id: 'Team', icon: PlaceholderIcon, label: 'Team', route: '/team/profile',
-      children: [
-        { id: 'Team Profile', label: 'Team Profile', hasPill: false, pillText: '', route: '/team/profile' },
-        { id: 'Manage Team', label: 'Manage Team', hasPill: false, pillText: '', route: '/team/manage' },
-        { id: 'Schedule', label: 'Schedule', hasPill: false, pillText: '', route: '/team/schedule' },
-        { id: 'Team Settings', label: 'Team Settings', hasPill: false, pillText: '', route: '/team/settings' },
-      ],
-    },
-    {
-      id: 'Highlights', icon: PlaceholderIcon, label: 'Highlights', route: '/team/highlights',
-      children: [
-        { id: 'Team Highlights', label: 'Team Highlights', hasPill: false, pillText: '', route: '/team/highlights' },
-        { id: 'Your Highlights', label: 'Your Highlights', hasPill: false, pillText: '', route: '/team/highlights/yours' },
-      ],
-    },
-    {
-      id: 'Recruiting', icon: PlaceholderIcon, label: 'Recruiting', route: '/team/recruiting',
-      children: [
-        { id: 'Sharing', label: 'Sharing', hasPill: false, pillText: '', route: '/team/recruiting/sharing' },
-        { id: 'College Search', label: 'College Search', hasPill: false, pillText: '', route: '/team/recruiting/college-search' },
-        { id: 'Verify Athletes', label: 'Verify Athletes', hasPill: false, pillText: '', route: '/team/recruiting/verify' },
-        { id: 'Recruiting Settings', label: 'Recruiting Settings', hasPill: false, pillText: '', route: '/team/recruiting/settings' },
-      ],
-    },
-  ];
+  const currentNavItems = directorNavItems;
+
+  // Derive active from route
+  const activeItem = (() => {
+    const path = activeRoute || '/';
+    const pathWithoutSlash = path === '/' ? '' : path.replace(/^\//, '');
+    for (const item of currentNavItems) {
+      const itemPath = (item.route || '').replace(/^\//, '');
+      if (itemPath === pathWithoutSlash) return item.id;
+      if (item.children) {
+        for (const child of item.children) {
+          const childPath = (child.route || '').replace(/^\//, '');
+          if (childPath === pathWithoutSlash) return child.id;
+        }
+      }
+    }
+    return currentNavItems[0]?.id || 'Home';
+  })();
 
   const bottomNavItems: NavItem[] = [
-    { id: 'Calendar', icon: CalendarIcon, label: 'Calendar' },
     { id: 'Messages', icon: MessagesIcon, label: 'Messages' },
     { id: 'Notifications', icon: NotificationsIcon, label: 'Notifications' },
   ];
@@ -277,7 +221,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
   const orgWorkspace: Workspace = {
     id: organization?.id || 'org',
     name: organization?.name || 'Organization',
-    role: 'Director',
+    role: currentUser?.role || 'Director',
     type: 'organization',
     avatar: organization?.avatar || undefined,
     primaryColor: organization?.primary_color,
@@ -304,19 +248,6 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
   };
 
   const [selectedOrg, setSelectedOrg] = useState<Workspace>(orgWorkspace);
-
-  const isTeamWorkspaceSelected = teamWorkspaces.some(ws => ws.id === selectedOrg.id);
-  const isDirectorWorkspaceSelected = selectedOrg.id === orgWorkspace.id;
-  const currentWorkspaceType = isTeamWorkspaceSelected
-    ? 'team'
-    : isDirectorWorkspaceSelected ? 'director' : 'personal';
-
-  const currentNavItems =
-    currentWorkspaceType === 'team'
-      ? teamNavItems
-      : currentWorkspaceType === 'personal'
-        ? [{ id: 'Home', icon: HomeIcon, label: 'Home' }]
-        : directorNavItems;
 
   const findParentGroupIdForItem = (itemId: string): string | null => {
     for (const item of currentNavItems) {
@@ -378,7 +309,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
             </svg>
           </div>
         </button>
-        <div className="mobile-logo-container" onClick={() => { setActiveItem(currentWorkspaceType === 'team' ? 'Library' : 'Home'); setOpenGroups([]); }}>
+        <div className="mobile-logo-container" onClick={() => handleNavigate('/')}>
           <div className="mobile-logo-icon"><img src={HudlLogoIcon} alt="Hudl" /></div>
           <div className="mobile-logo-text">Hudl</div>
         </div>
@@ -395,7 +326,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
               <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </button>
-          <div className="mobile-logo-container" style={{ paddingRight: 0, justifyContent: 'center' }} onClick={() => { setActiveItem(currentWorkspaceType === 'team' ? 'Library' : 'Home'); setIsMobileMenuOpen(false); }}>
+          <div className="mobile-logo-container" style={{ paddingRight: 0, justifyContent: 'center' }} onClick={() => { handleNavigate('/'); setIsMobileMenuOpen(false); }}>
             <div className="mobile-logo-icon"><img src={HudlLogoIcon} alt="Hudl" /></div>
             <div className="mobile-logo-text">Hudl</div>
           </div>
@@ -409,7 +340,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
               return (
                 <React.Fragment key={item.id}>
                   <div className={`mobile-menu-item ${isItemActive ? 'active' : ''} ${hasChildren && isGroupOpen ? 'mobile-menu-item--open' : ''}`}>
-                    <div className="mobile-menu-item-content" onClick={() => { setActiveItem(item.id); setOpenGroups([]); setIsMobileMenuOpen(false); if (item.route) navigateToRoute(item.route); }}>
+                    <div className="mobile-menu-item-content" onClick={() => { handleNavigate(item.route); setOpenGroups([]); setIsMobileMenuOpen(false); }}>
                       <div className="mobile-menu-item-icon"><img src={item.icon} alt="" width="24" height="24" /></div>
                       <div className="mobile-menu-item-label">{item.label}</div>
                     </div>
@@ -423,7 +354,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                     <div className="mobile-menu-children">
                       {item.children!.map(child => (
                         <div key={child.id} className="mobile-menu-item-child">
-                          <SubNavItem label={child.label} active={activeItem === child.id} hasPill={!!child.hasPill} pillText={child.pillText} onClick={() => { setActiveItem(child.id); const pid = findParentGroupIdForItem(child.id); setOpenGroups(prev => !pid ? [] : prev.includes(pid) ? [pid] : []); setIsMobileMenuOpen(false); if (child.route) navigateToRoute(child.route); }} />
+                          <SubNavItem label={child.label} active={activeItem === child.id} hasPill={!!child.hasPill} pillText={child.pillText} onClick={() => { handleNavigate(child.route); setIsMobileMenuOpen(false); }} />
                         </div>
                       ))}
                     </div>
@@ -435,7 +366,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
           <div className="mobile-menu-bottom-section">
             <div className="mobile-menu-items">
               {bottomNavItems.map(item => (
-                <div key={item.id} className={`mobile-menu-item ${activeItem === item.id ? 'active' : ''}`} onClick={() => { setActiveItem(item.id); setIsMobileMenuOpen(false); }}>
+                <div key={item.id} className={`mobile-menu-item ${activeItem === item.id ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>
                   <div className="mobile-menu-item-icon"><img src={item.icon} alt="" width="24" height="24" /></div>
                   <div className="mobile-menu-item-label">{item.label}</div>
                 </div>
@@ -452,7 +383,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
 
       {/* Desktop Sidebar */}
       <div className="nav-sidebar">
-        <div className="nav-logo" onClick={() => { setActiveItem(currentWorkspaceType === 'team' ? 'Library' : 'Home'); setOpenGroups([]); }}>
+        <div className="nav-logo" onClick={() => handleNavigate('/')}>
           <div className="nav-logo-icon"><img src={HudlLogoIcon} alt="Hudl" /></div>
           <div className="nav-logo-text">Hudl</div>
         </div>
@@ -470,7 +401,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
             <div className="org-popover" style={{ display: 'flex' }}>
               <p className="org-popover-header">{parentOrg.name}</p>
               <div className="org-popover-teams">
-                <div className={`org-popover-item ${selectedOrg.id === orgWorkspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(orgWorkspace); setActiveItem('Home'); setOpenGroups([]); setIsOrgPopoverOpen(false); router.push('/'); }}>
+                <div className={`org-popover-item ${selectedOrg.id === orgWorkspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(orgWorkspace); setOpenGroups([]); setIsOrgPopoverOpen(false); handleNavigate('/'); }}>
                   <div className="org-popover-item-wrapper position-top">
                     {renderAvatar(orgWorkspace, 'org-popover-avatar')}
                     <div className="org-popover-line org-popover-line-below org-popover-line-top" />
@@ -482,7 +413,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                 </div>
                 {teamWorkspaces.map(workspace => (
                   <React.Fragment key={workspace.id}>
-                    <div className={`org-popover-item ${selectedOrg.id === workspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(workspace); setActiveItem('Library'); setOpenGroups([]); setIsOrgPopoverOpen(false); router.push('/team/library'); }}>
+                    <div className={`org-popover-item ${selectedOrg.id === workspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(workspace); setOpenGroups([]); setIsOrgPopoverOpen(false); }}>
                       <div className={`org-popover-item-wrapper position-${workspace.position?.toLowerCase()}`}>
                         {workspace.position === 'Middle' && (
                           <>
@@ -513,7 +444,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                 ))}
               </div>
               <div className="org-popover-separator-line" />
-              <div className={`org-popover-item ${selectedOrg.id === personalWorkspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(personalWorkspace); setActiveItem('Home'); setOpenGroups([]); setIsOrgPopoverOpen(false); }}>
+              <div className={`org-popover-item ${selectedOrg.id === personalWorkspace.id ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); setSelectedOrg(personalWorkspace); setOpenGroups([]); setIsOrgPopoverOpen(false); }}>
                 <div className="org-popover-item-wrapper">
                   {renderAvatar(personalWorkspace, 'org-popover-avatar')}
                 </div>
@@ -539,13 +470,12 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                 <div
                   className={`nav-item ${isItemActive ? 'active' : ''} ${hasChildren && isGroupOpen ? 'nav-item--open' : ''} ${hasChildren && !isGroupOpen && hasActiveChild ? 'nav-item--child-active' : ''}`}
                   onClick={() => {
-                    setActiveItem(item.id);
                     const parentGroupId = findParentGroupIdForItem(item.id);
                     setOpenGroups(prev => {
                       if (!parentGroupId) return [];
                       return prev.includes(parentGroupId) ? [parentGroupId] : [];
                     });
-                    if (item.route) navigateToRoute(item.route);
+                    handleNavigate(item.route);
                   }}
                 >
                   <div className="nav-item-icon"><img src={item.icon} alt="" width="24" height="24" /></div>
@@ -561,7 +491,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                   <div className="nav-item-children">
                     {item.children!.map(child => (
                       <div key={child.id} className="nav-item-child">
-                        <SubNavItem label={child.label} active={activeItem === child.id} hasPill={!!child.hasPill} pillText={child.pillText} onClick={() => { setActiveItem(child.id); const pid = findParentGroupIdForItem(child.id); setOpenGroups(prev => !pid ? [] : prev.includes(pid) ? [pid] : []); if (child.route) navigateToRoute(child.route); }} />
+                        <SubNavItem label={child.label} active={activeItem === child.id} hasPill={!!child.hasPill} pillText={child.pillText} onClick={() => { const pid = findParentGroupIdForItem(child.id); setOpenGroups(prev => !pid ? [] : prev.includes(pid) ? [pid] : []); handleNavigate(child.route); }} />
                       </div>
                     ))}
                   </div>
@@ -573,7 +503,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
 
         <div className="nav-bottom-items">
           {bottomNavItems.map(item => (
-            <div key={item.id} className={`nav-item ${activeItem === item.id ? 'active' : ''}`} onClick={() => setActiveItem(item.id)}>
+            <div key={item.id} className={`nav-item ${activeItem === item.id ? 'active' : ''}`}>
               <div className="nav-item-icon"><img src={item.icon} alt="" width="24" height="24" /></div>
               <div className="nav-item-label">{item.label}</div>
               {!isExpanded && <div className="nav-item-tooltip">{item.label}</div>}
@@ -609,19 +539,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
 
       <div className="main-content">
         <div className="content-inner">
-          {children || (
-            <>
-              <div className="page-header">
-                <div className="page-header-row">
-                  <div className="page-header-title">{activeItem}</div>
-                  <div className="page-header-actions">
-                    <Button buttonStyle="minimal" buttonType="secondary" size="medium">Secondary action</Button>
-                    <Button buttonStyle="standard" buttonType="primary" size="medium">Primary action</Button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+          {children}
         </div>
       </div>
     </div>
