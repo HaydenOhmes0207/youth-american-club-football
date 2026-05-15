@@ -429,6 +429,20 @@ function MonthView({ year, month, events, cancelledEventIds, today }: { year: nu
 }
 
 // ---- WEEK VIEW ----
+function parseHour(timeStr: string): number {
+  const match = timeStr.match(/^(\d+):?(\d*)\s*(AM|PM)$/i);
+  if (!match) return 0;
+  let h = parseInt(match[1]);
+  const mins = match[2] ? parseInt(match[2]) : 0;
+  const ampm = match[3].toUpperCase();
+  if (ampm === 'PM' && h !== 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return h + mins / 60;
+}
+
+const WEEK_HOUR_HEIGHT = 48; // px per hour row -- must match CSS .cal-week-row min-height
+const WEEK_START_HOUR = 6;
+
 function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: Date; events: CalendarEvent[]; cancelledEventIds: Set<string>; today: Date }) {
   const days: Date[] = [];
   for (let i = 0; i < 7; i++) {
@@ -436,7 +450,7 @@ function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: 
     d.setDate(d.getDate() + i);
     days.push(d);
   }
-  const hours = Array.from({ length: 15 }, (_, i) => i + 6); // 6am-8pm
+  const hours = Array.from({ length: 17 }, (_, i) => i + 6); // 6am-10pm
 
   return (
     <div className="cal-week">
@@ -450,39 +464,57 @@ function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: 
         ))}
       </div>
       <div className="cal-week-body">
+        {/* Time grid rows */}
         {hours.map(hour => (
           <div key={hour} className="cal-week-row">
             <div className="cal-week-time-gutter cal-week-time-label">
               {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
             </div>
-            {days.map((d, di) => {
-              const dayEvents = events.filter(e => {
-                if (!isSameDay(e.date, d)) return false;
-                const match = e.time.match(/^(\d+):?(\d*)\s*(AM|PM)$/i);
-                if (!match) return false;
-                let h = parseInt(match[1]);
-                const ampm = match[3].toUpperCase();
-                if (ampm === 'PM' && h !== 12) h += 12;
-                if (ampm === 'AM' && h === 12) h = 0;
-                return h === hour;
-              });
-              return (
-                <div key={di} className="cal-week-cell">
-                  {dayEvents.map(ev => {
-                    const isCanceled = cancelledEventIds.has(ev.id);
-                    return (
-                      <div key={ev.id} className={`cal-week-event ${isCanceled ? 'cal-week-event--cancelled' : ''}`} style={{ backgroundColor: isCanceled ? '#f3f4f6' : ev.color + '18', borderLeftColor: isCanceled ? '#9ca3af' : ev.color }}>
-                        <span className={`cal-week-event-title ${isCanceled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
-                        <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
-                        {isCanceled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+            {days.map((_, di) => (
+              <div key={di} className="cal-week-cell" />
+            ))}
           </div>
         ))}
+        {/* Positioned events overlay */}
+        <div className="cal-week-events-layer">
+          <div className="cal-week-time-gutter" />
+          {days.map((d, di) => {
+            const dayEvents = events.filter(e => isSameDay(e.date, d));
+            return (
+              <div key={di} className="cal-week-day-col">
+                {dayEvents.map(ev => {
+                  const startH = parseHour(ev.time);
+                  const endH = ev.endTime ? parseHour(ev.endTime) : startH + 1;
+                  const top = (startH - WEEK_START_HOUR) * WEEK_HOUR_HEIGHT;
+                  const height = Math.max((endH - startH) * WEEK_HOUR_HEIGHT, 20);
+                  const isCanceled = cancelledEventIds.has(ev.id);
+                  const isPending = ev.isPending === true;
+                  return (
+                    <div
+                      key={ev.id}
+                      className={`cal-week-event ${isCanceled ? 'cal-week-event--cancelled' : ''} ${isPending ? 'cal-month-event--pending' : ''}`}
+                      style={{
+                        position: 'absolute',
+                        top: `${top}px`,
+                        height: `${height}px`,
+                        left: '2px', right: '2px',
+                        backgroundColor: isCanceled ? '#f3f4f6' : ev.color + '18',
+                        borderLeftColor: isCanceled ? '#9ca3af' : ev.color,
+                        borderLeftStyle: isPending ? 'dashed' : undefined,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <span className={`cal-week-event-title ${isCanceled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
+                      <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
+                      {isCanceled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
+                      {isPending && <span className="cal-pending-badge">Pending</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
