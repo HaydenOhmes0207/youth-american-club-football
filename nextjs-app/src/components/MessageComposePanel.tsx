@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import type { Registrant } from './ProgramDetailView';
+import type { ProgramWithStats } from '@/lib/actions/programs';
 
 export interface MessagePayload {
   subject: string;
@@ -12,41 +13,66 @@ export interface MessagePayload {
   sentBy: string;
 }
 
+function formatDollars(dollars: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(dollars);
+}
+
 interface MessageComposePanelProps {
   isOpen: boolean;
   onClose: () => void;
-  recipients: Registrant[];
-  programTitle: string;
   senderName: string;
   onSend: (payload: MessagePayload) => void;
+  // Registrant-level mode (drill-in)
+  recipients?: Registrant[];
+  programTitle?: string;
+  // Program-level bulk mode (overdue)
+  overduePrograms?: ProgramWithStats[];
 }
 
 export default function MessageComposePanel({
   isOpen,
   onClose,
-  recipients,
-  programTitle,
   senderName,
   onSend,
+  recipients,
+  programTitle,
+  overduePrograms,
 }: MessageComposePanelProps) {
-  const [subject, setSubject] = useState(`${programTitle} - What to Bring`);
+  const isBulkMode = !!overduePrograms && overduePrograms.length > 0;
+
+  // Compute context-dependent defaults
+  const bulkFamilyCount = isBulkMode
+    ? overduePrograms.reduce((sum, p) => {
+        // Estimate overdue families: registrants * (1 - paidPercent/100)
+        const unpaidRate = 1 - (p.paidPercent ?? 100) / 100;
+        return sum + Math.round(p.registrantCount * unpaidRate);
+      }, 0)
+    : 0;
+  const totalOutstanding = isBulkMode
+    ? overduePrograms.reduce((sum, p) => sum + (p.outstandingAmount ?? 0), 0)
+    : 0;
+  const bulkProgramNames = isBulkMode ? overduePrograms.map(p => p.title) : [];
+  const displayTitle = isBulkMode ? bulkProgramNames.join(', ') : (programTitle || '');
+  const recipientCount = isBulkMode ? bulkFamilyCount : (recipients ? new Set(recipients.map(r => r.parentEmail)).size : 0);
+
+  const [subject, setSubject] = useState(
+    isBulkMode
+      ? 'Payment Reminder - Outstanding Balance'
+      : `${displayTitle} - What to Bring`
+  );
   const [message, setMessage] = useState(
-    `Hi families,\n\nJust a quick reminder about what your athlete needs to bring to ${programTitle}:\n\n` +
-    `- Turf shoes (no metal cleats)\n` +
-    `- Helmet (properly fitted)\n` +
-    `- Water bottle (labeled with name)\n\n` +
-    `Also, please make sure to RSVP in the app so we have an accurate headcount.\n\n` +
-    `See you there!\n${senderName}`
+    isBulkMode
+      ? `Hi families,\n\nThis is a friendly reminder that your registration balance is still outstanding. Our records show a combined ${formatDollars(totalOutstanding)} in unpaid fees across the following programs:\n\n${bulkProgramNames.map(n => `  - ${n}`).join('\n')}\n\nPlease log in to the app to view your balance and submit payment at your earliest convenience. If you have already paid, please disregard this message.\n\nIf you need to set up a payment plan or have questions, please reply to this message and we will work with you.\n\nThank you,\n${senderName}`
+      : `Hi families,\n\nJust a quick reminder about what your athlete needs to bring to ${displayTitle}:\n\n- Turf shoes (no metal cleats)\n- Helmet (properly fitted)\n- Water bottle (labeled with name)\n\nAlso, please make sure to RSVP in the app so we have an accurate headcount.\n\nSee you there!\n${senderName}`
   );
   const [channelEmail, setChannelEmail] = useState(true);
-  const [channelSms, setChannelSms] = useState(true);
+  const [channelSms, setChannelSms] = useState(isBulkMode);
   const [channelPush, setChannelPush] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
   if (!isOpen) return null;
 
   const anyChannel = channelEmail || channelSms || channelPush;
-  const uniqueEmails = new Set(recipients.map(r => r.parentEmail));
 
   const handleSend = () => {
     setIsSending(true);
@@ -55,8 +81,8 @@ export default function MessageComposePanel({
         subject,
         message,
         channels: { email: channelEmail, sms: channelSms, push: channelPush },
-        recipientCount: uniqueEmails.size,
-        programTitle,
+        recipientCount,
+        programTitle: displayTitle,
         sentBy: senderName,
       });
       setIsSending(false);
@@ -69,7 +95,7 @@ export default function MessageComposePanel({
       <div className="import-panel-backdrop" onClick={onClose} />
       <div className="import-panel">
         <div className="import-panel-header">
-          <h2 className="import-panel-title">Send Message</h2>
+          <h2 className="import-panel-title">{isBulkMode ? 'Payment Reminder' : 'Send Message'}</h2>
           <button className="import-panel-close" onClick={onClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
@@ -90,9 +116,23 @@ export default function MessageComposePanel({
                 <div className="closure-review-section">
                   <div className="closure-section-label">Recipients</div>
                   <div className="compose-recipients-info">
-                    <span className="compose-recipients-count">{uniqueEmails.size} families</span>
-                    <span className="compose-recipients-program">{programTitle}</span>
+                    <span className="compose-recipients-count">{recipientCount} families</span>
+                    {isBulkMode ? (
+                      <span className="compose-recipients-program">with outstanding balances</span>
+                    ) : (
+                      <span className="compose-recipients-program">{displayTitle}</span>
+                    )}
                   </div>
+                  {isBulkMode && (
+                    <div className="compose-programs-list">
+                      {overduePrograms.map(p => (
+                        <div key={p.id} className="compose-program-row">
+                          <span className="compose-program-name">{p.title}</span>
+                          <span className="compose-program-outstanding">{formatDollars(p.outstandingAmount ?? 0)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Subject */}
@@ -155,7 +195,7 @@ export default function MessageComposePanel({
             ) : (
               <>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Send to {uniqueEmails.size} families
+                Send to {recipientCount} families
               </>
             )}
           </button>

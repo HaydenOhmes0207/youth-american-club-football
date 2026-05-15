@@ -209,6 +209,7 @@ export default function NavigationWrapper() {
   const [selectedProgram, setSelectedProgram] = useState<ProgramWithStats | null>(null);
   const [showComposePanel, setShowComposePanel] = useState(false);
   const [composeRecipients, setComposeRecipients] = useState<Registrant[]>([]);
+  const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
   const [toast, setToast] = useState<string | null>(null);
 
   // Chapter switching: reset state and set initial context for each chapter
@@ -221,6 +222,7 @@ export default function NavigationWrapper() {
     setSelectedProgram(null);
     setShowComposePanel(false);
     setComposeRecipients([]);
+    setComposeOverduePrograms([]);
     setToast(null);
 
     switch (activeChapter) {
@@ -236,9 +238,6 @@ export default function NavigationWrapper() {
         if (activePersona.id === 'maria') {
           setActiveRoute('/programs');
           setImportedEvents([]);
-          // Auto-drill into Summer Skills Camp
-          const camp = mariaPrograms.find(p => p.id === 'mp-camp');
-          if (camp) setSelectedProgram(camp);
         } else {
           setActiveRoute('/');
           setImportedEvents(getFallScheduleEvents());
@@ -283,6 +282,13 @@ export default function NavigationWrapper() {
 
   const handleEmailRegistrants = (registrants: Registrant[]) => {
     setComposeRecipients(registrants);
+    setComposeOverduePrograms([]);
+    setShowComposePanel(true);
+  };
+
+  const handleMessageOverdue = (programs: ProgramWithStats[]) => {
+    setComposeOverduePrograms(programs);
+    setComposeRecipients([]);
     setShowComposePanel(true);
   };
 
@@ -302,6 +308,9 @@ export default function NavigationWrapper() {
       programTitle: payload.programTitle,
       type: 'program-message',
     }]);
+    setShowComposePanel(false);
+    setComposeRecipients([]);
+    setComposeOverduePrograms([]);
     setToast(`Message sent to ${payload.recipientCount} families`);
     setTimeout(() => setToast(null), 4000);
   };
@@ -372,10 +381,22 @@ export default function NavigationWrapper() {
 
   // Build overlay based on active route or compose panel
   let overlay: React.ReactNode = null;
-  if (showComposePanel && selectedProgram) {
+  const isBulkOverdue = showComposePanel && composeOverduePrograms.length > 0;
+  const isRegistrantCompose = showComposePanel && selectedProgram && composeRecipients.length > 0;
+  if (isBulkOverdue) {
     overlay = (
       <MessageComposePanel
-        isOpen={showComposePanel}
+        isOpen
+        onClose={() => { setShowComposePanel(false); setComposeOverduePrograms([]); }}
+        senderName={`${activePersona.firstName} ${activePersona.lastName}`}
+        onSend={handleMessageSend}
+        overduePrograms={composeOverduePrograms}
+      />
+    );
+  } else if (isRegistrantCompose) {
+    overlay = (
+      <MessageComposePanel
+        isOpen
         onClose={() => { setShowComposePanel(false); setComposeRecipients([]); }}
         recipients={composeRecipients}
         programTitle={selectedProgram.title}
@@ -433,7 +454,12 @@ export default function NavigationWrapper() {
       pageContent = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
           <PageHeader title="Programs" description="Manage your registration programs, seasons, and events." />
-          <ProgramsTable programs={currentPrograms} onProgramClick={(p) => setSelectedProgram(p)} />
+          <ProgramsTable
+            programs={currentPrograms}
+            onProgramClick={(p) => setSelectedProgram(p)}
+            selectable={activePersona.id === 'maria' && activeChapter === 'communication'}
+            onMessageOverdue={handleMessageOverdue}
+          />
         </div>
       );
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import Toolbar from './Toolbar';
@@ -67,71 +67,15 @@ function PaidBar({ percent }: { percent: number }) {
 interface ProgramsTableProps {
   programs: ProgramWithStats[];
   onProgramClick?: (program: ProgramWithStats) => void;
+  selectable?: boolean;
+  onMessageOverdue?: (programs: ProgramWithStats[]) => void;
 }
 
-function TableContent({ programs, showFinancials, onProgramClick }: { programs: ProgramWithStats[]; showFinancials: boolean; onProgramClick?: (program: ProgramWithStats) => void }) {
-  return (
-    <div className="programs-table" style={{ minWidth: showFinancials ? '1200px' : '1100px' }}>
-      <div className="table-row table-header">
-        <div className="table-cell cell-title"><span className="header-label">Program</span></div>
-        <div className="table-cell cell-registration"><span className="header-label">Registration</span></div>
-        <div className="table-cell cell-type"><span className="header-label">Type</span></div>
-        <div className="table-cell cell-dates"><span className="header-label">Key Dates</span></div>
-        <div className="table-cell cell-registrants align-right"><span className="header-label">Registrants</span></div>
-        {showFinancials && (
-          <>
-            <div className="table-cell cell-teams align-right" style={{ width: '80px' }}><span className="header-label">Teams</span></div>
-            <div className="table-cell cell-paid"><span className="header-label">Paid</span></div>
-            <div className="table-cell cell-outstanding align-right"><span className="header-label">Outstanding</span></div>
-            <div className="table-cell cell-revenue align-right"><span className="header-label">Revenue</span></div>
-          </>
-        )}
-        {!showFinancials && (
-          <div className="table-cell cell-value align-right"><span className="header-label">Program Value</span></div>
-        )}
-        <div className="table-cell cell-actions" />
-      </div>
-      {programs.map((program) => (
-        <div
-          key={program.id}
-          className="table-row table-data"
-          onClick={() => onProgramClick?.(program)}
-          role={onProgramClick ? 'button' : undefined}
-          tabIndex={onProgramClick ? 0 : undefined}
-          onKeyDown={(e) => { if (onProgramClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onProgramClick(program); } }}
-        >
-          <div className="table-cell cell-title emphasized">{program.title}</div>
-          <div className="table-cell cell-registration"><StatusBadge status={program.registrationStatus} type="registration" /></div>
-          <div className="table-cell cell-type">{formatProgramType(program.type)}</div>
-          <div className="table-cell cell-dates">{program.keyDates || formatDateRange(program.eventDates)}</div>
-          <div className="table-cell cell-registrants align-right">{program.registrantCount}</div>
-          {showFinancials && (
-            <>
-              <div className="table-cell cell-teams align-right" style={{ width: '80px' }}>{program.teamCount ?? '\u2014'}</div>
-              <div className="table-cell cell-paid">{program.paidPercent != null ? <PaidBar percent={program.paidPercent} /> : '\u2014'}</div>
-              <div className="table-cell cell-outstanding align-right">
-                {program.outstandingAmount != null ? (
-                  <span className={program.outstandingAmount > 0 ? 'outstanding-amount' : ''}>{formatDollars(program.outstandingAmount)}</span>
-                ) : '\u2014'}
-              </div>
-              <div className="table-cell cell-revenue align-right">{program.totalRevenue != null ? formatDollars(program.totalRevenue) : '\u2014'}</div>
-            </>
-          )}
-          {!showFinancials && (
-            <div className="table-cell cell-value align-right">{formatCurrency(program.programValue)}</div>
-          )}
-          <div className="table-cell cell-actions"><button className="more-options-btn" aria-label="More options" onClick={(e) => e.stopPropagation()}><MoreOptionsIcon /></button></div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default function ProgramsTable({ programs, onProgramClick }: ProgramsTableProps) {
+export default function ProgramsTable({ programs, onProgramClick, selectable, onMessageOverdue }: ProgramsTableProps) {
   const [statusFilter, setStatusFilter] = useState('published');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Detect whether to show financial columns based on data presence
   const showFinancials = programs.some(p => p.paidPercent != null || p.totalRevenue != null);
 
   const segments = [
@@ -169,11 +113,131 @@ export default function ProgramsTable({ programs, onProgramClick }: ProgramsTabl
     return 'programs';
   };
 
+  // Selection helpers
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const allSelected = filteredPrograms.length > 0 && filteredPrograms.every(p => selectedIds.has(p.id));
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredPrograms.map(p => p.id)));
+    }
+  };
+
+  const selectedPrograms = useMemo(
+    () => filteredPrograms.filter(p => selectedIds.has(p.id)),
+    [filteredPrograms, selectedIds]
+  );
+
+  const selectedOverdueCount = useMemo(
+    () => selectedPrograms.reduce((sum, p) => sum + (p.outstandingAmount ?? 0), 0),
+    [selectedPrograms]
+  );
+
+  const hasOverdue = selectedPrograms.some(p => (p.outstandingAmount ?? 0) > 0);
+
   return (
     <div className="programs-content">
       <Toolbar segments={segments} searchPlaceholder="Search programs..." onSearch={(query) => setSearchQuery(query)} onFilter={() => {}} onExport={() => {}} />
+
+      {/* Bulk action bar */}
+      {selectable && selectedIds.size > 0 && (
+        <div className="bulk-action-bar">
+          <span className="bulk-action-count">{selectedIds.size} program{selectedIds.size !== 1 ? 's' : ''} selected</span>
+          {hasOverdue && onMessageOverdue && (
+            <button className="bulk-action-btn" onClick={() => onMessageOverdue(selectedPrograms)}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3" width="13" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.25"/><path d="M1.5 4.5L8 9l6.5-4.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+              Message Overdue Contacts ({formatDollars(selectedOverdueCount)} outstanding)
+            </button>
+          )}
+          <button className="bulk-action-clear" onClick={() => setSelectedIds(new Set())}>Clear</button>
+        </div>
+      )}
+
       {filteredPrograms.length > 0 ? (
-        <div className="table-scroll-container"><TableContent programs={filteredPrograms} showFinancials={showFinancials} onProgramClick={onProgramClick} /></div>
+        <div className="table-scroll-container">
+          <div className="programs-table" style={{ minWidth: showFinancials ? '1200px' : '1100px' }}>
+            {/* Header */}
+            <div className="table-row table-header">
+              {selectable && (
+                <div className="table-cell cell-checkbox">
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all programs" />
+                </div>
+              )}
+              <div className="table-cell cell-title"><span className="header-label">Program</span></div>
+              <div className="table-cell cell-registration"><span className="header-label">Registration</span></div>
+              <div className="table-cell cell-type"><span className="header-label">Type</span></div>
+              <div className="table-cell cell-dates"><span className="header-label">Key Dates</span></div>
+              <div className="table-cell cell-registrants align-right"><span className="header-label">Registrants</span></div>
+              {showFinancials && (
+                <>
+                  <div className="table-cell cell-teams align-right" style={{ width: '80px' }}><span className="header-label">Teams</span></div>
+                  <div className="table-cell cell-paid"><span className="header-label">Paid</span></div>
+                  <div className="table-cell cell-outstanding align-right"><span className="header-label">Outstanding</span></div>
+                  <div className="table-cell cell-revenue align-right"><span className="header-label">Revenue</span></div>
+                </>
+              )}
+              {!showFinancials && (
+                <div className="table-cell cell-value align-right"><span className="header-label">Program Value</span></div>
+              )}
+              <div className="table-cell cell-actions" />
+            </div>
+
+            {/* Rows */}
+            {filteredPrograms.map((program) => {
+              const isSelected = selectedIds.has(program.id);
+              return (
+                <div
+                  key={program.id}
+                  className={`table-row table-data${isSelected ? ' table-row--selected' : ''}`}
+                  onClick={() => onProgramClick?.(program)}
+                  role={onProgramClick ? 'button' : undefined}
+                  tabIndex={onProgramClick ? 0 : undefined}
+                  onKeyDown={(e) => { if (onProgramClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onProgramClick(program); } }}
+                >
+                  {selectable && (
+                    <div className="table-cell cell-checkbox" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(program.id)}
+                        aria-label={`Select ${program.title}`}
+                      />
+                    </div>
+                  )}
+                  <div className="table-cell cell-title emphasized">{program.title}</div>
+                  <div className="table-cell cell-registration"><StatusBadge status={program.registrationStatus} type="registration" /></div>
+                  <div className="table-cell cell-type">{formatProgramType(program.type)}</div>
+                  <div className="table-cell cell-dates">{program.keyDates || formatDateRange(program.eventDates)}</div>
+                  <div className="table-cell cell-registrants align-right">{program.registrantCount}</div>
+                  {showFinancials && (
+                    <>
+                      <div className="table-cell cell-teams align-right" style={{ width: '80px' }}>{program.teamCount ?? '\u2014'}</div>
+                      <div className="table-cell cell-paid">{program.paidPercent != null ? <PaidBar percent={program.paidPercent} /> : '\u2014'}</div>
+                      <div className="table-cell cell-outstanding align-right">
+                        {program.outstandingAmount != null ? (
+                          <span className={program.outstandingAmount > 0 ? 'outstanding-amount' : ''}>{formatDollars(program.outstandingAmount)}</span>
+                        ) : '\u2014'}
+                      </div>
+                      <div className="table-cell cell-revenue align-right">{program.totalRevenue != null ? formatDollars(program.totalRevenue) : '\u2014'}</div>
+                    </>
+                  )}
+                  {!showFinancials && (
+                    <div className="table-cell cell-value align-right">{formatCurrency(program.programValue)}</div>
+                  )}
+                  <div className="table-cell cell-actions"><button className="more-options-btn" aria-label="More options" onClick={(e) => e.stopPropagation()}><MoreOptionsIcon /></button></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : (
         <EmptyState variant={getEmptyStateVariant()} searchQuery={searchQuery} />
       )}

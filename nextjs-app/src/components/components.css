@@ -1345,6 +1345,17 @@
   font-family: var(--u-font-body); font-size: 13px;
   color: var(--u-color-base-foreground-subtle, #607081);
 }
+.compose-programs-list {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 6px;
+  padding: 8px 10px; background: var(--u-color-background-subtle, #f5f6f7);
+  border-radius: var(--u-border-radius-medium, 4px);
+}
+.compose-program-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--u-font-body); font-size: 12px;
+}
+.compose-program-name { color: var(--u-color-base-foreground, #36485c); }
+.compose-program-outstanding { color: #dc2626; font-weight: 600; }
 .compose-subject-input {
   width: 100%; padding: 8px 12px; border: 1px solid var(--u-color-line-subtle, #c4c6c8);
   border-radius: var(--u-border-radius-medium, 4px); background: var(--u-color-background-container, #fefefe);

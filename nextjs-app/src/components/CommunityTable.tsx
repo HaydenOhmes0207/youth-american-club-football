@@ -134,7 +134,7 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
               </div>
               {isProgramMessage && notif.programTitle && (
                 <div className="community-sent-card-row">
-                  <span className="community-sent-card-label">Program</span>
+                  <span className="community-sent-card-label">{notif.programTitle.includes(',') ? 'Programs' : 'Program'}</span>
                   <span className="community-sent-card-value">{notif.programTitle}</span>
                 </div>
               )}
