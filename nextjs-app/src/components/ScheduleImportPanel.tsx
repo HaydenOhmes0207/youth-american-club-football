@@ -223,6 +223,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setOptStreaming(false);
       setOptFocus(false);
       setPastedUrl('');
+      setIsPublishing(false);
     }
   }, [isOpen]);
 
@@ -288,22 +289,28 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
     setEditingEvent(null);
   }, []);
 
+  const [isPublishing, setIsPublishing] = useState(false);
+
   const handleApprove = useCallback(() => {
-    const eventsToAdd: CalendarEvent[] = [];
-    sections.forEach(section => {
-      section.events.forEach(evt => {
-        if (evt.status === 'accepted') {
-          eventsToAdd.push({
-            id: evt.id, title: evt.title, date: evt.date,
-            time: evt.time, endTime: evt.endTime, sport: evt.sport,
-            type: evt.type, location: evt.location, color: evt.color,
-          });
-        }
+    setIsPublishing(true);
+    setTimeout(() => {
+      const eventsToAdd: CalendarEvent[] = [];
+      sections.forEach(section => {
+        section.events.forEach(evt => {
+          if (evt.status === 'accepted') {
+            eventsToAdd.push({
+              id: evt.id, title: evt.title, date: evt.date,
+              time: evt.time, endTime: evt.endTime, sport: evt.sport,
+              type: evt.type, location: evt.location, color: evt.color,
+            });
+          }
+        });
       });
-    });
-    onImport(eventsToAdd);
-    showToast(`${eventsToAdd.length} events added to your calendar`, 'success');
-    onClose();
+      onImport(eventsToAdd);
+      setIsPublishing(false);
+      showToast(`${eventsToAdd.length} events added to your calendar`, 'success');
+      onClose();
+    }, 2000);
   }, [sections, onImport, onClose, showToast]);
 
   // Counts
@@ -569,9 +576,11 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
             <button
               className="import-approve-btn"
               onClick={handleApprove}
-              disabled={!allReviewed || acceptedCount === 0}
+              disabled={!allReviewed || acceptedCount === 0 || isPublishing}
             >
-              {!allReviewed
+              {isPublishing ? (
+                <><span className="import-btn-spinner" />Creating events...</>
+              ) : !allReviewed
                 ? `Review All Events (${reviewedCount}/${totalEvents})`
                 : `Add ${acceptedCount} ${acceptedCount === 1 ? 'Event' : 'Events'} to Calendar`}
             </button>

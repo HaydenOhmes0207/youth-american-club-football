@@ -755,6 +755,19 @@
 .import-event-badge--tickets { background: #fef3c7; color: #92400e; }
 .import-event-badge--cameras { background: #ede9fe; color: #6d28d9; }
 
+/* Button spinner for action buttons */
+.import-btn-spinner {
+  display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+.import-btn-spinner--light {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+}
+
 /* Edit event view */
 .import-edit-view {
   display: flex; flex-direction: column; height: 100%;
@@ -1069,12 +1082,22 @@
 .resource-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
 
 /* === Cancelled Events (Calendar) === */
-.cal-month-event--cancelled { opacity: 0.5; background: #f3f4f6; }
-.cal-month-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
-.cal-week-event--cancelled { opacity: 0.5; }
-.cal-week-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
-.cal-agenda-event--cancelled { opacity: 0.5; }
-.cal-agenda-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
+  .cal-month-event--cancelled { background: #f3f4f6; }
+  .cal-month-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
+  .cal-week-event--cancelled { }
+  .cal-week-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
+  .cal-agenda-event--cancelled { }
+  .cal-agenda-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
+
+  /* Red cancelled badge */
+  .cal-cancelled-badge {
+    display: inline-flex; align-items: center; height: 18px; padding: 0 6px;
+    border-radius: 3px; background: #fef2f2; color: #dc2626;
+    font-family: var(--u-font-body); font-size: 11px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0; margin-left: 6px;
+    border: 1px solid #fecaca;
+  }
+  .cal-cancelled-badge--small { font-size: 9px; height: 14px; padding: 0 4px; margin-left: 4px; }
 
 /* === Community Tabs === */
 .community-tabs {

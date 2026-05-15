@@ -402,6 +402,7 @@ function MonthView({ year, month, events, cancelledEventIds, today }: { year: nu
                         <div key={ev.id} className={`cal-month-event ${isCancelled ? 'cal-month-event--cancelled' : ''}`} style={{ borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
                           <span className="cal-month-event-time">{ev.time.replace(':00', '').replace(' ', '')}</span>
                           <span className={`cal-month-event-title ${isCancelled ? 'cal-month-event-title--cancelled' : ''}`}>{ev.title}</span>
+                          {isCancelled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Cancelled</span>}
                         </div>
                       );
                     })}
@@ -463,6 +464,7 @@ function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: 
                       <div key={ev.id} className={`cal-week-event ${isCancelled ? 'cal-week-event--cancelled' : ''}`} style={{ backgroundColor: isCancelled ? '#f3f4f6' : ev.color + '18', borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
                         <span className={`cal-week-event-title ${isCancelled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
                         <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
+                        {isCancelled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Cancelled</span>}
                       </div>
                     );
                   })}
@@ -514,7 +516,10 @@ function AgendaView({ year, month, events, cancelledEventIds, today }: { year: n
                     </div>
                     <div className="cal-agenda-event-right">
                       <span className="cal-agenda-event-time">{ev.time} - {ev.endTime}</span>
-                      <span className="cal-agenda-event-type">{isCancelled ? 'Cancelled' : formatEventType(ev.type)}</span>
+                        {isCancelled
+                          ? <span className="cal-cancelled-badge">Cancelled</span>
+                          : <span className="cal-agenda-event-type">{formatEventType(ev.type)}</span>
+                        }
                     </div>
                   </div>
                 );

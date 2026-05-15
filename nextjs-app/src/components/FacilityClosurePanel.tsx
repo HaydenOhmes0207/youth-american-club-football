@@ -64,6 +64,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       setChannelSms(false);
       setChannelPush(false);
       setMessage(`Due to a severe thunderstorm warning, the following facilities at Lincoln East will be closed on ${closureDateLabel}. All affected events have been cancelled. We apologize for the inconvenience.`);
+      setIsCancelling(false);
     }
   }, [isOpen]);
 
@@ -107,33 +108,39 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
   const handleReview = () => setPhase('review');
   const handleBack = () => setPhase('configure');
 
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const handleConfirm = () => {
-    const eventIds = affectedEvents.map(e => e.id);
-    const facilityNames = ALL_FACILITIES.filter(f => selectedFacilities.has(f.id)).map(f => f.name);
-    const recipientLabels: string[] = [];
-    if (notifyCoaches) recipientLabels.push('coaches');
-    if (notifyParents) recipientLabels.push('parents');
-    if (notifyFans) recipientLabels.push('fans');
-    const channelLabels: string[] = [];
-    if (channelEmail) channelLabels.push('email');
-    if (channelSms) channelLabels.push('SMS');
-    if (channelPush) channelLabels.push('push');
+    setIsCancelling(true);
+    setTimeout(() => {
+      const eventIds = affectedEvents.map(e => e.id);
+      const facilityNames = ALL_FACILITIES.filter(f => selectedFacilities.has(f.id)).map(f => f.name);
+      const recipientLabels: string[] = [];
+      if (notifyCoaches) recipientLabels.push('coaches');
+      if (notifyParents) recipientLabels.push('parents');
+      if (notifyFans) recipientLabels.push('fans');
+      const channelLabels: string[] = [];
+      if (channelEmail) channelLabels.push('email');
+      if (channelSms) channelLabels.push('SMS');
+      if (channelPush) channelLabels.push('push');
 
-    onConfirm(eventIds, {
-      date: closureDate,
-      facilities: facilityNames,
-      events: affectedEvents.map(e => e.title),
-      recipients: { coaches: notifyCoaches, parents: notifyParents, fans: notifyFans },
-      channels: { email: channelEmail, sms: channelSms, push: channelPush },
-      message,
-      recipientCount: Math.floor(80 + Math.random() * 200),
-    });
+      onConfirm(eventIds, {
+        date: closureDate,
+        facilities: facilityNames,
+        events: affectedEvents.map(e => e.title),
+        recipients: { coaches: notifyCoaches, parents: notifyParents, fans: notifyFans },
+        channels: { email: channelEmail, sms: channelSms, push: channelPush },
+        message,
+        recipientCount: Math.floor(80 + Math.random() * 200),
+      });
 
-    const notifSummary = recipientLabels.length > 0 && channelLabels.length > 0
-      ? ` Notifications sent via ${channelLabels.join(', ')} to ${recipientLabels.join(', ')}.`
-      : '';
-    showToast(`${eventIds.length} events cancelled across ${facilityNames.length} facilities.${notifSummary}`, 'success');
-    onClose();
+      const notifSummary = recipientLabels.length > 0 && channelLabels.length > 0
+        ? ` Notifications sent via ${channelLabels.join(', ')} to ${recipientLabels.join(', ')}.`
+        : '';
+      setIsCancelling(false);
+      showToast(`${eventIds.length} events cancelled across ${facilityNames.length} facilities.${notifSummary}`, 'success');
+      onClose();
+    }, 2000);
   };
 
   if (!isOpen) return null;
@@ -295,10 +302,14 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
               <div className="import-panel-footer">
                 <button
                   className="closure-confirm-btn"
-                  disabled={affectedEvents.length === 0 || (anyRecipient && !anyChannel)}
+                  disabled={affectedEvents.length === 0 || (anyRecipient && !anyChannel) || isCancelling}
                   onClick={handleConfirm}
                 >
-                  Close Facilities{anyRecipient && anyChannel ? ' & Notify' : ''}
+                  {isCancelling ? (
+                    <><span className="import-btn-spinner import-btn-spinner--light" />Cancelling events...</>
+                  ) : (
+                    <>Close Facilities{anyRecipient && anyChannel ? ' & Notify' : ''}</>
+                  )}
                 </button>
               </div>
             </div>
