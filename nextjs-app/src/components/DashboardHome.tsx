@@ -269,7 +269,7 @@ export default function DashboardHome({
                       tick={{ fontSize: 13, fill: '#607081' }}
                       dy={8}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                     <Line type="monotone" dataKey="programs" stroke="var(--color-programs)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-programs)', strokeWidth: 0 }} />
                     <Line type="monotone" dataKey="tickets" stroke="var(--color-tickets)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-tickets)', strokeWidth: 0 }} />
                     <Line type="monotone" dataKey="sponsorships" stroke="var(--color-sponsorships)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-sponsorships)', strokeWidth: 0 }} />

@@ -208,8 +208,9 @@ function ChartTooltipContent({
               <div
                 key={index}
                 className={cn(
-                  "flex w-full items-center gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-                  indicator === "dot" && "items-center"
+                  "flex w-full items-center [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+                  indicator === "dot" && "items-center",
+                  (itemConfig?.icon || !hideIndicator) && "gap-2"
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
@@ -246,12 +247,12 @@ function ChartTooltipContent({
                         nestLabel ? "items-end" : "items-center"
                       )}
                     >
-                      <span className="text-muted-foreground whitespace-nowrap">
+                      <span className="text-muted-foreground whitespace-nowrap text-left">
                         {nestLabel ? tooltipLabel : null}
                         {itemConfig?.label ?? item.name}
                       </span>
                       {item.value != null && (
-                        <span className="font-mono font-medium text-foreground tabular-nums text-right ml-auto">
+                        <span className="font-mono font-medium text-foreground tabular-nums text-right">
                           {typeof item.value === "number"
                             ? item.value.toLocaleString()
                             : String(item.value)}
