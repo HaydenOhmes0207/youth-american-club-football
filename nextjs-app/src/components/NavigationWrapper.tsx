@@ -8,6 +8,8 @@ import PageHeader from './PageHeader';
 import ProgramsTable from './ProgramsTable';
 import CommunityTable from './CommunityTable';
 import CalendarView from './CalendarView';
+import type { CalendarEvent } from './CalendarView';
+import ScheduleImportPanel from './ScheduleImportPanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 const mockPrograms: ProgramWithStats[] = [
@@ -34,10 +36,26 @@ function HomePage() {
 }
 
 function CalendarPage() {
+  const [showImportPanel, setShowImportPanel] = useState(false);
+  const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>([]);
+
+  const handleImport = (events: CalendarEvent[]) => {
+    setImportedEvents(prev => [...prev, ...events]);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
-      <PageHeader title="Calendar" description="View and manage camps, clinics, and events across your organization." actions={[{ label: 'Add Event', buttonStyle: 'standard' }]} />
-      <CalendarView />
+      <PageHeader
+        title="Calendar"
+        description="View and manage camps, clinics, and events across your organization."
+        actions={[{ label: 'Add Event', buttonStyle: 'standard', onClick: () => setShowImportPanel(true) }]}
+      />
+      <CalendarView extraEvents={importedEvents} />
+      <ScheduleImportPanel
+        isOpen={showImportPanel}
+        onClose={() => setShowImportPanel(false)}
+        onImport={handleImport}
+      />
     </div>
   );
 }

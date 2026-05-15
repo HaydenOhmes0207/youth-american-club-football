@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { usePersona } from '@/lib/persona-context';
 import type { PersonaId } from '@/lib/persona-context';
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id: string;
   title: string;
   date: Date;
@@ -17,7 +17,7 @@ interface CalendarEvent {
   color: string;
 }
 
-const SPORT_COLORS: Record<string, string> = {
+export const SPORT_COLORS: Record<string, string> = {
   // Alex - HS summer camps/clinics
   'Football': '#1b3a2a',
   'Boys Soccer': '#1e40af',
@@ -52,7 +52,7 @@ function repeatWeekly(
   }
 }
 
-const alexOpponents = ['Westview', 'Eastside', 'Central', 'North Platte', 'Elkhorn', 'Millard North', 'Papillion', 'Bellevue', 'Ralston', 'Burke'];
+export const alexOpponents = ['Westview', 'Eastside', 'Central', 'North Platte', 'Elkhorn', 'Millard North', 'Papillion', 'Bellevue', 'Ralston', 'Burke'];
 const mariaOpponents = ['Omaha Wolves', 'Bellevue Bears', 'Papillion Hawks', 'Ralston Raiders', 'Elkhorn Eagles', 'Millard Mustangs', 'Gretna Grizzlies', 'Blair Bears', 'Bennington Badgers', 'Waverly Vikings'];
 
 function generateAlexEvents(): CalendarEvent[] {
@@ -155,33 +155,13 @@ function generateAlexEvents(): CalendarEvent[] {
   // Football practices (Mon, Wed) + games (Fri)
   repeatWeekly(events, 'afbp', { title: 'Football - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Football', type: 'practice', location: 'Memorial Stadium', color: C['Football'] }, fallStart, fallEnd, 1);
   repeatWeekly(events, 'afbp', { title: 'Football - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Football', type: 'practice', location: 'Memorial Stadium', color: C['Football'] }, fallStart, fallEnd, 3);
-  // Football Friday games (9 game regular season)
-  const fbFridays: Date[] = [];
-  const fd = new Date(fallStart);
-  while (fd.getDay() !== 5) fd.setDate(fd.getDate() + 1);
-  for (let g = 0; g < 9 && fd <= fallEnd; g++) {
-    fbFridays.push(new Date(fd));
-    fd.setDate(fd.getDate() + 7);
-  }
-  fbFridays.forEach((d, i) => {
-    const opp = alexOpponents[i % alexOpponents.length];
-    const home = i % 2 === 0;
-    events.push({ id: `afbg-${i}`, title: `Football vs. ${opp}`, date: d, time: '7:00 PM', endTime: '9:30 PM', sport: 'Football', type: 'game', location: home ? 'Memorial Stadium' : `${opp} HS`, color: C['Football'] });
-  });
+  // Football Friday games removed — populated via AI schedule import demo
 
   // Boys Soccer practices (Mon, Wed, Thu) + games (Tue, Sat)
   repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 1);
   repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 3);
   repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 4);
-  const socEnd = new Date(2026, 9, 24); // soccer ends late Oct
-  const socTue: Date[] = [];
-  const st = new Date(fallStart);
-  while (st.getDay() !== 2) st.setDate(st.getDate() + 1);
-  for (let g = 0; g < 8 && st <= socEnd; g++) { socTue.push(new Date(st)); st.setDate(st.getDate() + 14); }
-  socTue.forEach((d, i) => {
-    const opp = alexOpponents[(i + 3) % alexOpponents.length];
-    events.push({ id: `asocg-${i}`, title: `Boys Soccer vs. ${opp}`, date: d, time: '4:30 PM', endTime: '6:30 PM', sport: 'Boys Soccer', type: 'game', location: i % 2 === 0 ? 'Soccer Complex' : `${opp} HS`, color: C['Boys Soccer'] });
-  });
+  // Soccer games removed — populated via AI schedule import demo
 
   // XC practices (Mon-Fri) + meets (Sat every 2 weeks)
   for (let dow = 1; dow <= 5; dow++) {
@@ -201,18 +181,7 @@ function generateAlexEvents(): CalendarEvent[] {
   repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 1);
   repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 3);
   repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 5);
-  // VB matches Tuesdays
-  const vbMatchEnd = new Date(2026, 10, 7);
-  const vbTue: Date[] = [];
-  const vt = new Date(fallStart);
-  while (vt.getDay() !== 2) vt.setDate(vt.getDate() + 1);
-  while (vt <= vbMatchEnd) { vbTue.push(new Date(vt)); vt.setDate(vt.getDate() + 7); }
-  vbTue.forEach((d, i) => {
-    const opp = alexOpponents[(i + 5) % alexOpponents.length];
-    events.push({ id: `avbg-${i}`, title: `Volleyball vs. ${opp}`, date: d, time: '6:00 PM', endTime: '8:00 PM', sport: 'Girls Volleyball', type: 'game', location: i % 2 === 0 ? 'Main Gym' : `${opp} HS`, color: C['Girls Volleyball'] });
-  });
-  // VB tournament
-  events.push({ id: 'avbtourney', title: 'Volleyball - Heartland Tournament', date: new Date(2026, 9, 10), time: '8:00 AM', endTime: '5:00 PM', sport: 'Girls Volleyball', type: 'game', location: 'Main Gym', color: C['Girls Volleyball'] });
+  // VB matches + tournament removed — populated via AI schedule import demo
 
   // Tennis practices (Mon, Wed) + duals/invites
   repeatWeekly(events, 'atnp', { title: 'Girls Tennis - Practice', time: '3:30 PM', endTime: '5:00 PM', sport: 'Girls Tennis', type: 'practice', location: 'Tennis Courts', color: C['Girls Tennis'] }, fallStart, new Date(2026, 9, 17), 1);
@@ -235,11 +204,8 @@ function generateAlexEvents(): CalendarEvent[] {
     { id: 'aboostf2', title: 'Booster Club Meeting', date: new Date(2026, 9, 12), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
     { id: 'aboostf3', title: 'Booster Club Meeting', date: new Date(2026, 10, 9), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
   );
-  // Special events
+  // Special events (keep non-game ones)
   events.push(
-    { id: 'ahomecoming', title: 'Homecoming Game & Ceremony', date: new Date(2026, 9, 2), time: '6:00 PM', endTime: '10:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'aseniornite', title: 'Senior Night - Football', date: new Date(2026, 9, 23), time: '6:30 PM', endTime: '10:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'avbsenior', title: 'Senior Night - Volleyball', date: new Date(2026, 9, 20), time: '5:30 PM', endTime: '8:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
     { id: 'afallbanq', title: 'Fall Sports Awards Banquet', date: new Date(2026, 10, 19), time: '6:00 PM', endTime: '8:30 PM', sport: 'AD Admin', type: 'event', location: 'Auditorium', color: C['AD Admin'] },
   );
 
@@ -557,14 +523,18 @@ function AgendaView({ year, month, events }: { year: number; month: number; even
 }
 
 // ---- MAIN CALENDAR ----
-export default function CalendarView() {
+interface CalendarViewProps {
+  extraEvents?: CalendarEvent[];
+}
+
+export default function CalendarView({ extraEvents = [] }: CalendarViewProps) {
   const { activePersona } = usePersona();
   const [view, setView] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const events = EVENTS_BY_PERSONA[activePersona.id];
+  const events = [...EVENTS_BY_PERSONA[activePersona.id], ...extraEvents];
   const weekStart = getWeekStart(currentDate);
 
   function prevPeriod() {
