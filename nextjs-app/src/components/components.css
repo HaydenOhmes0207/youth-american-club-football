@@ -1081,7 +1081,7 @@
 .resource-event--cancelled { opacity: 0.5; }
 .resource-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
 
-/* === Cancelled Events (Calendar) === */
+/* === Canceled Events (Calendar) === */
   .cal-month-event--cancelled { background: #f3f4f6; }
   .cal-month-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
   .cal-week-event--cancelled { }
@@ -1089,7 +1089,7 @@
   .cal-agenda-event--cancelled { }
   .cal-agenda-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
 
-  /* Red cancelled badge */
+  /* Red canceled badge */
   .cal-cancelled-badge {
     display: inline-flex; align-items: center; height: 18px; padding: 0 6px;
     border-radius: 3px; background: #fef2f2; color: #dc2626;

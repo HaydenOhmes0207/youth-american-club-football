@@ -397,12 +397,12 @@ function MonthView({ year, month, events, cancelledEventIds, today }: { year: nu
                   <span className={`cal-month-cell-day ${isToday ? 'cal-month-cell-day--today' : ''}`}>{day}</span>
                   <div className="cal-month-cell-events">
                     {dayEvents.slice(0, 3).map(ev => {
-                      const isCancelled = cancelledEventIds.has(ev.id);
+                      const isCanceled = cancelledEventIds.has(ev.id);
                       return (
-                        <div key={ev.id} className={`cal-month-event ${isCancelled ? 'cal-month-event--cancelled' : ''}`} style={{ borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
+                        <div key={ev.id} className={`cal-month-event ${isCanceled ? 'cal-month-event--cancelled' : ''}`} style={{ borderLeftColor: isCanceled ? '#9ca3af' : ev.color }}>
                           <span className="cal-month-event-time">{ev.time.replace(':00', '').replace(' ', '')}</span>
-                          <span className={`cal-month-event-title ${isCancelled ? 'cal-month-event-title--cancelled' : ''}`}>{ev.title}</span>
-                          {isCancelled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Cancelled</span>}
+                          <span className={`cal-month-event-title ${isCanceled ? 'cal-month-event-title--cancelled' : ''}`}>{ev.title}</span>
+                          {isCanceled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
                         </div>
                       );
                     })}
@@ -459,12 +459,12 @@ function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: 
               return (
                 <div key={di} className="cal-week-cell">
                   {dayEvents.map(ev => {
-                    const isCancelled = cancelledEventIds.has(ev.id);
+                    const isCanceled = cancelledEventIds.has(ev.id);
                     return (
-                      <div key={ev.id} className={`cal-week-event ${isCancelled ? 'cal-week-event--cancelled' : ''}`} style={{ backgroundColor: isCancelled ? '#f3f4f6' : ev.color + '18', borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
-                        <span className={`cal-week-event-title ${isCancelled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
+                      <div key={ev.id} className={`cal-week-event ${isCanceled ? 'cal-week-event--cancelled' : ''}`} style={{ backgroundColor: isCanceled ? '#f3f4f6' : ev.color + '18', borderLeftColor: isCanceled ? '#9ca3af' : ev.color }}>
+                        <span className={`cal-week-event-title ${isCanceled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
                         <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
-                        {isCancelled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Cancelled</span>}
+                        {isCanceled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
                       </div>
                     );
                   })}
@@ -504,20 +504,20 @@ function AgendaView({ year, month, events, cancelledEventIds, today }: { year: n
             </div>
             <div className="cal-agenda-events">
               {dayEvents.map(ev => {
-                const isCancelled = cancelledEventIds.has(ev.id);
+                const isCanceled = cancelledEventIds.has(ev.id);
                 return (
-                  <div key={ev.id} className={`cal-agenda-event ${isCancelled ? 'cal-agenda-event--cancelled' : ''}`} style={{ borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
+                  <div key={ev.id} className={`cal-agenda-event ${isCanceled ? 'cal-agenda-event--cancelled' : ''}`} style={{ borderLeftColor: isCanceled ? '#9ca3af' : ev.color }}>
                     <div className="cal-agenda-event-left">
-                      <TypeDot color={isCancelled ? '#9ca3af' : ev.color} />
+                      <TypeDot color={isCanceled ? '#9ca3af' : ev.color} />
                       <div className="cal-agenda-event-info">
-                        <span className={`cal-agenda-event-title ${isCancelled ? 'cal-agenda-event-title--cancelled' : ''}`}>{ev.title}</span>
+                        <span className={`cal-agenda-event-title ${isCanceled ? 'cal-agenda-event-title--cancelled' : ''}`}>{ev.title}</span>
                         <span className="cal-agenda-event-meta">{ev.location}</span>
                       </div>
                     </div>
                     <div className="cal-agenda-event-right">
                       <span className="cal-agenda-event-time">{ev.time} - {ev.endTime}</span>
-                        {isCancelled
-                          ? <span className="cal-cancelled-badge">Cancelled</span>
+                        {isCanceled
+                          ? <span className="cal-cancelled-badge">Canceled</span>
                           : <span className="cal-agenda-event-type">{formatEventType(ev.type)}</span>
                         }
                     </div>

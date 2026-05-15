@@ -63,7 +63,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       setChannelEmail(true);
       setChannelSms(false);
       setChannelPush(false);
-      setMessage(`Due to a severe thunderstorm warning, the following facilities at Lincoln East will be closed on ${closureDateLabel}. All affected events have been cancelled. We apologize for the inconvenience.`);
+      setMessage(`Due to a severe thunderstorm warning, the following facilities at Lincoln East will be closed on ${closureDateLabel}. All affected events have been canceled. We apologize for the inconvenience.`);
       setIsCancelling(false);
     }
   }, [isOpen]);
@@ -138,7 +138,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
         ? ` Notifications sent via ${channelLabels.join(', ')} to ${recipientLabels.join(', ')}.`
         : '';
       setIsCancelling(false);
-      showToast(`${eventIds.length} events cancelled across ${facilityNames.length} facilities.${notifSummary}`, 'success');
+      showToast(`${eventIds.length} events canceled across ${facilityNames.length} facilities.${notifSummary}`, 'success');
       onClose();
     }, 2000);
   };
@@ -212,7 +212,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
                   {/* Affected events preview */}
                   {selectedFacilities.size > 0 && (
                     <div className="closure-affected-preview">
-                      <span className="closure-affected-count">{affectedEvents.length} event{affectedEvents.length !== 1 ? 's' : ''} will be cancelled</span>
+                      <span className="closure-affected-count">{affectedEvents.length} event{affectedEvents.length !== 1 ? 's' : ''} will be canceled</span>
                     </div>
                   )}
                 </div>
@@ -306,7 +306,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
                   onClick={handleConfirm}
                 >
                   {isCancelling ? (
-                    <><span className="import-btn-spinner import-btn-spinner--light" />Cancelling events...</>
+                    <><span className="import-btn-spinner import-btn-spinner--light" />Canceling events...</>
                   ) : (
                     <>Close Facilities{anyRecipient && anyChannel ? ' & Notify' : ''}</>
                   )}
