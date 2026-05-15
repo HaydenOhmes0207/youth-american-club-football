@@ -23,11 +23,16 @@ const SPORT_COLORS: Record<string, string> = {
   'Cross Country': '#b45309',
   'Girls Volleyball': '#7c3aed',
   'Girls Tennis': '#0891b2',
-  // Maria
-  'Flag Football U10': '#1a2744',
-  'Flag Football U12': '#334155',
-  'Tackle Football U14': '#1e3a5f',
-  'Cheer': '#9333ea',
+  // Maria - grade-based football + cheer
+  '6th Football': '#1a2744',
+  '5th Football': '#2d4a6e',
+  '4th Football': '#334155',
+  '3rd Football': '#475569',
+  '6th Cheer': '#7c3aed',
+  '5th Cheer': '#8b5cf6',
+  '4th Cheer': '#a78bfa',
+  '3rd Cheer': '#c4b5fd',
+  'Club Admin': '#64748b',
 };
 
 function generateAlexEvents(): CalendarEvent[] {
@@ -100,30 +105,93 @@ function generateMariaEvents(): CalendarEvent[] {
   const events: CalendarEvent[] = [];
   const year = 2026;
   const month = 4; // May
+  const C = SPORT_COLORS;
 
+  // --- WEEK 1 (Mon 5/4 - Sat 5/9) ---
+  // Mon: 6th & 5th grade football practice
   events.push(
-    { id: 'm1', title: 'U14 Tackle - Practice', date: new Date(year, month, 4), time: '5:30 PM', endTime: '7:00 PM', sport: 'Tackle Football U14', type: 'practice', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm2', title: 'U12 Flag - Practice', date: new Date(year, month, 5), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football U12', type: 'practice', location: 'Pioneer Park Field 1', color: SPORT_COLORS['Flag Football U12'] },
-    { id: 'm3', title: 'U10 Flag - Practice', date: new Date(year, month, 5), time: '5:30 PM', endTime: '6:30 PM', sport: 'Flag Football U10', type: 'practice', location: 'Pioneer Park Field 3', color: SPORT_COLORS['Flag Football U10'] },
-    { id: 'm4', title: 'U14 Tackle - Practice', date: new Date(year, month, 6), time: '5:30 PM', endTime: '7:00 PM', sport: 'Tackle Football U14', type: 'practice', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm5', title: 'Cheer - Practice', date: new Date(year, month, 6), time: '5:00 PM', endTime: '6:30 PM', sport: 'Cheer', type: 'practice', location: 'Community Center', color: SPORT_COLORS['Cheer'] },
-    { id: 'm6', title: 'Board Meeting', date: new Date(year, month, 7), time: '7:00 PM', endTime: '8:30 PM', sport: 'Tackle Football U14', type: 'meeting', location: 'Community Center', color: '#64748b' },
-    { id: 'm7', title: 'U14 vs. Omaha Wolves', date: new Date(year, month, 9), time: '10:00 AM', endTime: '12:00 PM', sport: 'Tackle Football U14', type: 'game', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm8', title: 'U12 Flag Jamboree', date: new Date(year, month, 9), time: '1:00 PM', endTime: '4:00 PM', sport: 'Flag Football U12', type: 'game', location: 'Pioneer Park Fields', color: SPORT_COLORS['Flag Football U12'] },
-    { id: 'm9', title: 'U14 Tackle - Practice', date: new Date(year, month, 11), time: '5:30 PM', endTime: '7:00 PM', sport: 'Tackle Football U14', type: 'practice', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm10', title: 'U12 Flag - Practice', date: new Date(year, month, 12), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football U12', type: 'practice', location: 'Pioneer Park Field 1', color: SPORT_COLORS['Flag Football U12'] },
-    { id: 'm11', title: 'U10 Flag - Practice', date: new Date(year, month, 12), time: '5:30 PM', endTime: '6:30 PM', sport: 'Flag Football U10', type: 'practice', location: 'Pioneer Park Field 3', color: SPORT_COLORS['Flag Football U10'] },
-    { id: 'm12', title: 'Cheer - Practice', date: new Date(year, month, 13), time: '5:00 PM', endTime: '6:30 PM', sport: 'Cheer', type: 'practice', location: 'Community Center', color: SPORT_COLORS['Cheer'] },
-    { id: 'm13', title: 'U14 Tackle - Practice', date: new Date(year, month, 13), time: '5:30 PM', endTime: '7:00 PM', sport: 'Tackle Football U14', type: 'practice', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm14', title: 'Equipment Check-in', date: new Date(year, month, 14), time: '6:00 PM', endTime: '8:00 PM', sport: 'Tackle Football U14', type: 'event', location: 'Storage Building', color: '#64748b' },
-    { id: 'm15', title: 'U14 vs. Bellevue Tigers', date: new Date(year, month, 16), time: '10:00 AM', endTime: '12:00 PM', sport: 'Tackle Football U14', type: 'game', location: 'Bellevue Sports Complex', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm16', title: 'U10 Flag Tournament', date: new Date(year, month, 16), time: '9:00 AM', endTime: '2:00 PM', sport: 'Flag Football U10', type: 'game', location: 'Seymour Smith Park', color: SPORT_COLORS['Flag Football U10'] },
-    { id: 'm17', title: 'Fundraiser Committee', date: new Date(year, month, 18), time: '6:30 PM', endTime: '7:30 PM', sport: 'Tackle Football U14', type: 'meeting', location: 'Community Center', color: '#64748b' },
-    { id: 'm18', title: 'U14 Tackle - Practice', date: new Date(year, month, 18), time: '5:30 PM', endTime: '7:00 PM', sport: 'Tackle Football U14', type: 'practice', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
-    { id: 'm19', title: 'U12 Flag - Practice', date: new Date(year, month, 19), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football U12', type: 'practice', location: 'Pioneer Park Field 1', color: SPORT_COLORS['Flag Football U12'] },
-    { id: 'm20', title: 'Cheer - Practice', date: new Date(year, month, 20), time: '5:00 PM', endTime: '6:30 PM', sport: 'Cheer', type: 'practice', location: 'Community Center', color: SPORT_COLORS['Cheer'] },
-    { id: 'm21', title: 'Photo Day (All Teams)', date: new Date(year, month, 21), time: '9:00 AM', endTime: '1:00 PM', sport: 'Tackle Football U14', type: 'event', location: 'Pioneer Park', color: '#64748b' },
-    { id: 'm22', title: 'U14 vs. Papillion Panthers', date: new Date(year, month, 23), time: '10:00 AM', endTime: '12:00 PM', sport: 'Tackle Football U14', type: 'game', location: 'Pioneer Park Field 2', color: SPORT_COLORS['Tackle Football U14'] },
+    { id: 'm1', title: '6th Grade Football - Practice', date: new Date(year, month, 4), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm2', title: '5th Grade Football - Practice', date: new Date(year, month, 4), time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+  );
+  // Tue: 4th & 3rd grade football practice
+  events.push(
+    { id: 'm3', title: '4th Grade Football - Practice', date: new Date(year, month, 5), time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['4th Football'] },
+    { id: 'm4', title: '3rd Grade Football - Practice', date: new Date(year, month, 5), time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['3rd Football'] },
+  );
+  // Wed: cheer practice (all grades) + 6th grade football
+  events.push(
+    { id: 'm5', title: '6th Grade Football - Practice', date: new Date(year, month, 6), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm6', title: 'All Cheer - Practice', date: new Date(year, month, 6), time: '5:00 PM', endTime: '6:30 PM', sport: '6th Cheer', type: 'practice', location: 'Community Center Gym', color: C['6th Cheer'] },
+  );
+  // Thu: board meeting + 5th grade practice
+  events.push(
+    { id: 'm7', title: '5th Grade Football - Practice', date: new Date(year, month, 7), time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm8', title: 'Board Meeting', date: new Date(year, month, 7), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+  );
+  // Sat: game day
+  events.push(
+    { id: 'm9', title: '6th Grade A vs. Omaha Wolves', date: new Date(year, month, 9), time: '9:00 AM', endTime: '10:30 AM', sport: '6th Football', type: 'game', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm10', title: '6th Grade B vs. Omaha Wolves', date: new Date(year, month, 9), time: '10:45 AM', endTime: '12:15 PM', sport: '6th Football', type: 'game', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm11', title: '5th Grade A vs. Bellevue Bears', date: new Date(year, month, 9), time: '9:00 AM', endTime: '10:30 AM', sport: '5th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm12', title: '4th Grade A vs. Papillion Hawks', date: new Date(year, month, 9), time: '11:00 AM', endTime: '12:15 PM', sport: '4th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['4th Football'] },
+    { id: 'm13', title: 'All Cheer - Game Day Performance', date: new Date(year, month, 9), time: '9:00 AM', endTime: '1:00 PM', sport: '6th Cheer', type: 'event', location: 'Pioneer Park', color: C['6th Cheer'] },
+  );
+
+  // --- WEEK 2 (Mon 5/11 - Sat 5/16) ---
+  events.push(
+    { id: 'm14', title: '6th Grade Football - Practice', date: new Date(year, month, 11), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm15', title: '5th Grade Football - Practice', date: new Date(year, month, 11), time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+  );
+  events.push(
+    { id: 'm16', title: '4th Grade Football - Practice', date: new Date(year, month, 12), time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['4th Football'] },
+    { id: 'm17', title: '3rd Grade Football - Practice', date: new Date(year, month, 12), time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['3rd Football'] },
+  );
+  events.push(
+    { id: 'm18', title: '6th Grade Football - Practice', date: new Date(year, month, 13), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm19', title: 'All Cheer - Practice', date: new Date(year, month, 13), time: '5:00 PM', endTime: '6:30 PM', sport: '6th Cheer', type: 'practice', location: 'Community Center Gym', color: C['6th Cheer'] },
+  );
+  events.push(
+    { id: 'm20', title: '5th Grade Football - Practice', date: new Date(year, month, 14), time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm21', title: 'Equipment Check-in (All Teams)', date: new Date(year, month, 14), time: '6:00 PM', endTime: '8:00 PM', sport: 'Club Admin', type: 'event', location: 'Storage Building', color: C['Club Admin'] },
+  );
+  // Today (5/15) - show something on "today"
+  events.push(
+    { id: 'm22', title: 'Coaches Meeting (All Sports)', date: new Date(year, month, 15), time: '6:00 PM', endTime: '7:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'm23', title: '3rd Grade Football - Practice', date: new Date(year, month, 15), time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['3rd Football'] },
+  );
+  // Sat: game day
+  events.push(
+    { id: 'm24', title: '6th Grade A vs. Bellevue Tigers', date: new Date(year, month, 16), time: '9:00 AM', endTime: '10:30 AM', sport: '6th Football', type: 'game', location: 'Bellevue Sports Complex', color: C['6th Football'] },
+    { id: 'm25', title: '5th Grade A vs. Papillion Panthers', date: new Date(year, month, 16), time: '9:00 AM', endTime: '10:30 AM', sport: '5th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm26', title: '5th Grade B vs. Papillion Panthers', date: new Date(year, month, 16), time: '11:00 AM', endTime: '12:30 PM', sport: '5th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm27', title: '3rd Grade Jamboree', date: new Date(year, month, 16), time: '10:00 AM', endTime: '1:00 PM', sport: '3rd Football', type: 'game', location: 'Seymour Smith Park', color: C['3rd Football'] },
+    { id: 'm28', title: '4th Grade Cheer - Competition', date: new Date(year, month, 16), time: '1:00 PM', endTime: '4:00 PM', sport: '4th Cheer', type: 'game', location: 'Civic Center', color: C['4th Cheer'] },
+  );
+
+  // --- WEEK 3 (Mon 5/18 - Sat 5/23) ---
+  events.push(
+    { id: 'm29', title: '6th Grade Football - Practice', date: new Date(year, month, 18), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm30', title: '5th Grade Football - Practice', date: new Date(year, month, 18), time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['5th Football'] },
+    { id: 'm31', title: 'Fundraiser Committee', date: new Date(year, month, 18), time: '7:30 PM', endTime: '8:30 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+  );
+  events.push(
+    { id: 'm32', title: '4th Grade Football - Practice', date: new Date(year, month, 19), time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['4th Football'] },
+    { id: 'm33', title: '3rd Grade Football - Practice', date: new Date(year, month, 19), time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['3rd Football'] },
+  );
+  events.push(
+    { id: 'm34', title: '6th Grade Football - Practice', date: new Date(year, month, 20), time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm35', title: 'All Cheer - Practice', date: new Date(year, month, 20), time: '5:00 PM', endTime: '6:30 PM', sport: '6th Cheer', type: 'practice', location: 'Community Center Gym', color: C['6th Cheer'] },
+  );
+  events.push(
+    { id: 'm36', title: 'Photo Day (All Teams)', date: new Date(year, month, 21), time: '9:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Pioneer Park', color: C['Club Admin'] },
+  );
+  // Sat: game day
+  events.push(
+    { id: 'm37', title: '6th Grade A vs. Millard Mustangs', date: new Date(year, month, 23), time: '9:00 AM', endTime: '10:30 AM', sport: '6th Football', type: 'game', location: 'Pioneer Park Field 1', color: C['6th Football'] },
+    { id: 'm38', title: '4th Grade A vs. Ralston Raiders', date: new Date(year, month, 23), time: '9:00 AM', endTime: '10:15 AM', sport: '4th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['4th Football'] },
+    { id: 'm39', title: '4th Grade B vs. Ralston Raiders', date: new Date(year, month, 23), time: '10:30 AM', endTime: '11:45 AM', sport: '4th Football', type: 'game', location: 'Pioneer Park Field 2', color: C['4th Football'] },
+    { id: 'm40', title: '3rd Grade A vs. Elkhorn Eagles', date: new Date(year, month, 23), time: '10:00 AM', endTime: '11:00 AM', sport: '3rd Football', type: 'game', location: 'Elkhorn Youth Park', color: C['3rd Football'] },
+    { id: 'm41', title: 'All Cheer - Game Day Performance', date: new Date(year, month, 23), time: '9:00 AM', endTime: '12:00 PM', sport: '6th Cheer', type: 'event', location: 'Pioneer Park', color: C['6th Cheer'] },
   );
 
   return events;
