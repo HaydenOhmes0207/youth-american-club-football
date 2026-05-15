@@ -24,6 +24,7 @@ export interface SentNotification {
   message: string;
   sentAt: Date;
   recipientCount: number;
+  sentBy: string;
 }
 
 const mockPrograms: ProgramWithStats[] = [
@@ -163,6 +164,7 @@ export default function NavigationWrapper() {
       ...notification,
       id: `notif-${Date.now()}`,
       sentAt: new Date(),
+      sentBy: `${activePersona.firstName} ${activePersona.lastName}`,
     }]);
   };
 

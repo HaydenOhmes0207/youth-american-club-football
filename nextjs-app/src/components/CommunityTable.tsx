@@ -125,11 +125,15 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
             </div>
             <div className="community-sent-card-body">
               <div className="community-sent-card-row">
+                <span className="community-sent-card-label">Sent by</span>
+                <span className="community-sent-card-value">{notif.sentBy}</span>
+              </div>
+              <div className="community-sent-card-row">
                 <span className="community-sent-card-label">Facilities</span>
                 <span className="community-sent-card-value">{notif.facilities.join(', ')}</span>
               </div>
               <div className="community-sent-card-row">
-                <span className="community-sent-card-label">Events cancelled</span>
+                <span className="community-sent-card-label">Events canceled</span>
                 <span className="community-sent-card-value">{notif.events.length}</span>
               </div>
               <div className="community-sent-card-row">
