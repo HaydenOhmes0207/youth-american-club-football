@@ -35,15 +35,23 @@ function DemoBar() {
   );
 }
 
+function DemoShellInner() {
+  const { activePersona } = usePersona();
+
+  return (
+    <div className="demo-shell" style={{ backgroundColor: activePersona.barColor }}>
+      <DemoBar />
+      <div className="demo-shell-content">
+        <NavigationWrapper />
+      </div>
+    </div>
+  );
+}
+
 export default function DemoShell() {
   return (
     <PersonaProvider>
-      <div className="demo-shell">
-        <DemoBar />
-        <div className="demo-shell-content">
-          <NavigationWrapper />
-        </div>
-      </div>
+      <DemoShellInner />
     </PersonaProvider>
   );
 }
