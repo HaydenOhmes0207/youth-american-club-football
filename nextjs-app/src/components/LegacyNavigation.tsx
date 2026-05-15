@@ -310,7 +310,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
     name: organization?.name || 'Organization',
     role: 'Director',
     type: 'organization',
-    avatar: organization?.avatar || getInitials(organization?.name || 'ORG'),
+    avatar: organization?.avatar || undefined,
     primaryColor: organization?.primary_color,
     secondaryColor: organization?.secondary_color,
   };
@@ -321,7 +321,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
     name: team.title,
     role: 'Team Admin',
     type: 'team',
-    avatar: team.avatar || getInitials(team.title),
+    avatar: team.avatar || undefined,
     position: getPosition(index, teams.length),
     sport: team.sport,
     primaryColor: team.primary_color,
@@ -479,6 +479,19 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
           height: 100%;
           object-fit: cover;
           display: block;
+        }
+
+        .workspace-avatar-initials {
+          font-size: 12px;
+          font-weight: 700;
+          color: #fefefe;
+          background: var(--u-color-base-background-contrast, #607081);
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
         }
 
         .workspace-info {
@@ -859,6 +872,19 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
           height: 100%;
           object-fit: cover;
           display: block;
+        }
+
+        .org-popover-avatar-initials {
+          font-size: 12px;
+          font-weight: 700;
+          color: #fefefe;
+          background: var(--u-color-base-background-contrast, #607081);
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
         }
 
         .org-popover-avatar.personal {
@@ -1677,7 +1703,13 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
             onClick={() => setIsOrgPopoverOpen(!isOrgPopoverOpen)}
           >
             <div className="workspace-avatar">
-              <img src={selectedOrg.id === personalWorkspace.id ? PersonalWorkspaceAvatar : (selectedOrg.avatar || HudlHighSchoolLogo)} alt={selectedOrg.name} />
+              {selectedOrg.id === personalWorkspace.id ? (
+                <img src={PersonalWorkspaceAvatar} alt={selectedOrg.name} />
+              ) : selectedOrg.avatar ? (
+                <img src={selectedOrg.avatar} alt={selectedOrg.name} />
+              ) : (
+                <span className="workspace-avatar-initials">{getInitials(selectedOrg.name)}</span>
+              )}
             </div>
             {isExpanded && (
               <div className="workspace-info">
@@ -1717,7 +1749,11 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                   >
                     <div className="org-popover-item-wrapper position-top">
                       <div className="org-popover-avatar">
-                        <img src={orgWorkspace.avatar || HudlHighSchoolLogo} alt={orgWorkspace.name} />
+                        {orgWorkspace.avatar ? (
+                          <img src={orgWorkspace.avatar} alt={orgWorkspace.name} />
+                        ) : (
+                          <span className="org-popover-avatar-initials">{getInitials(orgWorkspace.name)}</span>
+                        )}
                       </div>
                       <div className="org-popover-line org-popover-line-below org-popover-line-top" />
                     </div>
@@ -1744,15 +1780,23 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                             <>
                               <div className="org-popover-line org-popover-line-above" />
                               <div className="org-popover-avatar">
-                                <img src={workspace.avatar || HudlHighSchoolLogo} alt={workspace.name} />
-                              </div>
+                              {workspace.avatar ? (
+                                <img src={workspace.avatar} alt={workspace.name} />
+                              ) : (
+                                <span className="org-popover-avatar-initials">{getInitials(workspace.name)}</span>
+                              )}
+                      </div>
                               <div className="org-popover-line org-popover-line-below" />
                             </>
                           )}
                           {workspace.position === 'Top' && (
                             <>
                               <div className="org-popover-avatar">
-                                <img src={workspace.avatar || HudlHighSchoolLogo} alt={workspace.name} />
+                                {workspace.avatar ? (
+                                  <img src={workspace.avatar} alt={workspace.name} />
+                                ) : (
+                                  <span className="org-popover-avatar-initials">{getInitials(workspace.name)}</span>
+                                )}
                               </div>
                               <div className="org-popover-line org-popover-line-below org-popover-line-top" />
                             </>
@@ -1761,7 +1805,11 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                             <>
                               <div className="org-popover-line org-popover-line-above org-popover-line-bottom" />
                               <div className="org-popover-avatar">
-                                <img src={workspace.avatar || HudlHighSchoolLogo} alt={workspace.name} />
+                                {workspace.avatar ? (
+                                  <img src={workspace.avatar} alt={workspace.name} />
+                                ) : (
+                                  <span className="org-popover-avatar-initials">{getInitials(workspace.name)}</span>
+                                )}
                               </div>
                             </>
                           )}

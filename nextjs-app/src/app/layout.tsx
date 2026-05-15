@@ -22,10 +22,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch organization, teams, and nav items from mock data
   const orgData = getOrganizationWithNavItems();
-  
-  // Transform to the format expected by LegacyNavigation
+  const userData = getCurrentUser();
+
   const organization = orgData ? {
     id: orgData.id,
     name: orgData.name,
@@ -35,18 +34,17 @@ export default function RootLayout({
     secondary_color: orgData.secondary_color,
   } : null;
 
-  const teams = orgData?.teams.map(team => ({
+  const teams = (orgData?.teams ?? []).map(team => ({
     id: team.id,
     title: team.title,
     sport: team.sport,
     gender: team.gender,
-    avatar: team.avatar,
+    avatar: team.avatar ?? null,
     primary_color: team.primary_color,
     secondary_color: team.secondary_color,
-  })) || [];
+  }));
 
-  // Transform nav items for the navigation component
-  const navItems = orgData?.nav_items.map(item => ({
+  const navItems = (orgData?.nav_items ?? []).map(item => ({
     id: item.id,
     label: item.label,
     icon: item.icon,
@@ -56,10 +54,8 @@ export default function RootLayout({
       label: child.label,
       route: child.route,
     })),
-  })) || [];
+  }));
 
-  // Get current logged-in user (school administrator for prototype)
-  const userData = getCurrentUser();
   const currentUser = userData ? {
     id: userData.id,
     email: userData.email,

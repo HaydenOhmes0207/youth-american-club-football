@@ -4,7 +4,8 @@ export const mockOrganization = {
   id: 'org-1',
   name: 'Lincoln Youth Football',
   slug: 'lincoln-youth-football',
-  logo: null,
+  avatar: null,
+  primary_sport: 'Football',
   primary_color: '#1e40af',
   secondary_color: '#fbbf24',
 };
