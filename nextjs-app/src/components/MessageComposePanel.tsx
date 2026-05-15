@@ -17,6 +17,11 @@ function formatDollars(dollars: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(dollars);
 }
 
+export interface CommunityMember {
+  name: string;
+  email: string;
+}
+
 interface MessageComposePanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,6 +32,8 @@ interface MessageComposePanelProps {
   programTitle?: string;
   // Program-level bulk mode (overdue)
   overduePrograms?: ProgramWithStats[];
+  // Community mode
+  communityMembers?: CommunityMember[];
 }
 
 export default function MessageComposePanel({
@@ -37,8 +44,10 @@ export default function MessageComposePanel({
   recipients,
   programTitle,
   overduePrograms,
+  communityMembers,
 }: MessageComposePanelProps) {
   const isBulkMode = !!overduePrograms && overduePrograms.length > 0;
+  const isCommunityMode = !!communityMembers && communityMembers.length > 0;
 
   const bulkFamilyCount = isBulkMode
     ? overduePrograms.reduce((sum, p) => {
@@ -50,13 +59,19 @@ export default function MessageComposePanel({
     ? overduePrograms.reduce((sum, p) => sum + (p.outstandingAmount ?? 0), 0)
     : 0;
   const bulkProgramNames = isBulkMode ? overduePrograms.map(p => p.title) : [];
-  const displayTitle = isBulkMode ? bulkProgramNames.join(', ') : (programTitle || '');
-  const recipientCount = isBulkMode ? bulkFamilyCount : (recipients ? new Set(recipients.map(r => r.parentEmail)).size : 0);
+  const displayTitle = isBulkMode ? bulkProgramNames.join(', ') : (programTitle || 'Community Message');
+  const recipientCount = isCommunityMode 
+    ? new Set(communityMembers.map(m => m.email)).size 
+    : isBulkMode 
+      ? bulkFamilyCount 
+      : (recipients ? new Set(recipients.map(r => r.parentEmail)).size : 0);
 
   const [subject, setSubject] = useState(
-    isBulkMode
-      ? 'Payment Reminder - {{programName}} Balance'
-      : `${displayTitle} - What to Bring`
+    isCommunityMode
+      ? 'Message from Your Organization'
+      : isBulkMode
+        ? 'Payment Reminder - {{programName}} Balance'
+        : `${displayTitle} - What to Bring`
   );
   const [message, setMessage] = useState(
     isBulkMode

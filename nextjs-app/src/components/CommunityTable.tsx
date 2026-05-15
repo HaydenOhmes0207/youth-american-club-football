@@ -96,10 +96,28 @@ function MemberAvatar({ name }: { name: string }) {
   );
 }
 
-function TableContent({ members }: { members: CommunityMember[] }) {
+interface TableContentProps {
+  members: CommunityMember[];
+  selectedIds: Set<string>;
+  allSelected: boolean;
+  someSelected: boolean;
+  onToggleAll: () => void;
+  onToggleOne: (id: string) => void;
+}
+
+function TableContent({ members, selectedIds, allSelected, someSelected, onToggleAll, onToggleOne }: TableContentProps) {
   return (
     <div className="community-table">
       <div className="table-row table-header">
+        <div className="table-cell cell-checkbox">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            ref={(input) => { if (input) input.indeterminate = !allSelected && someSelected; }}
+            onChange={onToggleAll}
+            aria-label="Select all members"
+          />
+        </div>
         <div className="table-cell cell-name"><span className="header-label">Name</span></div>
         <div className="table-cell cell-email"><span className="header-label">Email</span></div>
         <div className="table-cell cell-role"><span className="header-label">Role</span></div>
@@ -108,9 +126,17 @@ function TableContent({ members }: { members: CommunityMember[] }) {
         <div className="table-cell cell-actions" />
       </div>
       {members.map((member) => (
-        <div key={member.id} className="table-row table-data">
+        <div key={member.id} className={`table-row table-data ${selectedIds.has(member.id) ? 'table-row--selected' : ''}`}>
+          <div className="table-cell cell-checkbox">
+            <input
+              type="checkbox"
+              checked={selectedIds.has(member.id)}
+              onChange={() => onToggleOne(member.id)}
+              aria-label={`Select ${member.name}`}
+            />
+          </div>
           <div className="table-cell cell-name"><MemberAvatar name={member.name} /></div>
-          <div className="table-cell cell-email">{member.email}</div>
+          <div className="table-cell cell-email"><span className="cell-email-text">{member.email}</span></div>
           <div className="table-cell cell-role">{member.role}</div>
           <div className="table-cell cell-teams">{member.teams.join(', ')}</div>
           <div className="table-cell cell-status"><StatusBadge status={member.status} /></div>
@@ -224,13 +250,24 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
 interface CommunityTableProps {
   sentNotifications?: SentNotification[];
   personaId?: 'alex' | 'maria';
+  onContactMembers?: (members: { name: string; email: string }[]) => void;
 }
 
-export default function CommunityTable({ sentNotifications = [], personaId = 'alex' }: CommunityTableProps) {
+function MailIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M1 5l7 4 7-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export default function CommunityTable({ sentNotifications = [], personaId = 'alex', onContactMembers }: CommunityTableProps) {
   const mockCommunityData = personaId === 'maria' ? mariaCommunityData : alexCommunityData;
   const [activeTab, setActiveTab] = useState<CommunityTab>('directory');
   const [roleFilter, setRoleFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const segments = [
     {
@@ -254,6 +291,33 @@ export default function CommunityTable({ sentNotifications = [], personaId = 'al
     }
     return true;
   });
+
+  // Selection logic
+  const allFilteredSelected = filteredMembers.length > 0 && filteredMembers.every(m => selectedIds.has(m.id));
+  const someSelected = filteredMembers.some(m => selectedIds.has(m.id));
+  
+  const toggleAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredMembers.map(m => m.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleContactClick = () => {
+    const selectedMembers = mockCommunityData.filter(m => selectedIds.has(m.id));
+    onContactMembers?.(selectedMembers.map(m => ({ name: m.name, email: m.email })));
+  };
 
   const tabs: { id: CommunityTab; label: string; count?: number }[] = [
     { id: 'directory', label: 'Directory' },
@@ -287,8 +351,28 @@ export default function CommunityTable({ sentNotifications = [], personaId = 'al
             onFilter={() => {}}
             onExport={() => {}}
           />
+          
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="bulk-action-bar">
+              <span className="bulk-action-count">{selectedIds.size} selected</span>
+              <button className="bulk-action-btn" onClick={handleContactClick}>
+                <MailIcon />
+                Contact Members
+              </button>
+              <button className="bulk-action-clear" onClick={() => setSelectedIds(new Set())}>Clear</button>
+            </div>
+          )}
+          
           <div className="table-scroll-container">
-            <TableContent members={filteredMembers} />
+            <TableContent 
+              members={filteredMembers}
+              selectedIds={selectedIds}
+              allSelected={allFilteredSelected}
+              someSelected={someSelected}
+              onToggleAll={toggleAll}
+              onToggleOne={toggleOne}
+            />
           </div>
         </>
       )}

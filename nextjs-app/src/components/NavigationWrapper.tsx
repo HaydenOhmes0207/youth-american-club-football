@@ -365,11 +365,11 @@ function BookingListItem({ request, onReview, isOutgoing }: { request: BookingRe
   );
 }
 
-function CommunityPageContent({ sentNotifications, personaId }: { sentNotifications: SentNotification[]; personaId: 'alex' | 'maria' }) {
+function CommunityPageContent({ sentNotifications, personaId, onContactMembers }: { sentNotifications: SentNotification[]; personaId: 'alex' | 'maria'; onContactMembers: (members: { name: string; email: string }[]) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
       <PageHeader title="Community" description="Manage athletes, coaches, and staff across your organization." actions={[{ label: 'Import', buttonStyle: 'minimal' }, { label: 'Add Member', buttonStyle: 'standard' }]} />
-      <CommunityTable sentNotifications={sentNotifications} personaId={personaId} />
+      <CommunityTable sentNotifications={sentNotifications} personaId={personaId} onContactMembers={onContactMembers} />
     </div>
   );
 }
@@ -387,6 +387,7 @@ export default function NavigationWrapper() {
   const [selectedProgram, setSelectedProgram] = useState<ProgramWithStats | null>(null);
   const [showComposePanel, setShowComposePanel] = useState(false);
   const [composeRecipients, setComposeRecipients] = useState<Registrant[]>([]);
+  const [communityRecipients, setCommunityRecipients] = useState<{ name: string; email: string }[]>([]);
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
   const [bookingApproved, setBookingApproved] = useState(false);
@@ -564,6 +565,14 @@ export default function NavigationWrapper() {
   const handleMessageOverdue = (programs: ProgramWithStats[]) => {
     setComposeOverduePrograms(programs);
     setComposeRecipients([]);
+    setCommunityRecipients([]);
+    setShowComposePanel(true);
+  };
+
+  const handleContactCommunityMembers = (members: { name: string; email: string }[]) => {
+    setCommunityRecipients(members);
+    setComposeRecipients([]);
+    setComposeOverduePrograms([]);
     setShowComposePanel(true);
   };
 
@@ -586,7 +595,8 @@ export default function NavigationWrapper() {
     setShowComposePanel(false);
     setComposeRecipients([]);
     setComposeOverduePrograms([]);
-    showToast(`Message sent to ${payload.recipientCount} families`, 'success');
+    setCommunityRecipients([]);
+    showToast(`Message sent to ${payload.recipientCount} ${communityRecipients.length > 0 ? 'members' : 'families'}`, 'success');
   };
 
   const organization = {
@@ -683,6 +693,7 @@ export default function NavigationWrapper() {
   let overlay: React.ReactNode = null;
   const isBulkOverdue = showComposePanel && composeOverduePrograms.length > 0;
   const isRegistrantCompose = showComposePanel && selectedProgram && composeRecipients.length > 0;
+  const isCommunityCompose = showComposePanel && communityRecipients.length > 0;
   if (isBulkOverdue) {
     overlay = (
       <MessageComposePanel
@@ -691,6 +702,16 @@ export default function NavigationWrapper() {
         senderName={`${activePersona.firstName} ${activePersona.lastName}`}
         onSend={handleMessageSend}
         overduePrograms={composeOverduePrograms}
+      />
+    );
+  } else if (isCommunityCompose) {
+    overlay = (
+      <MessageComposePanel
+        isOpen
+        onClose={() => { setShowComposePanel(false); setCommunityRecipients([]); }}
+        senderName={`${activePersona.firstName} ${activePersona.lastName}`}
+        onSend={handleMessageSend}
+        communityMembers={communityRecipients}
       />
     );
   } else if (isRegistrantCompose) {
@@ -807,7 +828,7 @@ export default function NavigationWrapper() {
       </div>
     );
   } else if (activeRoute === '/community') {
-    pageContent = <CommunityPageContent sentNotifications={sentNotifications} personaId={activePersona.id as 'alex' | 'maria'} />;
+    pageContent = <CommunityPageContent sentNotifications={sentNotifications} personaId={activePersona.id as 'alex' | 'maria'} onContactMembers={handleContactCommunityMembers} />;
   } else if (activeRoute === '/programs') {
     if (selectedProgram) {
       pageContent = (

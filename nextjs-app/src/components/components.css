@@ -261,7 +261,14 @@
 .table-header .table-cell { font-weight: var(--u-font-weight-bold, 700); color: var(--u-color-base-foreground-contrast, #071c31); }
 .cell-name { flex: 1; min-width: 180px; }
 .cell-title { flex: 1; min-width: 180px; }
-.cell-email { width: 240px; flex-shrink: 0; }
+.cell-email { width: 240px; flex-shrink: 0; min-width: 0; overflow: hidden; }
+.cell-email-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
 .cell-role { width: 140px; flex-shrink: 0; }
 .cell-teams { width: 200px; flex-shrink: 0; }
 .cell-status { width: 100px; flex-shrink: 0; }
