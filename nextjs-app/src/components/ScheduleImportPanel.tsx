@@ -103,7 +103,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
       opponent: opp, isHome: home, facility: home ? 'Soccer Complex' : `${opp} HS`,
       hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
     });
-    st2.setDate(st2.getDate() + 14);
+    st2.setDate(st2.getDate() + 7);
     socI++;
   }
 
