@@ -4,6 +4,25 @@ import React, { createContext, useContext, useState } from 'react';
 
 export type PersonaId = 'alex' | 'maria';
 
+export type ChapterId = 'home' | 'schedule-ingest' | 'communication' | 'external-bookings';
+
+export interface Chapter {
+  id: ChapterId;
+  label: string;
+}
+
+export const CHAPTERS_BY_PERSONA: Record<PersonaId, Chapter[]> = {
+  alex: [
+    { id: 'home', label: 'Home' },
+    { id: 'schedule-ingest', label: 'Schedule Ingest' },
+    { id: 'communication', label: 'Communication' },
+    { id: 'external-bookings', label: 'External Bookings' },
+  ],
+  maria: [
+    { id: 'home', label: 'Home' },
+  ],
+};
+
 export interface Persona {
   id: PersonaId;
   firstName: string;
@@ -54,16 +73,32 @@ interface PersonaContextValue {
   activePersona: Persona;
   setActivePersonaId: (id: PersonaId) => void;
   personas: Record<PersonaId, Persona>;
+  activeChapter: ChapterId;
+  setActiveChapter: (id: ChapterId) => void;
+  chapterVersion: number;
 }
 
 const PersonaContext = createContext<PersonaContextValue | null>(null);
 
 export function PersonaProvider({ children }: { children: React.ReactNode }) {
   const [activeId, setActiveId] = useState<PersonaId>('alex');
+  const [activeChapter, setActiveChapterState] = useState<ChapterId>('home');
+  const [chapterVersion, setChapterVersion] = useState(0);
   const activePersona = personas[activeId];
 
+  const setActivePersonaId = (id: PersonaId) => {
+    setActiveId(id);
+    setActiveChapterState('home');
+    setChapterVersion(v => v + 1);
+  };
+
+  const setActiveChapter = (id: ChapterId) => {
+    setActiveChapterState(id);
+    setChapterVersion(v => v + 1);
+  };
+
   return (
-    <PersonaContext.Provider value={{ activePersona, setActivePersonaId: setActiveId, personas }}>
+    <PersonaContext.Provider value={{ activePersona, setActivePersonaId, personas, activeChapter, setActiveChapter, chapterVersion }}>
       {children}
     </PersonaContext.Provider>
   );

@@ -41,20 +41,22 @@ const mockPrograms: ProgramWithStats[] = [
   },
 ];
 
-function HomePage({ onNavigate }: { onNavigate?: (route: string) => void }) {
+function HomePage({ onTakeAction, showStormAlert }: { onTakeAction?: () => void; showStormAlert?: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
       <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
-      <div className="storm-alert-card">
-        <div className="storm-alert-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 11l-4 6h6l-4 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      {showStormAlert && (
+        <div className="storm-alert-card">
+          <div className="storm-alert-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 11l-4 6h6l-4 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <div className="storm-alert-content">
+            <div className="storm-alert-title">Severe Thunderstorm Warning</div>
+            <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
+          </div>
+          <button className="storm-alert-action" onClick={onTakeAction}>Take Action</button>
         </div>
-        <div className="storm-alert-content">
-          <div className="storm-alert-title">Severe Thunderstorm Warning</div>
-          <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
-        </div>
-        <button className="storm-alert-action" onClick={() => onNavigate?.('/facilities')}>Take Action</button>
-      </div>
+      )}
     </div>
   );
 }
@@ -107,13 +109,38 @@ const STATIC_PAGE_MAP: Record<string, React.FC> = {
 };
 
 export default function NavigationWrapper() {
-  const { activePersona } = usePersona();
+  const { activePersona, activeChapter, chapterVersion } = usePersona();
   const [activeRoute, setActiveRoute] = useState('/');
   const [showImportPanel, setShowImportPanel] = useState(false);
   const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>([]);
   const [cancelledEventIds, setCancelledEventIds] = useState<Set<string>>(new Set());
   const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
   const [showClosurePanel, setShowClosurePanel] = useState(false);
+
+  // Chapter switching: reset state and set initial context for each chapter
+  React.useEffect(() => {
+    // Reset shared state
+    setShowImportPanel(false);
+    setShowClosurePanel(false);
+    setImportedEvents([]);
+    setCancelledEventIds(new Set());
+    setSentNotifications([]);
+
+    switch (activeChapter) {
+      case 'home':
+        setActiveRoute('/');
+        break;
+      case 'schedule-ingest':
+        setActiveRoute('/calendar');
+        break;
+      case 'communication':
+        setActiveRoute('/');
+        break;
+      case 'external-bookings':
+        setActiveRoute('/');
+        break;
+    }
+  }, [activeChapter, chapterVersion]);
 
   const handleImport = (events: CalendarEvent[]) => {
     setImportedEvents(prev => [...prev, ...events]);
@@ -227,11 +254,27 @@ export default function NavigationWrapper() {
   } else if (activeRoute === '/community') {
     pageContent = <CommunityPageContent sentNotifications={sentNotifications} />;
   } else if (activeRoute === '/') {
-    pageContent = <HomePage onNavigate={(route) => setActiveRoute(route)} />;
+    pageContent = (
+      <HomePage
+        showStormAlert={activeChapter === 'communication'}
+        onTakeAction={() => {
+          setActiveRoute('/facilities');
+          setShowClosurePanel(true);
+        }}
+      />
+    );
   } else if (StaticPage) {
     pageContent = <StaticPage />;
   } else {
-    pageContent = <HomePage onNavigate={(route) => setActiveRoute(route)} />;
+    pageContent = (
+      <HomePage
+        showStormAlert={activeChapter === 'communication'}
+        onTakeAction={() => {
+          setActiveRoute('/facilities');
+          setShowClosurePanel(true);
+        }}
+      />
+    );
   }
 
   return (
