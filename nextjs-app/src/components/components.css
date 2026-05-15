@@ -303,9 +303,10 @@
 .empty-description { font-family: var(--u-font-body); font-size: var(--u-font-size-200, 14px); color: var(--u-color-base-foreground, #36485c); margin: 0; max-width: 456px; line-height: 1.4; }
 
 /* === Calendar === */
-.cal-container { display: flex; flex-direction: column; gap: 0; width: 100%; flex: 1; min-height: 0; overflow: hidden; }
+.cal-container { display: flex; flex-direction: column; gap: var(--u-space-one, 16px); width: 100%; flex: 1; min-height: 0; overflow: hidden; }
 
 /* Calendar utilities row (reuses .toolbar layout) */
+.cal-container .toolbar { position: relative; }
 .cal-nav-group { display: flex; align-items: center; gap: var(--u-space-quarter, 4px); }
 .cal-nav-btn {
   display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
@@ -321,7 +322,11 @@
   transition: background 0.15s ease;
 }
 .cal-today-btn:hover { background: var(--u-color-background-subtle, #f5f6f7); }
-.cal-header-label { font-family: var(--u-font-body); font-size: var(--u-font-size-default, 16px); font-weight: var(--u-font-weight-bold, 700); color: var(--u-color-base-foreground-contrast, #071c31); white-space: nowrap; }
+.cal-header-label {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-family: var(--u-font-body); font-size: var(--u-font-size-default, 16px); font-weight: var(--u-font-weight-bold, 700);
+  color: var(--u-color-base-foreground-contrast, #071c31); white-space: nowrap; pointer-events: none;
+}
 .cal-view-toggle { display: flex; border: 1px solid var(--u-color-line-subtle, #c4c6c8); border-radius: var(--u-border-radius-medium, 4px); overflow: hidden; }
 .cal-view-btn {
   height: 40px; padding: 0 var(--u-space-one, 16px); border: none; border-right: 1px solid var(--u-color-line-subtle, #c4c6c8);

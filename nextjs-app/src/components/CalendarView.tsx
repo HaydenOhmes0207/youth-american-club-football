@@ -608,8 +608,8 @@ export default function CalendarView() {
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
           </div>
-          <span className="cal-header-label">{headerLabel}</span>
         </div>
+        <span className="cal-header-label">{headerLabel}</span>
         <div className="toolbar-right">
           <div className="cal-view-toggle">
             {(['month', 'week', 'agenda'] as ViewMode[]).map(v => (
