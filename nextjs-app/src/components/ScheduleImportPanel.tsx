@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Checkbox from './Checkbox';
 import { useToast } from './Toast';
 import type { CalendarEvent } from './CalendarView';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SPORT_COLORS, alexOpponents } from './CalendarView';
 
 // ---- Types ----
@@ -14,18 +14,26 @@ interface ImportEvent extends CalendarEvent {
   hasStream: boolean;
   hasTickets: boolean;
   hasCameras: boolean;
+  status: 'pending' | 'accepted' | 'rejected';
 }
 
 interface SportSection {
   sport: string;
-  label: string;
+  teamName: string;
   color: string;
   events: ImportEvent[];
 }
 
 type Phase = 'choose' | 'paste' | 'agent' | 'review';
 
-// ---- Generate demo events (same data that was removed from CalendarView) ----
+// Facility options for the edit view
+const FACILITY_OPTIONS: Record<string, string[]> = {
+  'Football': ['Memorial Stadium', 'Practice Field A', 'Practice Field B', 'Fieldhouse'],
+  'Girls Volleyball': ['Main Gym', 'Auxiliary Gym', 'Fieldhouse'],
+  'Boys Soccer': ['Soccer Complex', 'Practice Field A', 'Memorial Stadium'],
+};
+
+// ---- Generate demo events ----
 function generateImportEvents(): SportSection[] {
   const C = SPORT_COLORS;
   const fallStart = new Date(2026, 7, 28);
@@ -39,21 +47,12 @@ function generateImportEvents(): SportSection[] {
     const opp = alexOpponents[g % alexOpponents.length];
     const home = g % 2 === 0;
     fbEvents.push({
-      id: `import-fb-${g}`,
-      title: `Football vs. ${opp}`,
-      date: new Date(fd),
-      time: '7:00 PM',
-      endTime: '9:30 PM',
-      sport: 'Football',
-      type: 'game',
-      location: home ? 'Memorial Stadium' : `${opp} HS`,
-      color: C['Football'],
-      opponent: opp,
-      isHome: home,
-      facility: home ? 'Memorial Stadium' : `${opp} HS`,
-      hasStream: home,
-      hasTickets: home,
-      hasCameras: home,
+      id: `import-fb-${g}`, title: `Varsity Football vs. ${opp}`,
+      date: new Date(fd), time: '7:00 PM', endTime: '9:30 PM',
+      sport: 'Football', type: 'game',
+      location: home ? 'Memorial Stadium' : `${opp} HS`, color: C['Football'],
+      opponent: opp, isHome: home, facility: home ? 'Memorial Stadium' : `${opp} HS`,
+      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
     });
     fd.setDate(fd.getDate() + 7);
   }
@@ -68,42 +67,23 @@ function generateImportEvents(): SportSection[] {
     const opp = alexOpponents[(vbI + 5) % alexOpponents.length];
     const home = vbI % 2 === 0;
     vbEvents.push({
-      id: `import-vb-${vbI}`,
-      title: `Volleyball vs. ${opp}`,
-      date: new Date(vt),
-      time: '6:00 PM',
-      endTime: '8:00 PM',
-      sport: 'Girls Volleyball',
-      type: 'game',
-      location: home ? 'Main Gym' : `${opp} HS`,
-      color: C['Girls Volleyball'],
-      opponent: opp,
-      isHome: home,
-      facility: home ? 'Main Gym' : `${opp} HS`,
-      hasStream: home,
-      hasTickets: home,
-      hasCameras: home,
+      id: `import-vb-${vbI}`, title: `Varsity Girls Volleyball vs. ${opp}`,
+      date: new Date(vt), time: '6:00 PM', endTime: '8:00 PM',
+      sport: 'Girls Volleyball', type: 'game',
+      location: home ? 'Main Gym' : `${opp} HS`, color: C['Girls Volleyball'],
+      opponent: opp, isHome: home, facility: home ? 'Main Gym' : `${opp} HS`,
+      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
     });
     vt.setDate(vt.getDate() + 7);
     vbI++;
   }
-  // Tournament
   vbEvents.push({
-    id: 'import-vb-tourney',
-    title: 'Volleyball - Heartland Tournament',
-    date: new Date(2026, 9, 10),
-    time: '8:00 AM',
-    endTime: '5:00 PM',
-    sport: 'Girls Volleyball',
-    type: 'game',
-    location: 'Main Gym',
-    color: C['Girls Volleyball'],
-    opponent: 'Multiple',
-    isHome: true,
-    facility: 'Main Gym',
-    hasStream: true,
-    hasTickets: true,
-    hasCameras: true,
+    id: 'import-vb-tourney', title: 'Varsity Girls Volleyball - Heartland Tournament',
+    date: new Date(2026, 9, 10), time: '8:00 AM', endTime: '5:00 PM',
+    sport: 'Girls Volleyball', type: 'game',
+    location: 'Main Gym', color: C['Girls Volleyball'],
+    opponent: 'Multiple', isHome: true, facility: 'Main Gym',
+    hasStream: true, hasTickets: true, hasCameras: true, status: 'pending',
   });
 
   // Soccer: biweekly Tuesday
@@ -116,30 +96,21 @@ function generateImportEvents(): SportSection[] {
     const opp = alexOpponents[(socI + 3) % alexOpponents.length];
     const home = socI % 2 === 0;
     socEvents.push({
-      id: `import-soc-${socI}`,
-      title: `Boys Soccer vs. ${opp}`,
-      date: new Date(st2),
-      time: '4:30 PM',
-      endTime: '6:30 PM',
-      sport: 'Boys Soccer',
-      type: 'game',
-      location: home ? 'Soccer Complex' : `${opp} HS`,
-      color: C['Boys Soccer'],
-      opponent: opp,
-      isHome: home,
-      facility: home ? 'Soccer Complex' : `${opp} HS`,
-      hasStream: home,
-      hasTickets: home,
-      hasCameras: home,
+      id: `import-soc-${socI}`, title: `Varsity Boys Soccer vs. ${opp}`,
+      date: new Date(st2), time: '4:30 PM', endTime: '6:30 PM',
+      sport: 'Boys Soccer', type: 'game',
+      location: home ? 'Soccer Complex' : `${opp} HS`, color: C['Boys Soccer'],
+      opponent: opp, isHome: home, facility: home ? 'Soccer Complex' : `${opp} HS`,
+      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
     });
     st2.setDate(st2.getDate() + 14);
     socI++;
   }
 
   return [
-    { sport: 'Football', label: 'Football', color: C['Football'], events: fbEvents },
-    { sport: 'Girls Volleyball', label: 'Girls Volleyball', color: C['Girls Volleyball'], events: vbEvents },
-    { sport: 'Boys Soccer', label: 'Boys Soccer', color: C['Boys Soccer'], events: socEvents },
+    { sport: 'Football', teamName: 'Varsity Football', color: C['Football'], events: fbEvents },
+    { sport: 'Girls Volleyball', teamName: 'Varsity Girls Volleyball', color: C['Girls Volleyball'], events: vbEvents },
+    { sport: 'Boys Soccer', teamName: 'Varsity Boys Soccer', color: C['Boys Soccer'], events: socEvents },
   ];
 }
 
@@ -148,13 +119,13 @@ const AGENT_LOG: { text: string; type: 'working' | 'found' | 'done' }[] = [
   { text: 'Connecting to nsaa-schedule.org...', type: 'working' },
   { text: 'Parsing district schedule page...', type: 'working' },
   { text: 'Found 28 games across 3 sports for Lincoln East', type: 'found' },
-  { text: 'Identifying Football schedule... found 9 games', type: 'found' },
-  { text: 'Identifying Girls Volleyball schedule... found 11 matches', type: 'found' },
-  { text: 'Identifying Boys Soccer schedule... found 8 matches', type: 'found' },
+  { text: 'Identifying Varsity Football schedule... found 9 games', type: 'found' },
+  { text: 'Identifying Varsity Girls Volleyball schedule... found 11 matches', type: 'found' },
+  { text: 'Identifying Varsity Boys Soccer schedule... found 8 matches', type: 'found' },
   { text: 'Mapping home games to facilities...', type: 'working' },
-  { text: 'Memorial Stadium assigned to Football (5 home games)', type: 'found' },
-  { text: 'Main Gym assigned to Volleyball (6 home matches)', type: 'found' },
-  { text: 'Soccer Complex assigned to Boys Soccer (4 home matches)', type: 'found' },
+  { text: 'Memorial Stadium assigned to Varsity Football (5 home games)', type: 'found' },
+  { text: 'Main Gym assigned to Varsity Girls Volleyball (6 home matches)', type: 'found' },
+  { text: 'Soccer Complex assigned to Varsity Boys Soccer (4 home matches)', type: 'found' },
   { text: 'Setting up live streams for home events...', type: 'working' },
   { text: 'Configuring ticketed events for home games...', type: 'working' },
   { text: 'Linking cameras for 15 home events...', type: 'working' },
@@ -169,6 +140,11 @@ function formatEventDate(date: Date): string {
   return `${SHORT_DAYS[date.getDay()]}, ${SHORT_MONTHS[date.getMonth()]} ${date.getDate()}`;
 }
 
+function formatEventDateLong(date: Date): string {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${SHORT_DAYS[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
 // ---- Component ----
 interface ScheduleImportPanelProps {
   isOpen: boolean;
@@ -180,7 +156,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const [phase, setPhase] = useState<Phase>('choose');
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editingEvent, setEditingEvent] = useState<ImportEvent | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -190,7 +166,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setPhase('choose');
       setLogEntries(0);
       setSections([]);
-      setSelected(new Set());
+      setEditingEvent(null);
     }
   }, [isOpen]);
 
@@ -198,31 +174,21 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   useEffect(() => {
     if (phase !== 'agent') return;
     if (logEntries >= AGENT_LOG.length) {
-      // Done — generate events and move to review
       const timer = setTimeout(() => {
         const generatedSections = generateImportEvents();
         setSections(generatedSections);
-        // Select all by default
-        const allIds = new Set<string>();
-        generatedSections.forEach(s => s.events.forEach(e => allIds.add(e.id)));
-        setSelected(allIds);
         setPhase('review');
       }, 600);
       return () => clearTimeout(timer);
     }
-
     const delay = logEntries === 0 ? 300 : (400 + Math.random() * 400);
-    const timer = setTimeout(() => {
-      setLogEntries(prev => prev + 1);
-    }, delay);
+    const timer = setTimeout(() => setLogEntries(prev => prev + 1), delay);
     return () => clearTimeout(timer);
   }, [phase, logEntries]);
 
   // Auto-scroll log
   useEffect(() => {
-    if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [logEntries]);
 
   const handleStartImport = useCallback(() => {
@@ -230,43 +196,32 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
     setPhase('agent');
   }, []);
 
-  const toggleEvent = useCallback((id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  // Accept / Reject
+  const setEventStatus = useCallback((eventId: string, status: 'accepted' | 'rejected') => {
+    setSections(prev => prev.map(s => ({
+      ...s,
+      events: s.events.map(e => e.id === eventId ? { ...e, status } : e),
+    })));
   }, []);
 
-  const toggleSportAll = useCallback((section: SportSection) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      const allSelected = section.events.every(e => next.has(e.id));
-      if (allSelected) {
-        section.events.forEach(e => next.delete(e.id));
-      } else {
-        section.events.forEach(e => next.add(e.id));
-      }
-      return next;
-    });
+  // Update event from edit view
+  const updateEvent = useCallback((updated: ImportEvent) => {
+    setSections(prev => prev.map(s => ({
+      ...s,
+      events: s.events.map(e => e.id === updated.id ? updated : e),
+    })));
+    setEditingEvent(null);
   }, []);
 
   const handleApprove = useCallback(() => {
     const eventsToAdd: CalendarEvent[] = [];
     sections.forEach(section => {
       section.events.forEach(evt => {
-        if (selected.has(evt.id)) {
+        if (evt.status === 'accepted') {
           eventsToAdd.push({
-            id: evt.id,
-            title: evt.title,
-            date: evt.date,
-            time: evt.time,
-            endTime: evt.endTime,
-            sport: evt.sport,
-            type: evt.type,
-            location: evt.location,
-            color: evt.color,
+            id: evt.id, title: evt.title, date: evt.date,
+            time: evt.time, endTime: evt.endTime, sport: evt.sport,
+            type: evt.type, location: evt.location, color: evt.color,
           });
         }
       });
@@ -274,18 +229,19 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
     onImport(eventsToAdd);
     showToast(`${eventsToAdd.length} events added to your calendar`, 'success');
     onClose();
-  }, [sections, selected, onImport, onClose, showToast]);
+  }, [sections, onImport, onClose, showToast]);
 
-  const selectedCount = selected.size;
+  // Counts
+  const totalEvents = sections.reduce((sum, s) => sum + s.events.length, 0);
+  const reviewedCount = sections.reduce((sum, s) => sum + s.events.filter(e => e.status !== 'pending').length, 0);
+  const acceptedCount = sections.reduce((sum, s) => sum + s.events.filter(e => e.status === 'accepted').length, 0);
+  const allReviewed = totalEvents > 0 && reviewedCount === totalEvents;
 
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div className="import-panel-backdrop" onClick={onClose} />
-
-      {/* Panel */}
       <div className="import-panel">
         {/* Header */}
         <div className="import-panel-header">
@@ -295,173 +251,316 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
           </button>
         </div>
 
-        {/* Body */}
-        <div className="import-panel-body">
-          {/* Phase: Choose method */}
-          {phase === 'choose' && (
-            <div className="import-phase-choose">
-              <button className="import-method-card import-method-card--ai" onClick={() => setPhase('paste')}>
-                <div className="import-method-icon import-method-icon--ai">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <div className="import-method-text">
-                  <span className="import-method-label">AI-Assisted Schedule Import</span>
-                  <span className="import-method-desc">Paste a link to your district schedule and let Hudl AI find and import your games automatically.</span>
-                </div>
-                <svg className="import-method-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-              <button className="import-method-card import-method-card--manual" disabled>
-                <div className="import-method-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <div className="import-method-text">
-                  <span className="import-method-label">Add Manually</span>
-                  <span className="import-method-desc">Create an event by filling in the details yourself.</span>
-                </div>
-                <svg className="import-method-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-          )}
-
-          {/* Phase: Paste URL */}
-          {phase === 'paste' && (
-            <div className="import-phase-paste">
-              <div className="import-paste-header">
-                <button className="import-back-btn" onClick={() => setPhase('choose')}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Back
-                </button>
-              </div>
-              <div className="import-paste-content">
-                <div className="import-paste-label">Paste your district schedule URL</div>
-                <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
-                <input
-                  className="import-paste-input"
-                  type="url"
-                  defaultValue="https://www.nsaa-schedule.org/district/lincoln-east/fall-2026"
-                  readOnly
-                />
-                <button className="import-paste-submit" onClick={handleStartImport}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Import Schedule
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Phase: Agent streaming log */}
-          {phase === 'agent' && (
-            <div className="import-phase-agent">
-              <div className="import-agent-header">
-                <div className="import-agent-icon">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1L1 5.5l9 4.5 9-4.5L10 1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 14.5l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 10l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-                <span className="import-agent-title">Hudl AI is importing your schedule</span>
-              </div>
-              <div className="import-agent-log" ref={logRef}>
-                {AGENT_LOG.slice(0, logEntries).map((entry, i) => (
-                  <div
-                    key={i}
-                    className={`import-log-entry import-log-entry--${entry.type} ${i === logEntries - 1 ? 'import-log-entry--latest' : ''}`}
-                  >
-                    <span className={`import-log-dot import-log-dot--${entry.type}`} />
-                    <span className="import-log-text">{entry.text}</span>
+        {/* Body — wraps list + edit as a horizontal slider */}
+        <div className="import-panel-body-wrapper">
+          <div className={`import-panel-slider ${editingEvent ? 'import-panel-slider--edit' : ''}`}>
+            {/* Left pane: main content */}
+            <div className="import-panel-pane">
+              <div className="import-panel-body">
+                {/* Phase: Choose */}
+                {phase === 'choose' && (
+                  <div className="import-phase-choose">
+                    <button className="import-method-card import-method-card--ai" onClick={() => setPhase('paste')}>
+                      <div className="import-method-icon import-method-icon--ai">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <div className="import-method-text">
+                        <span className="import-method-label">AI-Assisted Schedule Import</span>
+                        <span className="import-method-desc">Paste a link to your district schedule and let Hudl AI find and import your games automatically.</span>
+                      </div>
+                      <svg className="import-method-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                    <button className="import-method-card import-method-card--manual" disabled>
+                      <div className="import-method-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <div className="import-method-text">
+                        <span className="import-method-label">Add Manually</span>
+                        <span className="import-method-desc">Create an event by filling in the details yourself.</span>
+                      </div>
+                      <svg className="import-method-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
                   </div>
-                ))}
-                {logEntries < AGENT_LOG.length && (
-                  <div className="import-log-entry import-log-entry--thinking">
-                    <span className="import-log-spinner" />
-                    <span className="import-log-text import-log-text--dim">Processing...</span>
+                )}
+
+                {/* Phase: Paste URL */}
+                {phase === 'paste' && (
+                  <div className="import-phase-paste">
+                    <div className="import-paste-header">
+                      <button className="import-back-btn" onClick={() => setPhase('choose')}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        Back
+                      </button>
+                    </div>
+                    <div className="import-paste-content">
+                      <div className="import-paste-label">Paste your district schedule URL</div>
+                      <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
+                      <input className="import-paste-input" type="url" defaultValue="https://www.nsaa-schedule.org/district/lincoln-east/fall-2026" readOnly />
+                      <button className="import-paste-submit" onClick={handleStartImport}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        Import Schedule
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Phase: Agent log */}
+                {phase === 'agent' && (
+                  <div className="import-phase-agent">
+                    <div className="import-agent-header">
+                      <div className="import-agent-icon">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1L1 5.5l9 4.5 9-4.5L10 1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 14.5l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 10l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <span className="import-agent-title">Hudl AI is importing your schedule</span>
+                    </div>
+                    <div className="import-agent-log" ref={logRef}>
+                      {AGENT_LOG.slice(0, logEntries).map((entry, i) => (
+                        <div key={i} className={`import-log-entry import-log-entry--${entry.type} ${i === logEntries - 1 ? 'import-log-entry--latest' : ''}`}>
+                          <span className={`import-log-dot import-log-dot--${entry.type}`} />
+                          <span className="import-log-text">{entry.text}</span>
+                        </div>
+                      ))}
+                      {logEntries < AGENT_LOG.length && (
+                        <div className="import-log-entry import-log-entry--thinking">
+                          <span className="import-log-spinner" />
+                          <span className="import-log-text import-log-text--dim">Processing...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Phase: Review */}
+                {phase === 'review' && (
+                  <div className="import-phase-review">
+                    <div className="import-review-summary">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16.667 5L7.5 14.167 3.333 10" stroke="#2e7d32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <span>Found {totalEvents} events across {sections.length} sports</span>
+                    </div>
+
+                    <div className="import-review-progress">
+                      <div className="import-review-progress-bar">
+                        <div className="import-review-progress-fill" style={{ width: `${totalEvents > 0 ? (reviewedCount / totalEvents) * 100 : 0}%` }} />
+                      </div>
+                      <span className="import-review-progress-label">{reviewedCount} of {totalEvents} reviewed</span>
+                    </div>
+
+                    {sections.map(section => {
+                      const sectionAccepted = section.events.filter(e => e.status === 'accepted').length;
+                      const sectionRejected = section.events.filter(e => e.status === 'rejected').length;
+                      const sectionReviewed = sectionAccepted + sectionRejected;
+
+                      return (
+                        <div key={section.sport} className="import-sport-section">
+                          <div className="import-sport-header">
+                            <span className="import-sport-dot" style={{ background: section.color }} />
+                            <span className="import-sport-label">{section.teamName}</span>
+                            <span className="import-sport-count">
+                              {sectionReviewed === section.events.length
+                                ? `${sectionAccepted} accepted`
+                                : `${sectionReviewed} / ${section.events.length} reviewed`}
+                            </span>
+                          </div>
+                          <div className="import-event-list">
+                            {section.events.map(evt => (
+                              <div
+                                key={evt.id}
+                                className={`import-event-row import-event-row--${evt.status}`}
+                              >
+                                <div className="import-event-row-top">
+                                  <button
+                                    className="import-event-row-clickable"
+                                    onClick={() => setEditingEvent(evt)}
+                                    aria-label={`Edit ${evt.title}`}
+                                  >
+                                    <span className="import-event-date">{formatEventDate(evt.date)}</span>
+                                    <span className="import-event-title">{evt.isHome ? 'vs.' : '@'} {evt.opponent}</span>
+                                    <span className="import-event-time">{evt.time}</span>
+                                  </button>
+                                  <div className="import-event-actions">
+                                    <button
+                                      className={`import-action-btn import-action-btn--accept ${evt.status === 'accepted' ? 'import-action-btn--active' : ''}`}
+                                      onClick={() => setEventStatus(evt.id, evt.status === 'accepted' ? 'pending' : 'accepted')}
+                                      aria-label="Accept"
+                                    >
+                                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                    </button>
+                                    <button
+                                      className={`import-action-btn import-action-btn--reject ${evt.status === 'rejected' ? 'import-action-btn--active' : ''}`}
+                                      onClick={() => setEventStatus(evt.id, evt.status === 'rejected' ? 'pending' : 'rejected')}
+                                      aria-label="Reject"
+                                    >
+                                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="import-event-row-meta">
+                                  <span className="import-event-badge import-event-badge--facility">
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 4h10M3 1h6a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
+                                    {evt.facility}
+                                  </span>
+                                  {evt.hasStream && (
+                                    <span className="import-event-badge import-event-badge--stream">
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3.5v5l3-2.5 2 1.5 2-2 3 3V3.5a1 1 0 00-1-1H2a1 1 0 00-1 1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                      Live Stream
+                                    </span>
+                                  )}
+                                  {evt.hasTickets && (
+                                    <span className="import-event-badge import-event-badge--tickets">
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l1-2h6l1 2M2 4v5a1 1 0 001 1h6a1 1 0 001-1V4M2 4h8M5 7h2" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
+                                      Tickets
+                                    </span>
+                                  )}
+                                  {evt.hasCameras && (
+                                    <span className="import-event-badge import-event-badge--cameras">
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="2" stroke="currentColor" strokeWidth="1"/><path d="M1 4a1 1 0 011-1h1l1-1h4l1 1h1a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1"/></svg>
+                                      Cameras
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </div>
-          )}
 
-          {/* Phase: Review & Approve */}
-          {phase === 'review' && (
-            <div className="import-phase-review">
-              <div className="import-review-summary">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M16.667 5L7.5 14.167 3.333 10" stroke="#2e7d32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <span>Found {sections.reduce((sum, s) => sum + s.events.length, 0)} events across {sections.length} sports</span>
-              </div>
-
-              {sections.map(section => {
-                const sectionSelected = section.events.filter(e => selected.has(e.id)).length;
-                const allSelected = sectionSelected === section.events.length;
-                const someSelected = sectionSelected > 0 && !allSelected;
-
-                return (
-                  <div key={section.sport} className="import-sport-section">
-                    <div className="import-sport-header">
-                      <Checkbox
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onChange={() => toggleSportAll(section)}
-                      />
-                      <span className="import-sport-dot" style={{ background: section.color }} />
-                      <span className="import-sport-label">{section.label}</span>
-                      <span className="import-sport-count">{section.events.length} events</span>
-                    </div>
-                    <div className="import-event-list">
-                      {section.events.map(evt => (
-                        <div key={evt.id} className={`import-event-row ${selected.has(evt.id) ? 'import-event-row--selected' : ''}`}>
-                          <div className="import-event-row-top">
-                            <Checkbox
-                              checked={selected.has(evt.id)}
-                              onChange={() => toggleEvent(evt.id)}
-                            />
-                            <span className="import-event-date">{formatEventDate(evt.date)}</span>
-                            <span className="import-event-title">{evt.isHome ? 'vs.' : '@'} {evt.opponent}</span>
-                            <span className="import-event-time">{evt.time}</span>
-                          </div>
-                          <div className="import-event-row-meta">
-                            <span className="import-event-badge import-event-badge--facility">
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 4h10M3 1h6a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
-                              {evt.facility}
-                            </span>
-                            {evt.hasStream && (
-                              <span className="import-event-badge import-event-badge--stream">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3.5v5l3-2.5 2 1.5 2-2 3 3V3.5a1 1 0 00-1-1H2a1 1 0 00-1 1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                Live Stream
-                              </span>
-                            )}
-                            {evt.hasTickets && (
-                              <span className="import-event-badge import-event-badge--tickets">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l1-2h6l1 2M2 4v5a1 1 0 001 1h6a1 1 0 001-1V4M2 4h8M5 7h2" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
-                                Tickets
-                              </span>
-                            )}
-                            {evt.hasCameras && (
-                              <span className="import-event-badge import-event-badge--cameras">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="2" stroke="currentColor" strokeWidth="1"/><path d="M1 4a1 1 0 011-1h1l1-1h4l1 1h1a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1"/></svg>
-                                Cameras
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Right pane: edit detail (pushes over) */}
+            <div className="import-panel-pane">
+              {editingEvent && (
+                <EditEventView
+                  event={editingEvent}
+                  facilityOptions={FACILITY_OPTIONS[editingEvent.sport] || [editingEvent.facility]}
+                  onSave={updateEvent}
+                  onBack={() => setEditingEvent(null)}
+                />
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer (review phase only) */}
-        {phase === 'review' && (
+        {phase === 'review' && !editingEvent && (
           <div className="import-panel-footer">
             <button
               className="import-approve-btn"
               onClick={handleApprove}
-              disabled={selectedCount === 0}
+              disabled={!allReviewed || acceptedCount === 0}
             >
-              Add {selectedCount} {selectedCount === 1 ? 'Event' : 'Events'} to Calendar
+              {!allReviewed
+                ? `Review All Events (${reviewedCount}/${totalEvents})`
+                : `Add ${acceptedCount} ${acceptedCount === 1 ? 'Event' : 'Events'} to Calendar`}
             </button>
           </div>
         )}
       </div>
     </>
+  );
+}
+
+
+// ---- Edit Event Sub-view ----
+function EditEventView({
+  event,
+  facilityOptions,
+  onSave,
+  onBack,
+}: {
+  event: ImportEvent;
+  facilityOptions: string[];
+  onSave: (updated: ImportEvent) => void;
+  onBack: () => void;
+}) {
+  const [facility, setFacility] = useState(event.facility);
+  const [hasStream, setHasStream] = useState(event.hasStream);
+  const [hasTickets, setHasTickets] = useState(event.hasTickets);
+  const [hasCameras, setHasCameras] = useState(event.hasCameras);
+
+  const handleSave = () => {
+    onSave({
+      ...event,
+      facility,
+      location: facility,
+      hasStream,
+      hasTickets,
+      hasCameras,
+    });
+  };
+
+  // Find team name from sport
+  const teamName = event.sport === 'Football' ? 'Varsity Football'
+    : event.sport === 'Girls Volleyball' ? 'Varsity Girls Volleyball'
+    : event.sport === 'Boys Soccer' ? 'Varsity Boys Soccer'
+    : event.sport;
+
+  return (
+    <div className="import-edit-view">
+      <div className="import-edit-header">
+        <button className="import-back-btn" onClick={onBack}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Back
+        </button>
+      </div>
+
+      <div className="import-edit-body">
+        <div className="import-edit-title-row">
+          <span className="import-sport-dot" style={{ background: event.color }} />
+          <h3 className="import-edit-title">{event.isHome ? 'vs.' : '@'} {event.opponent}</h3>
+        </div>
+
+        <div className="import-edit-meta">
+          <span className="import-edit-team">{teamName}</span>
+          <span className="import-edit-date">{formatEventDateLong(event.date)}</span>
+          <span className="import-edit-time">{event.time} - {event.endTime}</span>
+        </div>
+
+        <div className="import-edit-section">
+          <label className="import-edit-label">Facility</label>
+          {event.isHome ? (
+            <select
+              className="import-edit-select"
+              value={facility}
+              onChange={(e) => setFacility(e.target.value)}
+            >
+              {facilityOptions.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="import-edit-readonly">{facility}</div>
+          )}
+        </div>
+
+        {event.isHome && (
+          <>
+            <div className="import-edit-section">
+              <label className="import-edit-label">Event Configuration</label>
+              <div className="import-edit-toggles">
+                <label className="import-edit-toggle">
+                  <input type="checkbox" checked={hasStream} onChange={(e) => setHasStream(e.target.checked)} />
+                  <span className="import-edit-toggle-label">Live Stream</span>
+                </label>
+                <label className="import-edit-toggle">
+                  <input type="checkbox" checked={hasTickets} onChange={(e) => setHasTickets(e.target.checked)} />
+                  <span className="import-edit-toggle-label">Tickets</span>
+                </label>
+                <label className="import-edit-toggle">
+                  <input type="checkbox" checked={hasCameras} onChange={(e) => setHasCameras(e.target.checked)} />
+                  <span className="import-edit-toggle-label">Cameras</span>
+                </label>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="import-edit-footer">
+        <button className="import-approve-btn" onClick={handleSave}>Save Changes</button>
+      </div>
+    </div>
   );
 }
