@@ -543,8 +543,8 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
         <div className="content-inner">
           {children}
         </div>
-        {overlay}
       </div>
+      {overlay}
     </div>
   );
 };

@@ -5,6 +5,8 @@
   height: 100%;
   background-color: var(--u-color-background-canvas, #eff0f0);
   font-family: var(--u-font-body);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Sidebar */
