@@ -29,7 +29,7 @@ type Phase = 'choose' | 'paste' | 'agent' | 'review';
 /** Pre-built fall schedule events for chapters that assume import already happened */
 export function getFallScheduleEvents(): CalendarEvent[] {
   const sections = generateImportEvents(true, true, true);
-  return sections.flatMap(s => s.events.map(({ opponent, isHome, facility, hasStream, hasTickets, hasCameras, status, ...ev }) => ev));
+  return sections.flatMap(s => s.events.map(({ opponent: _o, isHome: _h, facility: _f, hasStream: _s, hasTickets: _t, hasCameras: _c, status: _st, ...ev }) => ev));
 }
 
 // Facility options for the edit view

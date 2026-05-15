@@ -12,7 +12,7 @@ import {
 } from '@/lib/mock-data';
 
 // In-memory state for prototype mutations
-let programs = [...mockPrograms];
+const programs = [...mockPrograms];
 
 export interface ProgramCreator {
   id: string;

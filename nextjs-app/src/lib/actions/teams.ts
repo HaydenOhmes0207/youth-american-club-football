@@ -210,7 +210,7 @@ export interface StaffUser {
   teamRoles: string[];
 }
 
-export function getStaffUsers(organizationId: string): StaffUser[] {
+export function getStaffUsers(_organizationId: string): StaffUser[] {
   const adminUsers = mockUsers.filter(u => 
     u.role === 'school-administrator' || 
     u.role === 'school administrator' ||
