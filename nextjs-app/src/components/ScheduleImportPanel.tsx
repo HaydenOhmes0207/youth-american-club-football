@@ -181,7 +181,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       }, 600);
       return () => clearTimeout(timer);
     }
-    const delay = logEntries === 0 ? 300 : (400 + Math.random() * 400);
+    const delay = logEntries === 0 ? 500 : (600 + Math.random() * 500);
     const timer = setTimeout(() => setLogEntries(prev => prev + 1), delay);
     return () => clearTimeout(timer);
   }, [phase, logEntries]);
