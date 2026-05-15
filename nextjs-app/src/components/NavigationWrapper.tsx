@@ -34,7 +34,12 @@ function HomePage() {
 }
 
 function CalendarPage() {
-  return <CalendarView />;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader title="Calendar" description="View and manage camps, clinics, and events across your organization." actions={[{ label: 'Add Event', buttonStyle: 'standard' }]} />
+      <CalendarView />
+    </div>
+  );
 }
 
 function FacilitiesPage() {

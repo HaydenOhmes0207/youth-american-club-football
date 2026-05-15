@@ -371,9 +371,8 @@ export default function CalendarView() {
 
   return (
     <div className="cal-container">
-      <div className="cal-toolbar">
-        <div className="cal-toolbar-left">
-          <h1 className="page-header-title">Calendar</h1>
+      <div className="toolbar">
+        <div className="toolbar-left">
           <div className="cal-nav-group">
             <button className="cal-nav-btn" onClick={prevPeriod} aria-label="Previous">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -385,7 +384,7 @@ export default function CalendarView() {
           </div>
           <span className="cal-header-label">{headerLabel}</span>
         </div>
-        <div className="cal-toolbar-right">
+        <div className="toolbar-right">
           <div className="cal-view-toggle">
             {(['month', 'week', 'agenda'] as ViewMode[]).map(v => (
               <button key={v} className={`cal-view-btn ${view === v ? 'cal-view-btn--active' : ''}`} onClick={() => setView(v)}>

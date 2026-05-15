@@ -305,10 +305,7 @@
 /* === Calendar === */
 .cal-container { display: flex; flex-direction: column; gap: 0; width: 100%; height: 100%; overflow: hidden; }
 
-/* Toolbar */
-.cal-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 0 16px 0; gap: 16px; flex-shrink: 0; }
-.cal-toolbar-left { display: flex; align-items: center; gap: 16px; }
-.cal-toolbar-right { display: flex; align-items: center; gap: 12px; }
+/* Calendar utilities row (reuses .toolbar layout) */
 .cal-nav-group { display: flex; align-items: center; gap: 4px; }
 .cal-nav-btn {
   display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
