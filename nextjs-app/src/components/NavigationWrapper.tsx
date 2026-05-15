@@ -7,10 +7,24 @@ import { mockNavItems } from '@/lib/mock-data';
 import PageHeader from './PageHeader';
 import ProgramsTable from './ProgramsTable';
 import CommunityTable from './CommunityTable';
-import CalendarView from './CalendarView';
+import CalendarView, { EVENTS_BY_PERSONA } from './CalendarView';
 import type { CalendarEvent } from './CalendarView';
 import ScheduleImportPanel from './ScheduleImportPanel';
+import FacilityResourceView from './FacilityResourceView';
+import FacilityClosurePanel from './FacilityClosurePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
+
+export interface SentNotification {
+  id: string;
+  date: Date;
+  facilities: string[];
+  events: string[];
+  recipients: { coaches: boolean; parents: boolean; fans: boolean };
+  channels: { email: boolean; sms: boolean; push: boolean };
+  message: string;
+  sentAt: Date;
+  recipientCount: number;
+}
 
 const mockPrograms: ProgramWithStats[] = [
   {
@@ -27,10 +41,20 @@ const mockPrograms: ProgramWithStats[] = [
   },
 ];
 
-function HomePage() {
+function HomePage({ onNavigate }: { onNavigate?: (route: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
       <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
+      <div className="storm-alert-card">
+        <div className="storm-alert-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 11l-4 6h6l-4 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </div>
+        <div className="storm-alert-content">
+          <div className="storm-alert-title">Severe Thunderstorm Warning</div>
+          <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
+        </div>
+        <button className="storm-alert-action" onClick={() => onNavigate?.('/facilities')}>Take Action</button>
+      </div>
     </div>
   );
 }
@@ -47,19 +71,24 @@ function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
   );
 }
 
-function FacilitiesPage() {
+function FacilitiesPageContent({ onOpenClosure }: { onOpenClosure: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <PageHeader title="Facilities" description="Manage fields, gyms, and other facilities available for your organization." actions={[{ label: 'Add Facility', buttonStyle: 'standard' }]} />
-    </div>
+    <PageHeader
+      title="Facilities"
+      description="Manage fields, gyms, and other facilities available for your organization."
+      actions={[
+        { label: 'Close Facilities', buttonStyle: 'minimal', onClick: onOpenClosure },
+        { label: 'Add Facility', buttonStyle: 'standard' },
+      ]}
+    />
   );
 }
 
-function CommunityPage() {
+function CommunityPageContent({ sentNotifications }: { sentNotifications: SentNotification[] }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
       <PageHeader title="Community" description="Manage athletes, coaches, and staff across your organization." actions={[{ label: 'Import', buttonStyle: 'minimal' }, { label: 'Add Member', buttonStyle: 'standard' }]} />
-      <CommunityTable />
+      <CommunityTable sentNotifications={sentNotifications} />
     </div>
   );
 }
@@ -74,9 +103,6 @@ function ProgramsPage() {
 }
 
 const STATIC_PAGE_MAP: Record<string, React.FC> = {
-  '/': HomePage,
-  '/facilities': FacilitiesPage,
-  '/community': CommunityPage,
   '/programs': ProgramsPage,
 };
 
@@ -85,9 +111,25 @@ export default function NavigationWrapper() {
   const [activeRoute, setActiveRoute] = useState('/');
   const [showImportPanel, setShowImportPanel] = useState(false);
   const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>([]);
+  const [cancelledEventIds, setCancelledEventIds] = useState<Set<string>>(new Set());
+  const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
+  const [showClosurePanel, setShowClosurePanel] = useState(false);
 
   const handleImport = (events: CalendarEvent[]) => {
     setImportedEvents(prev => [...prev, ...events]);
+  };
+
+  const handleClosure = (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt'>) => {
+    setCancelledEventIds(prev => {
+      const next = new Set(prev);
+      eventIds.forEach(id => next.add(id));
+      return next;
+    });
+    setSentNotifications(prev => [...prev, {
+      ...notification,
+      id: `notif-${Date.now()}`,
+      sentAt: new Date(),
+    }]);
   };
 
   const organization = {
@@ -139,16 +181,58 @@ export default function NavigationWrapper() {
     role: activePersona.role,
   };
 
-  const isCalendar = activeRoute === '/calendar';
   const StaticPage = STATIC_PAGE_MAP[activeRoute];
 
-  const calendarOverlay = isCalendar ? (
-    <ScheduleImportPanel
-      isOpen={showImportPanel}
-      onClose={() => setShowImportPanel(false)}
-      onImport={handleImport}
-    />
-  ) : null;
+  // Collect all events for facilities view
+  const allEvents = [...(EVENTS_BY_PERSONA[activePersona.id] || []), ...importedEvents];
+
+  // Build overlay based on active route
+  let overlay: React.ReactNode = null;
+  if (activeRoute === '/calendar') {
+    overlay = (
+      <ScheduleImportPanel
+        isOpen={showImportPanel}
+        onClose={() => setShowImportPanel(false)}
+        onImport={handleImport}
+      />
+    );
+  } else if (activeRoute === '/facilities') {
+    overlay = (
+      <FacilityClosurePanel
+        isOpen={showClosurePanel}
+        onClose={() => setShowClosurePanel(false)}
+        allEvents={allEvents}
+        cancelledEventIds={cancelledEventIds}
+        onConfirm={handleClosure}
+      />
+    );
+  }
+
+  // Render page content
+  let pageContent: React.ReactNode;
+  if (activeRoute === '/calendar') {
+    pageContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+        <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
+        <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} />
+      </div>
+    );
+  } else if (activeRoute === '/facilities') {
+    pageContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+        <FacilitiesPageContent onOpenClosure={() => setShowClosurePanel(true)} />
+        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} />
+      </div>
+    );
+  } else if (activeRoute === '/community') {
+    pageContent = <CommunityPageContent sentNotifications={sentNotifications} />;
+  } else if (activeRoute === '/') {
+    pageContent = <HomePage onNavigate={(route) => setActiveRoute(route)} />;
+  } else if (StaticPage) {
+    pageContent = <StaticPage />;
+  } else {
+    pageContent = <HomePage onNavigate={(route) => setActiveRoute(route)} />;
+  }
 
   return (
     <LegacyNavigation
@@ -159,18 +243,9 @@ export default function NavigationWrapper() {
       currentUser={currentUser}
       activeRoute={activeRoute}
       onNavigate={(route) => setActiveRoute(route)}
-      overlay={calendarOverlay}
+      overlay={overlay}
     >
-      {isCalendar ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
-          <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
-          <CalendarView extraEvents={importedEvents} />
-        </div>
-      ) : StaticPage ? (
-        <StaticPage />
-      ) : (
-        <HomePage />
-      )}
+      {pageContent}
     </LegacyNavigation>
   );
 }

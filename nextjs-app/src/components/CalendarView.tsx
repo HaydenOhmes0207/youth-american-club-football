@@ -342,7 +342,7 @@ function generateMariaEvents(): CalendarEvent[] {
   return events;
 }
 
-const EVENTS_BY_PERSONA: Record<PersonaId, CalendarEvent[]> = {
+export const EVENTS_BY_PERSONA: Record<PersonaId, CalendarEvent[]> = {
   alex: generateAlexEvents(),
   maria: generateMariaEvents(),
 };
@@ -371,7 +371,7 @@ function TypeDot({ color }: { color: string }) {
 }
 
 // ---- MONTH VIEW ----
-function MonthView({ year, month, events }: { year: number; month: number; events: CalendarEvent[] }) {
+function MonthView({ year, month, events, cancelledEventIds }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
@@ -397,12 +397,15 @@ function MonthView({ year, month, events }: { year: number; month: number; event
                 <>
                   <span className={`cal-month-cell-day ${isToday ? 'cal-month-cell-day--today' : ''}`}>{day}</span>
                   <div className="cal-month-cell-events">
-                    {dayEvents.slice(0, 3).map(ev => (
-                      <div key={ev.id} className="cal-month-event" style={{ borderLeftColor: ev.color }}>
-                        <span className="cal-month-event-time">{ev.time.replace(':00', '').replace(' ', '')}</span>
-                        <span className="cal-month-event-title">{ev.title}</span>
-                      </div>
-                    ))}
+                    {dayEvents.slice(0, 3).map(ev => {
+                      const isCancelled = cancelledEventIds.has(ev.id);
+                      return (
+                        <div key={ev.id} className={`cal-month-event ${isCancelled ? 'cal-month-event--cancelled' : ''}`} style={{ borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
+                          <span className="cal-month-event-time">{ev.time.replace(':00', '').replace(' ', '')}</span>
+                          <span className={`cal-month-event-title ${isCancelled ? 'cal-month-event-title--cancelled' : ''}`}>{ev.title}</span>
+                        </div>
+                      );
+                    })}
                     {dayEvents.length > 3 && <div className="cal-month-more">+{dayEvents.length - 3} more</div>}
                   </div>
                 </>
@@ -416,7 +419,7 @@ function MonthView({ year, month, events }: { year: number; month: number; event
 }
 
 // ---- WEEK VIEW ----
-function WeekView({ weekStart, events }: { weekStart: Date; events: CalendarEvent[] }) {
+function WeekView({ weekStart, events, cancelledEventIds }: { weekStart: Date; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
   const days: Date[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart);
@@ -456,12 +459,15 @@ function WeekView({ weekStart, events }: { weekStart: Date; events: CalendarEven
               });
               return (
                 <div key={di} className="cal-week-cell">
-                  {dayEvents.map(ev => (
-                    <div key={ev.id} className="cal-week-event" style={{ backgroundColor: ev.color + '18', borderLeftColor: ev.color }}>
-                      <span className="cal-week-event-title">{ev.title}</span>
-                      <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
-                    </div>
-                  ))}
+                  {dayEvents.map(ev => {
+                    const isCancelled = cancelledEventIds.has(ev.id);
+                    return (
+                      <div key={ev.id} className={`cal-week-event ${isCancelled ? 'cal-week-event--cancelled' : ''}`} style={{ backgroundColor: isCancelled ? '#f3f4f6' : ev.color + '18', borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
+                        <span className={`cal-week-event-title ${isCancelled ? 'cal-week-event-title--cancelled' : ''}`}>{ev.title}</span>
+                        <span className="cal-week-event-time">{ev.time} - {ev.endTime}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -473,7 +479,7 @@ function WeekView({ weekStart, events }: { weekStart: Date; events: CalendarEven
 }
 
 // ---- AGENDA VIEW ----
-function AgendaView({ year, month, events }: { year: number; month: number; events: CalendarEvent[] }) {
+function AgendaView({ year, month, events, cancelledEventIds }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
   const monthEvents = events
     .filter(e => e.date.getFullYear() === year && e.date.getMonth() === month)
     .sort((a, b) => a.date.getTime() - b.date.getTime() || a.time.localeCompare(b.time));
@@ -499,21 +505,24 @@ function AgendaView({ year, month, events }: { year: number; month: number; even
               <span className="cal-agenda-date-full">{MONTHS[date.getMonth()]} {date.getDate()}, {date.getFullYear()}</span>
             </div>
             <div className="cal-agenda-events">
-              {dayEvents.map(ev => (
-                <div key={ev.id} className="cal-agenda-event" style={{ borderLeftColor: ev.color }}>
-                  <div className="cal-agenda-event-left">
-                    <TypeDot color={ev.color} />
-                    <div className="cal-agenda-event-info">
-                      <span className="cal-agenda-event-title">{ev.title}</span>
-                      <span className="cal-agenda-event-meta">{ev.location}</span>
+              {dayEvents.map(ev => {
+                const isCancelled = cancelledEventIds.has(ev.id);
+                return (
+                  <div key={ev.id} className={`cal-agenda-event ${isCancelled ? 'cal-agenda-event--cancelled' : ''}`} style={{ borderLeftColor: isCancelled ? '#9ca3af' : ev.color }}>
+                    <div className="cal-agenda-event-left">
+                      <TypeDot color={isCancelled ? '#9ca3af' : ev.color} />
+                      <div className="cal-agenda-event-info">
+                        <span className={`cal-agenda-event-title ${isCancelled ? 'cal-agenda-event-title--cancelled' : ''}`}>{ev.title}</span>
+                        <span className="cal-agenda-event-meta">{ev.location}</span>
+                      </div>
+                    </div>
+                    <div className="cal-agenda-event-right">
+                      <span className="cal-agenda-event-time">{ev.time} - {ev.endTime}</span>
+                      <span className="cal-agenda-event-type">{isCancelled ? 'Cancelled' : formatEventType(ev.type)}</span>
                     </div>
                   </div>
-                  <div className="cal-agenda-event-right">
-                    <span className="cal-agenda-event-time">{ev.time} - {ev.endTime}</span>
-                    <span className="cal-agenda-event-type">{formatEventType(ev.type)}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         );
@@ -525,9 +534,10 @@ function AgendaView({ year, month, events }: { year: number; month: number; even
 // ---- MAIN CALENDAR ----
 interface CalendarViewProps {
   extraEvents?: CalendarEvent[];
+  cancelledEventIds?: Set<string>;
 }
 
-export default function CalendarView({ extraEvents = [] }: CalendarViewProps) {
+export default function CalendarView({ extraEvents = [], cancelledEventIds = new Set() }: CalendarViewProps) {
   const { activePersona } = usePersona();
   const [view, setView] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
@@ -591,9 +601,9 @@ export default function CalendarView({ extraEvents = [] }: CalendarViewProps) {
         </div>
       </div>
       <div className="cal-body">
-        {view === 'month' && <MonthView year={year} month={month} events={events} />}
-        {view === 'week' && <WeekView weekStart={weekStart} events={events} />}
-        {view === 'agenda' && <AgendaView year={year} month={month} events={events} />}
+        {view === 'month' && <MonthView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} />}
+        {view === 'week' && <WeekView weekStart={weekStart} events={events} cancelledEventIds={cancelledEventIds} />}
+        {view === 'agenda' && <AgendaView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} />}
       </div>
     </div>
   );

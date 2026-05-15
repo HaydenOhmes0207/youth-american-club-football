@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Toolbar from './Toolbar';
+import type { SentNotification } from './NavigationWrapper';
 
 interface CommunityMember {
   id: string;
@@ -80,7 +81,87 @@ function TableContent({ members }: { members: CommunityMember[] }) {
   );
 }
 
-export default function CommunityTable() {
+// Tab types
+type CommunityTab = 'directory' | 'inbox' | 'sent';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function formatDate(d: Date): string {
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${d.getHours() > 12 ? d.getHours() - 12 : d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} ${d.getHours() >= 12 ? 'PM' : 'AM'}`;
+}
+
+function SentNotificationsView({ notifications }: { notifications: SentNotification[] }) {
+  if (notifications.length === 0) {
+    return (
+      <div className="community-sent-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <span className="community-sent-empty-text">No notifications sent yet</span>
+        <span className="community-sent-empty-desc">When you send notifications from facility closures, they will appear here.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="community-sent-list">
+      {notifications.map(notif => {
+        const recipientLabels: string[] = [];
+        if (notif.recipients.coaches) recipientLabels.push('Coaches');
+        if (notif.recipients.parents) recipientLabels.push('Parents & guardians');
+        if (notif.recipients.fans) recipientLabels.push('Ticket holders');
+
+        const channelLabels: string[] = [];
+        if (notif.channels.email) channelLabels.push('Email');
+        if (notif.channels.sms) channelLabels.push('SMS');
+        if (notif.channels.push) channelLabels.push('Push');
+
+        return (
+          <div key={notif.id} className="community-sent-card">
+            <div className="community-sent-card-header">
+              <div className="community-sent-card-title">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Facility Closure Notification
+              </div>
+              <span className="community-sent-card-date">{formatDate(notif.sentAt)}</span>
+            </div>
+            <div className="community-sent-card-body">
+              <div className="community-sent-card-row">
+                <span className="community-sent-card-label">Facilities</span>
+                <span className="community-sent-card-value">{notif.facilities.join(', ')}</span>
+              </div>
+              <div className="community-sent-card-row">
+                <span className="community-sent-card-label">Events cancelled</span>
+                <span className="community-sent-card-value">{notif.events.length}</span>
+              </div>
+              <div className="community-sent-card-row">
+                <span className="community-sent-card-label">Recipients</span>
+                <span className="community-sent-card-value">{recipientLabels.join(', ')} ({notif.recipientCount} people)</span>
+              </div>
+              <div className="community-sent-card-row">
+                <span className="community-sent-card-label">Channels</span>
+                <div className="community-sent-channels">
+                  {channelLabels.map(ch => (
+                    <span key={ch} className="community-sent-channel-badge">{ch}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="community-sent-card-row community-sent-card-row--message">
+                <span className="community-sent-card-label">Message</span>
+                <span className="community-sent-card-message">{notif.message}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+interface CommunityTableProps {
+  sentNotifications?: SentNotification[];
+}
+
+export default function CommunityTable({ sentNotifications = [] }: CommunityTableProps) {
+  const [activeTab, setActiveTab] = useState<CommunityTab>('directory');
   const [roleFilter, setRoleFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -107,18 +188,55 @@ export default function CommunityTable() {
     return true;
   });
 
+  const tabs: { id: CommunityTab; label: string; count?: number }[] = [
+    { id: 'directory', label: 'Directory' },
+    { id: 'inbox', label: 'Inbox' },
+    { id: 'sent', label: 'Sent', count: sentNotifications.length > 0 ? sentNotifications.length : undefined },
+  ];
+
   return (
     <div className="community-content">
-      <Toolbar 
-        segments={segments}
-        searchPlaceholder="Search members..."
-        onSearch={(query) => setSearchQuery(query)}
-        onFilter={() => {}}
-        onExport={() => {}}
-      />
-      <div className="table-scroll-container">
-        <TableContent members={filteredMembers} />
+      {/* Tab bar */}
+      <div className="community-tabs">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`community-tab ${activeTab === tab.id ? 'community-tab--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+            {tab.count !== undefined && <span className="community-tab-count">{tab.count}</span>}
+          </button>
+        ))}
       </div>
+
+      {/* Tab content */}
+      {activeTab === 'directory' && (
+        <>
+          <Toolbar 
+            segments={segments}
+            searchPlaceholder="Search members..."
+            onSearch={(query) => setSearchQuery(query)}
+            onFilter={() => {}}
+            onExport={() => {}}
+          />
+          <div className="table-scroll-container">
+            <TableContent members={filteredMembers} />
+          </div>
+        </>
+      )}
+
+      {activeTab === 'inbox' && (
+        <div className="community-sent-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="#9ca3af" strokeWidth="1.5"/><path d="M2 8l10 6 10-6" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <span className="community-sent-empty-text">No messages</span>
+          <span className="community-sent-empty-desc">Your inbox is empty.</span>
+        </div>
+      )}
+
+      {activeTab === 'sent' && (
+        <SentNotificationsView notifications={sentNotifications} />
+      )}
     </div>
   );
 }
