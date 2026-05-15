@@ -35,7 +35,7 @@ function HomePage() {
 
 function CalendarPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
       <PageHeader title="Calendar" description="View and manage camps, clinics, and events across your organization." actions={[{ label: 'Add Event', buttonStyle: 'standard' }]} />
       <CalendarView />
     </div>
