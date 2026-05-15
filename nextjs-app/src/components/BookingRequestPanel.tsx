@@ -25,6 +25,7 @@ interface BookingRequestPanelProps {
   request: BookingRequest;
   onApprove: (request: BookingRequest) => void;
   onDecline: (request: BookingRequest) => void;
+  isOutgoing?: boolean; // Maria's perspective - she submitted the request
 }
 
 function AmenityIcon({ type }: { type: BookingRequest['amenities'][0]['icon'] }) {
@@ -40,7 +41,7 @@ function AmenityIcon({ type }: { type: BookingRequest['amenities'][0]['icon'] })
   }
 }
 
-export default function BookingRequestPanel({ isOpen, onClose, request, onApprove, onDecline }: BookingRequestPanelProps) {
+export default function BookingRequestPanel({ isOpen, onClose, request, onApprove, onDecline, isOutgoing }: BookingRequestPanelProps) {
   const [isApproving, setIsApproving] = useState(false);
   const { showToast } = useToast();
 
@@ -70,7 +71,7 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
       <div className="import-panel-backdrop" onClick={onClose} />
       <div className="import-panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="import-panel-header">
-          <h2 className="import-panel-title">Booking Request</h2>
+          <h2 className="import-panel-title">{isOutgoing ? 'Booking Details' : 'Booking Request'}</h2>
           <button className="import-panel-close" onClick={onClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
@@ -78,9 +79,9 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
 
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px' }}>
           <div className="closure-phase-review">
-            {/* Requesting Organization */}
+            {/* Organization info - different label based on perspective */}
             <div className="closure-review-section">
-              <div className="closure-section-label">Requesting organization</div>
+              <div className="closure-section-label">{isOutgoing ? 'Requested from' : 'Requesting organization'}</div>
               <div className="booking-org-card">
                 <div className="booking-org-avatar">
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/></svg>
@@ -146,17 +147,45 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
           </div>
         </div>
 
-        <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
-          <button className="booking-decline-btn" onClick={handleDecline} disabled={isApproving}>
-            Decline
-          </button>
-          <button className="booking-approve-btn" onClick={handleApprove} disabled={isApproving}>
-            {isApproving ? (
-              <><span className="import-btn-spinner import-btn-spinner--light" />Approving...</>
-            ) : (
-              'Approve & Unlock Camera'
-            )}
-          </button>
+        <div className="import-panel-footer" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {isOutgoing ? (
+            <>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {request.status === 'approved' ? (
+                  <span className="booking-status-badge booking-status-badge--approved">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.5 4L5.5 10L2.5 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Approved
+                  </span>
+                ) : request.status === 'declined' ? (
+                  <span className="booking-status-badge booking-status-badge--declined">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10.5 3.5L3.5 10.5M3.5 3.5l7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    Declined
+                  </span>
+                ) : (
+                  <span className="booking-status-badge booking-status-badge--pending">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.25"/><path d="M7 4v3l2 1" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+                    Awaiting Response
+                  </span>
+                )}
+              </div>
+              <button className="compose-send-btn" onClick={onClose}>
+                Done
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="booking-decline-btn" onClick={handleDecline} disabled={isApproving}>
+                Decline
+              </button>
+              <button className="booking-approve-btn" onClick={handleApprove} disabled={isApproving}>
+                {isApproving ? (
+                  <><span className="import-btn-spinner import-btn-spinner--light" />Approving...</>
+                ) : (
+                  'Approve & Unlock Camera'
+                )}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>

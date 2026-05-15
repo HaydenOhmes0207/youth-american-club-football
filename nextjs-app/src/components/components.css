@@ -1491,6 +1491,22 @@
 .booking-decline-btn:hover:not(:disabled) { background: var(--u-color-background-subtle, #f5f6f7); }
 .booking-decline-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Booking status badges (for outgoing requests) */
+.booking-status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 16px;
+  font-family: var(--u-font-body); font-size: 13px; font-weight: 500;
+}
+.booking-status-badge--approved {
+  background: #d1fae5; color: #065f46;
+}
+.booking-status-badge--declined {
+  background: #fee2e2; color: #991b1b;
+}
+.booking-status-badge--pending {
+  background: #fef3c7; color: #92400e;
+}
+
 /* Booking alert card (teal) */
 .booking-alert-card {
   display: flex; align-items: flex-start; gap: var(--u-space-one, 16px);

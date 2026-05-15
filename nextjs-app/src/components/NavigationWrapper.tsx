@@ -623,6 +623,7 @@ export default function NavigationWrapper() {
         request={mariaBookingRequest}
         onApprove={handleBookingApprove}
         onDecline={() => setShowBookingPanel(false)}
+        isOutgoing={activePersona.id === 'maria'}
       />
     );
   } else if (activeRoute === '/facilities') {
