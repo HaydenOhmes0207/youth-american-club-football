@@ -15,6 +15,7 @@ export interface CalendarEvent {
   type: 'game' | 'practice' | 'meeting' | 'event' | 'tryout';
   location: string;
   color: string;
+  isExternal?: boolean;
 }
 
 export const SPORT_COLORS: Record<string, string> = {

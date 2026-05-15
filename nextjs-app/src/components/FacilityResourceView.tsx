@@ -157,11 +157,12 @@ export default function FacilityResourceView({ events, cancelledEventIds, simula
                     const top = (start - HOURS_START) * HOUR_HEIGHT;
                     const height = Math.max((end - start) * HOUR_HEIGHT, 20);
                     const isCancelled = cancelledEventIds.has(ev.id);
+                    const isExternal = ev.isExternal === true;
 
                     return (
                       <div
                         key={ev.id}
-                        className={`resource-event ${isCancelled ? 'resource-event--cancelled' : ''}`}
+                        className={`resource-event ${isCancelled ? 'resource-event--cancelled' : ''} ${isExternal ? 'resource-event--external' : ''}`}
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
@@ -169,6 +170,7 @@ export default function FacilityResourceView({ events, cancelledEventIds, simula
                           background: isCancelled ? '#f3f4f6' : ev.color + '18',
                         }}
                       >
+                        {isExternal && <span className="resource-event-external-badge">External</span>}
                         <span className={`resource-event-title ${isCancelled ? 'resource-event-title--cancelled' : ''}`}>
                           {ev.title}
                         </span>

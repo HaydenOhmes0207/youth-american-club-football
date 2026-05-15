@@ -17,6 +17,8 @@ import type { Registrant } from './ProgramDetailView';
 import MessageComposePanel from './MessageComposePanel';
 import type { MessagePayload } from './MessageComposePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
+import BookingRequestPanel from './BookingRequestPanel';
+import type { BookingRequest } from './BookingRequestPanel';
 import { useToast } from './Toast';
 
 export interface SentNotification {
@@ -131,11 +133,13 @@ interface HomePageProps {
   onTakeAction?: () => void;
   showStormAlert?: boolean;
   showPaymentAlert?: boolean;
+  showBookingAlert?: boolean;
   onReviewPrograms?: () => void;
+  onReviewBooking?: () => void;
   deskItems?: DeskItem[];
 }
 
-function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, onReviewPrograms, deskItems }: HomePageProps) {
+function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, showBookingAlert, onReviewPrograms, onReviewBooking, deskItems }: HomePageProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
       <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
@@ -161,6 +165,18 @@ function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, onReviewProg
             <div className="payment-alert-desc"><strong>$17,545</strong> outstanding across Fall Tackle Football, Fall Flag Football, and Fall Cheer. <strong>72 families</strong> have unpaid balances that need follow-up before the season starts.</div>
           </div>
           <button className="payment-alert-action" onClick={onReviewPrograms}>Review Programs</button>
+        </div>
+      )}
+      {showBookingAlert && (
+        <div className="booking-alert-card">
+          <div className="booking-alert-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <div className="booking-alert-content">
+            <div className="booking-alert-title">Facility Booking Request</div>
+            <div className="booking-alert-desc"><strong>Lincoln Junior Football Club</strong> is requesting <strong>Spartan Field &ndash; Memorial Stadium</strong> for Championship Saturday on <strong>November 7</strong>. Includes camera &amp; streaming access.</div>
+          </div>
+          <button className="booking-alert-action" onClick={onReviewBooking}>Review Request</button>
         </div>
       )}
       {deskItems && deskItems.length > 0 && (
@@ -231,7 +247,29 @@ export default function NavigationWrapper() {
   const [showComposePanel, setShowComposePanel] = useState(false);
   const [composeRecipients, setComposeRecipients] = useState<Registrant[]>([]);
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
+  const [showBookingPanel, setShowBookingPanel] = useState(false);
+  const [bookingApproved, setBookingApproved] = useState(false);
   const { showToast } = useToast();
+
+  const mariaBookingRequest: BookingRequest = {
+    id: 'booking-1',
+    fromOrg: 'Lincoln Junior Football Club',
+    fromDirector: 'Maria Rodriguez',
+    fromRole: 'Club Director',
+    facility: 'Spartan Field',
+    venue: 'Memorial Stadium',
+    date: '2026-11-07',
+    dateLabel: 'Saturday, November 7, 2026',
+    timeBlock: '8:00 AM - 6:00 PM',
+    eventTitle: 'Championship Saturday',
+    description: 'End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.',
+    amenities: [
+      { label: 'Camera / Streaming', icon: 'camera' },
+      { label: 'Scoreboard', icon: 'scoreboard' },
+      { label: 'PA System', icon: 'pa' },
+    ],
+    status: 'pending',
+  };
 
   // Chapter switching: reset state and set initial context for each chapter
   React.useEffect(() => {
@@ -244,6 +282,8 @@ export default function NavigationWrapper() {
     setShowComposePanel(false);
     setComposeRecipients([]);
     setComposeOverduePrograms([]);
+    setShowBookingPanel(false);
+    setBookingApproved(false);
 
     switch (activeChapter) {
       case 'home':
@@ -269,6 +309,7 @@ export default function NavigationWrapper() {
       case 'external-bookings':
         setActiveRoute('/');
         setImportedEvents(getFallScheduleEvents());
+        setBookingApproved(false);
         break;
       case 'booking-request':
         setActiveRoute('/');
@@ -303,6 +344,24 @@ export default function NavigationWrapper() {
     setComposeRecipients(registrants);
     setComposeOverduePrograms([]);
     setShowComposePanel(true);
+  };
+
+  const handleBookingApprove = (_request: BookingRequest) => {
+    setBookingApproved(true);
+    // Add the championship event to imported events so it shows on the resource view
+    const champEvent: CalendarEvent = {
+      id: 'ext-champ-saturday',
+      title: 'Championship Saturday - Lincoln Jr. Football',
+      date: new Date(2026, 10, 7),
+      time: '8:00 AM',
+      endTime: '6:00 PM',
+      location: 'Memorial Stadium',
+      sport: 'Football',
+      type: 'game',
+      color: '#14b8a6',
+      isExternal: true,
+    };
+    setImportedEvents(prev => [...prev, champEvent]);
   };
 
   const handleMessageOverdue = (programs: ProgramWithStats[]) => {
@@ -390,6 +449,7 @@ export default function NavigationWrapper() {
     switch (activeChapter) {
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
+      case 'external-bookings': return new Date(2026, 10, 7); // Nov 7
       default: return undefined;
     }
   }, [activeChapter]);
@@ -428,6 +488,16 @@ export default function NavigationWrapper() {
         isOpen={showImportPanel}
         onClose={() => setShowImportPanel(false)}
         onImport={handleImport}
+      />
+    );
+  } else if (activeRoute === '/facilities' && showBookingPanel) {
+    overlay = (
+      <BookingRequestPanel
+        isOpen={showBookingPanel}
+        onClose={() => setShowBookingPanel(false)}
+        request={mariaBookingRequest}
+        onApprove={handleBookingApprove}
+        onDecline={() => setShowBookingPanel(false)}
       />
     );
   } else if (activeRoute === '/facilities') {
@@ -494,6 +564,7 @@ export default function NavigationWrapper() {
       <HomePage
         showStormAlert={isAlex && activeChapter === 'communication'}
         showPaymentAlert={isMaria && activeChapter === 'communication'}
+        showBookingAlert={isAlex && activeChapter === 'external-bookings' && !bookingApproved}
         deskItems={mariaDeskItems}
         onTakeAction={() => {
           setActiveRoute('/facilities');
@@ -504,6 +575,10 @@ export default function NavigationWrapper() {
           const overduePrograms = mariaPrograms.filter(p => (p.outstandingAmount ?? 0) > 0);
           setComposeOverduePrograms(overduePrograms);
           setShowComposePanel(true);
+        }}
+        onReviewBooking={() => {
+          setActiveRoute('/facilities');
+          setShowBookingPanel(true);
         }}
       />
     );
