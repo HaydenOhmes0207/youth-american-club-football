@@ -55,13 +55,13 @@ export default function MessageComposePanel({
 
   const [subject, setSubject] = useState(
     isBulkMode
-      ? 'Payment Reminder - Outstanding Balance'
+      ? 'Payment Reminder - {{programName}} Balance'
       : `${displayTitle} - What to Bring`
   );
   const [message, setMessage] = useState(
     isBulkMode
-      ? `Hi families,\n\nThis is a friendly reminder that your registration balance is still outstanding. Our records show a combined ${formatDollars(totalOutstanding)} in unpaid fees across the following programs:\n\n${bulkProgramNames.map(n => `  - ${n}`).join('\n')}\n\nPlease log in to the app to view your balance and submit payment at your earliest convenience. If you have already paid, please disregard this message.\n\nIf you need to set up a payment plan or have questions, please reply to this message and we will work with you.\n\nThank you,\n${senderName}`
-      : `Hi families,\n\nJust a quick reminder about what your athlete needs to bring to ${displayTitle}:\n\n- Turf shoes (no metal cleats)\n- Helmet (properly fitted)\n- Water bottle (labeled with name)\n\nAlso, please make sure to RSVP in the app so we have an accurate headcount.\n\nSee you there!\n${senderName}`
+      ? `Hi {{parentFirstName}},\n\nThis is a friendly reminder that {{athleteFirstName}}'s registration balance for {{programName}} is still outstanding. Our records show {{amountDue}} remaining on your account.\n\nPlease log in to the app to view your balance and submit payment at your earliest convenience. If you have already paid, please disregard this message.\n\nIf you need to set up a payment plan or have questions, reply to this message and we'll work with you.\n\nThank you,\n${senderName}\nWestside Youth Football Club`
+      : `Hi {{parentFirstName}},\n\nJust a quick reminder about what {{athleteFirstName}} needs to bring to ${displayTitle}:\n\n- Turf shoes (no metal cleats)\n- Helmet (properly fitted)\n- Water bottle (labeled with name)\n\nAlso, please make sure to RSVP in the app so we have an accurate headcount for {{sessionDate}}.\n\nSee you there!\n${senderName}`
   );
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(isBulkMode);
@@ -181,7 +181,7 @@ export default function MessageComposePanel({
             </div>
             <div className="import-panel-footer">
               <button
-                className="closure-confirm-btn"
+                className="compose-send-btn"
                 disabled={!anyChannel || !subject.trim() || !message.trim() || isSending}
                 onClick={handleSend}
               >
