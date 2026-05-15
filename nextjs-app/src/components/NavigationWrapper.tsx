@@ -19,6 +19,8 @@ import type { MessagePayload } from './MessageComposePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
+import EventCreatePanel from './EventCreatePanel';
+import type { EventCreateResult } from './EventCreatePanel';
 import { useToast } from './Toast';
 
 export interface SentNotification {
@@ -199,13 +201,16 @@ function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, showBookingA
   );
 }
 
-function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
+function CalendarPageContent({ onOpenImport, onNewEvent, showNewEvent }: { onOpenImport: () => void; onNewEvent?: () => void; showNewEvent?: boolean }) {
+  const actions = showNewEvent
+    ? [{ label: 'New Event', buttonStyle: 'standard' as const, onClick: onNewEvent }]
+    : [{ label: 'Add Event', buttonStyle: 'standard' as const, onClick: onOpenImport }];
   return (
     <>
       <PageHeader
         title="Calendar"
         description="View and manage camps, clinics, and events across your organization."
-        actions={[{ label: 'Add Event', buttonStyle: 'standard', onClick: onOpenImport }]}
+        actions={actions}
       />
     </>
   );
@@ -249,6 +254,8 @@ export default function NavigationWrapper() {
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
   const [bookingApproved, setBookingApproved] = useState(false);
+  const [showEventCreatePanel, setShowEventCreatePanel] = useState(false);
+  const [bookingRequestSubmitted, setBookingRequestSubmitted] = useState(false);
   const { showToast } = useToast();
 
   const mariaBookingRequest: BookingRequest = {
@@ -284,6 +291,8 @@ export default function NavigationWrapper() {
     setComposeOverduePrograms([]);
     setShowBookingPanel(false);
     setBookingApproved(false);
+    setShowEventCreatePanel(false);
+    setBookingRequestSubmitted(false);
 
     switch (activeChapter) {
       case 'home':
@@ -312,7 +321,7 @@ export default function NavigationWrapper() {
         setBookingApproved(false);
         break;
       case 'booking-request':
-        setActiveRoute('/');
+        setActiveRoute('/calendar');
         setImportedEvents([]);
         break;
       default:
@@ -362,6 +371,31 @@ export default function NavigationWrapper() {
       isExternal: true,
     };
     setImportedEvents(prev => [...prev, champEvent]);
+  };
+
+  const handleEventCreate = (result: EventCreateResult) => {
+    const pendingEvent: CalendarEvent = {
+      id: 'pending-champ-saturday',
+      title: result.title,
+      date: new Date(2026, 10, 7),
+      time: '8:00 AM',
+      endTime: '6:00 PM',
+      location: result.location,
+      sport: 'Football',
+      type: 'game',
+      color: result.isExternal ? '#d97706' : '#1a2744',
+      isExternal: result.isExternal,
+      isPending: true,
+    };
+    setImportedEvents(prev => [...prev, pendingEvent]);
+    setShowEventCreatePanel(false);
+    setBookingRequestSubmitted(true);
+    showToast(
+      result.isExternal
+        ? `Booking request sent to ${result.externalOrg}`
+        : `Event "${result.title}" saved`,
+      'success'
+    );
   };
 
   const handleMessageOverdue = (programs: ProgramWithStats[]) => {
@@ -450,6 +484,7 @@ export default function NavigationWrapper() {
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
       case 'external-bookings': return new Date(2026, 10, 7); // Nov 7
+      case 'booking-request': return new Date(2026, 9, 28);  // Oct 28
       default: return undefined;
     }
   }, [activeChapter]);
@@ -480,6 +515,15 @@ export default function NavigationWrapper() {
         programTitle={selectedProgram.title}
         senderName={`${activePersona.firstName} ${activePersona.lastName}`}
         onSend={handleMessageSend}
+      />
+    );
+  } else if (activeRoute === '/calendar' && showEventCreatePanel) {
+    overlay = (
+      <EventCreatePanel
+        isOpen={showEventCreatePanel}
+        onClose={() => setShowEventCreatePanel(false)}
+        onSubmit={handleEventCreate}
+        defaultDate="2026-11-07"
       />
     );
   } else if (activeRoute === '/calendar') {
@@ -518,7 +562,11 @@ export default function NavigationWrapper() {
   if (activeRoute === '/calendar') {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
-        <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
+        <CalendarPageContent
+          onOpenImport={() => setShowImportPanel(true)}
+          showNewEvent={activePersona.id === 'maria' && activeChapter === 'booking-request'}
+          onNewEvent={() => setShowEventCreatePanel(true)}
+        />
         <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );

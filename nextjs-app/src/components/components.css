@@ -1516,3 +1516,89 @@
   font-family: var(--u-font-body); font-size: 10px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.3px;
 }
+
+/* === Event Create Panel: Venue Search === */
+.event-venue-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+  margin-top: 4px; max-height: 280px; overflow-y: auto;
+  background: var(--u-color-background-container, #fefefe);
+  border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+  border-radius: var(--u-border-radius-medium, 4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.event-venue-group-label {
+  padding: 8px 12px 4px; font-family: var(--u-font-body); font-size: 11px;
+  font-weight: 600; color: var(--u-color-base-foreground-subtle, #607081);
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.event-venue-option {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 8px 12px; border: none; background: none;
+  font-family: var(--u-font-body); font-size: 13px; text-align: left;
+  cursor: pointer; transition: background 0.1s;
+}
+.event-venue-option:hover { background: var(--u-color-background-subtle, #f5f6f7); }
+.event-venue-option-name { color: var(--u-color-base-foreground-contrast, #071c31); font-weight: 500; }
+.event-venue-option-org {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--u-color-base-foreground-subtle, #607081);
+}
+.event-venue-avail {
+  flex-shrink: 0; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+.event-venue-avail--open { background: #f0fdf4; color: #166534; }
+.event-venue-avail--busy { background: #fef2f2; color: #991b1b; }
+
+/* Selected venue chip */
+.event-venue-selected {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--u-color-background-subtle, #f5f6f7);
+  border: 1px solid var(--u-color-line-subtle, #c4c6c8); border-radius: var(--u-border-radius-medium, 4px);
+}
+.event-venue-selected-info { display: flex; flex-direction: column; gap: 2px; }
+.event-venue-selected-name {
+  font-family: var(--u-font-body); font-size: 14px; font-weight: 600;
+  color: var(--u-color-base-foreground-contrast, #071c31);
+}
+.event-venue-external-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--u-font-body); font-size: 11px; font-weight: 500;
+  color: #0d9488;
+}
+.event-venue-change {
+  background: none; border: none; padding: 4px 8px;
+  font-family: var(--u-font-body); font-size: 12px; font-weight: 500;
+  color: var(--u-color-emphasis-background-contrast, #0273e3); cursor: pointer;
+}
+.event-venue-change:hover { text-decoration: underline; }
+
+/* Approval notice */
+.event-approval-notice {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--u-border-radius-medium, 4px);
+  font-family: var(--u-font-body); font-size: 13px; color: #92400e;
+}
+.event-approval-notice strong { font-weight: 600; }
+
+/* Amenity toggle chips */
+.event-amenity-toggle {
+  display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px;
+  border: 1px solid var(--u-color-line-subtle, #c4c6c8); border-radius: var(--u-border-radius-medium, 4px);
+  background: var(--u-color-background-container, #fefefe);
+  font-family: var(--u-font-body); font-size: 12px; font-weight: 500;
+  color: var(--u-color-base-foreground, #36485c); cursor: pointer; transition: all 0.15s ease;
+}
+.event-amenity-toggle--active {
+  border-color: var(--u-color-emphasis-background-contrast, #0273e3);
+  background: #eef4ff; color: var(--u-color-emphasis-background-contrast, #0273e3);
+}
+
+/* Pending event on calendar */
+.cal-month-event--pending { background: #fffbeb !important; }
+.cal-pending-badge {
+  display: inline-flex; padding: 0 4px; border-radius: 3px;
+  background: #fef3c7; color: #92400e;
+  font-family: var(--u-font-body); font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
+}

@@ -16,6 +16,7 @@ export interface CalendarEvent {
   location: string;
   color: string;
   isExternal?: boolean;
+  isPending?: boolean;
 }
 
 export const SPORT_COLORS: Record<string, string> = {
@@ -398,11 +399,20 @@ function MonthView({ year, month, events, cancelledEventIds, today }: { year: nu
                   <div className="cal-month-cell-events">
                     {dayEvents.slice(0, 3).map(ev => {
                       const isCanceled = cancelledEventIds.has(ev.id);
+                      const isPending = ev.isPending === true;
                       return (
-                        <div key={ev.id} className={`cal-month-event ${isCanceled ? 'cal-month-event--cancelled' : ''}`} style={{ borderLeftColor: isCanceled ? '#9ca3af' : ev.color }}>
+                        <div
+                          key={ev.id}
+                          className={`cal-month-event ${isCanceled ? 'cal-month-event--cancelled' : ''} ${isPending ? 'cal-month-event--pending' : ''}`}
+                          style={{
+                            borderLeftColor: isCanceled ? '#9ca3af' : ev.color,
+                            borderLeftStyle: isPending ? 'dashed' : undefined,
+                          }}
+                        >
                           <span className="cal-month-event-time">{ev.time.replace(':00', '').replace(' ', '')}</span>
                           <span className={`cal-month-event-title ${isCanceled ? 'cal-month-event-title--cancelled' : ''}`}>{ev.title}</span>
                           {isCanceled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
+                          {isPending && <span className="cal-pending-badge">Pending</span>}
                         </div>
                       );
                     })}
