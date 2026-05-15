@@ -10,29 +10,29 @@
   --u-color-background-subtle: #f5f6f7;
   --u-color-background-popover: #fefefe;
   --u-color-background-default: #e8eaec;
-  
+
   --u-color-base-background: #e0e1e1;
   --u-color-base-background-contrast: #607081;
   --u-color-base-foreground: #36485c;
   --u-color-base-foreground-contrast: #071c31;
   --u-color-base-foreground-subtle: #607081;
-  
+
   --u-color-emphasis-background-active: #96ccf3;
   --u-color-emphasis-background-contrast: #0273e3;
   --u-color-emphasis-foreground-contrast: #0d3673;
   --u-color-emphasis-foreground-reversed: #fefefe;
-  
+
   --u-color-line-subtle: #c4c6c8;
   --u-color-line-media: rgba(254, 254, 254, 0.25);
-  
+
   --u-color-alert-background: #fef0ee;
   --u-color-alert-foreground: #bb1700;
-  
+
   --u-color-success-foreground: #2e7d32;
 
   /* Typography */
   --u-font-body: var(--font-barlow), 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  
+
   --u-font-size-micro: 12px;
   --u-font-size-150: 12px;
   --u-font-size-200: 14px;
@@ -40,7 +40,7 @@
   --u-font-size-450: 24px;
   --u-font-size-small: 14px;
   --u-font-size-xx-large: 24px;
-  
+
   --u-font-weight-medium: 500;
   --u-font-weight-bold: 700;
 
@@ -62,8 +62,6 @@
   --u-border-radius-large: 8px;
 
   /* Standard Next.js variables */
-  --background: #ffffff;
-  --foreground: #171717;
 }
 
 * {
@@ -99,7 +97,6 @@ body {
 }
 
 body {
-  color: var(--foreground);
   background: var(--u-color-background-canvas);
   font-family: var(--u-font-body);
 }
@@ -107,5 +104,45 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

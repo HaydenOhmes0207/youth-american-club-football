@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
-import { Barlow } from 'next/font/google';
+import { Barlow, Inter } from 'next/font/google';
 import './globals.css';
 import '@/components/components.css';
 import DemoShell from '@/components/DemoShell';
 import { ToastProvider } from '@/components/Toast';
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const barlow = Barlow({ 
   subsets: ['latin'],
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout() {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className={cn("font-sans", inter.variable)}>
       <body className={`${barlow.className} ${barlow.variable}`}>
         <ToastProvider>
           <DemoShell />

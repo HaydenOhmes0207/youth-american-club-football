@@ -21,6 +21,7 @@ import type { ProgramWithStats } from '@/lib/actions/programs';
 import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
 import { useToast } from './Toast';
+import DashboardHome, { type TaskItem } from './DashboardHome';
 
 export interface SentNotification {
   id: string;
@@ -110,95 +111,6 @@ const mariaPrograms: ProgramWithStats[] = [
     teamCount: 0, feePerPlayer: 0, outstandingAmount: 0, totalRevenue: 0, paidPercent: 100,
   },
 ];
-
-interface DeskItem {
-  id: string;
-  icon: 'payment' | 'registration' | 'assignment';
-  label: string;
-  detail: string;
-}
-
-function DeskIcon({ type }: { type: DeskItem['icon'] }) {
-  if (type === 'payment') return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M1 7h14" stroke="currentColor" strokeWidth="1.5"/></svg>
-  );
-  if (type === 'registration') return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-  );
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-  );
-}
-
-interface HomePageProps {
-  onTakeAction?: () => void;
-  showStormAlert?: boolean;
-  showPaymentAlert?: boolean;
-  showBookingAlert?: boolean;
-  onReviewPrograms?: () => void;
-  onReviewBooking?: () => void;
-  deskItems?: DeskItem[];
-}
-
-function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, showBookingAlert, onReviewPrograms, onReviewBooking, deskItems }: HomePageProps) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
-      {showStormAlert && (
-        <div className="storm-alert-card">
-          <div className="storm-alert-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 16.9A5 5 0 0018 7h-1.26A8 8 0 104 15.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 11l-4 6h6l-4 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <div className="storm-alert-content">
-            <div className="storm-alert-title">Severe Thunderstorm Warning</div>
-            <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
-          </div>
-          <button className="storm-alert-action" onClick={onTakeAction}>Take Action</button>
-        </div>
-      )}
-      {showPaymentAlert && (
-        <div className="payment-alert-card">
-          <div className="payment-alert-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <div className="payment-alert-content">
-            <div className="payment-alert-title">Overdue Payments Across 3 Programs</div>
-            <div className="payment-alert-desc"><strong>$17,545</strong> outstanding across Fall Tackle Football, Fall Flag Football, and Fall Cheer. <strong>72 families</strong> have unpaid balances that need follow-up before the season starts.</div>
-          </div>
-          <button className="payment-alert-action" onClick={onReviewPrograms}>Review Programs</button>
-        </div>
-      )}
-      {showBookingAlert && (
-        <div className="booking-alert-card">
-          <div className="booking-alert-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <div className="booking-alert-content">
-            <div className="booking-alert-title">Facility Booking Request</div>
-            <div className="booking-alert-desc"><strong>Lincoln Junior Football Club</strong> is requesting <strong>Spartan Field &ndash; Memorial Stadium</strong> for Championship Saturday on <strong>November 7</strong>. Includes camera &amp; streaming access.</div>
-          </div>
-          <button className="booking-alert-action" onClick={onReviewBooking}>Review Request</button>
-        </div>
-      )}
-      {deskItems && deskItems.length > 0 && (
-        <div className="desk-section">
-          <h3 className="desk-section-title">On Your Desk</h3>
-          <div className="desk-items">
-            {deskItems.map(item => (
-              <div key={item.id} className="desk-item">
-                <div className="desk-item-icon"><DeskIcon type={item.icon} /></div>
-                <div className="desk-item-content">
-                  <span className="desk-item-label">{item.label}</span>
-                  <span className="desk-item-detail">{item.detail}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
   return (
@@ -734,32 +646,95 @@ export default function NavigationWrapper() {
     const isAlex = activePersona.id === 'alex';
     const isMaria = activePersona.id === 'maria';
 
-    const mariaDeskItems: DeskItem[] = isMaria && activeChapter !== 'home' ? [
-      { id: 'desk-1', icon: 'assignment', label: '14 athletes unassigned to teams', detail: 'Fall Tackle Football registration' },
-      { id: 'desk-2', icon: 'registration', label: '12 new registrations this week', detail: 'Flag Football is filling up fast' },
-    ] : [];
+    // Build tasks from current alerts
+    const dashboardTasks: TaskItem[] = [];
 
-    pageContent = (
-      <HomePage
-        showStormAlert={isAlex && activeChapter === 'communication'}
-        showPaymentAlert={isMaria && activeChapter === 'communication'}
-        showBookingAlert={isAlex && activeChapter === 'external-bookings' && !bookingApproved}
-        deskItems={mariaDeskItems}
-        onTakeAction={() => {
+    // Alex: Storm alert (communication chapter)
+    if (isAlex && activeChapter === 'communication') {
+      dashboardTasks.push({
+        id: 'storm-alert',
+        category: 'facility',
+        categoryLabel: 'Facility',
+        timestamp: '2h ago',
+        title: 'Severe Weather Alert',
+        description: 'Thunderstorm warning for Friday, Sep 4. Consider closing outdoor facilities.',
+        variant: 'warning',
+        onClick: () => {
           setActiveRoute('/facilities');
           setShowClosurePanel(true);
-        }}
-        onReviewPrograms={() => {
+        },
+      });
+    }
+
+    // Alex: Booking request (external-bookings chapter)
+    if (isAlex && activeChapter === 'external-bookings' && !bookingApproved) {
+      dashboardTasks.push({
+        id: 'booking-request',
+        category: 'facility',
+        categoryLabel: 'Facility',
+        timestamp: '3m ago',
+        title: 'Ext. Booking',
+        description: 'Lincoln Junior Football Club requesting Spartan Field for Nov 7.',
+        variant: 'info',
+        onClick: () => {
+          setActiveRoute('/facilities');
+          setFacilitiesTab('bookings');
+          setShowBookingPanel(true);
+        },
+      });
+    }
+
+    // Maria: Payment alert (communication chapter)
+    if (isMaria && activeChapter === 'communication') {
+      dashboardTasks.push({
+        id: 'payment-alert',
+        category: 'programs',
+        categoryLabel: 'Programs',
+        timestamp: '40m ago',
+        title: 'Overdue Payments',
+        description: '$17,545 outstanding across 3 programs. 72 families need follow-up.',
+        variant: 'warning',
+        onClick: () => {
           setActiveRoute('/programs');
           const overduePrograms = mariaPrograms.filter(p => (p.outstandingAmount ?? 0) > 0);
           setComposeOverduePrograms(overduePrograms);
           setShowComposePanel(true);
-        }}
-        onReviewBooking={() => {
-          setActiveRoute('/facilities');
-          setFacilitiesTab('bookings');
-          setShowBookingPanel(true);
-        }}
+        },
+      });
+    }
+
+    // Maria: Registration tasks (non-home chapters)
+    if (isMaria && activeChapter !== 'home') {
+      dashboardTasks.push({
+        id: 'new-signups',
+        category: 'programs',
+        categoryLabel: 'Programs',
+        timestamp: '8m ago',
+        title: 'New Signups',
+        description: '7 new athletes registered overnight for the Summer Camp program.',
+        onClick: () => setActiveRoute('/programs'),
+      });
+    }
+
+    // Alex: Facility change task
+    if (isAlex && activeChapter !== 'home') {
+      dashboardTasks.push({
+        id: 'facility-change',
+        category: 'facility',
+        categoryLabel: 'Facility',
+        timestamp: '2h ago',
+        title: 'Facility Change',
+        description: 'Practice has moved from Field 2 to Field 4 for the week.',
+        onClick: () => setActiveRoute('/facilities'),
+      });
+    }
+
+    pageContent = (
+      <DashboardHome
+        personaId={activePersona.id as 'alex' | 'maria'}
+        tasks={dashboardTasks}
+        simulatedToday={simulatedToday}
+        onNavigateToCalendar={() => setActiveRoute('/calendar')}
       />
     );
   }
