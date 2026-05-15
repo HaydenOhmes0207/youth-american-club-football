@@ -1,99 +1,81 @@
-import { db } from './db';
+import {
+  mockOrganization,
+  mockTeams,
+  mockNavItems,
+  mockUsers,
+  mockTeamMembers,
+} from './mock-data';
 
 export async function getOrganizationWithTeams() {
-  const organization = await db.organizations.findFirst({
-    include: {
-      teams: {
-        orderBy: [
-          { sport: 'asc' },
-          { title: 'asc' }
-        ]
-      }
-    }
-  });
-
-  return organization;
+  return {
+    ...mockOrganization,
+    teams: mockTeams.sort((a, b) => {
+      if (a.sport !== b.sport) return a.sport.localeCompare(b.sport);
+      return a.title.localeCompare(b.title);
+    }),
+  };
 }
 
 export async function getTeams() {
-  const teams = await db.teams.findMany({
-    orderBy: [
-      { sport: 'asc' },
-      { title: 'asc' }
-    ]
+  return mockTeams.sort((a, b) => {
+    if (a.sport !== b.sport) return a.sport.localeCompare(b.sport);
+    return a.title.localeCompare(b.title);
   });
-
-  return teams;
 }
 
 export async function getNavItems(organizationId: string) {
-  // Fetch top-level nav items (no parent) with their children
-  const navItems = await db.nav_items.findMany({
-    where: {
-      organization_id: organizationId,
-      parent_id: null, // Only top-level items
-      is_active: true,
-    },
-    include: {
-      children: {
-        where: { is_active: true },
-        orderBy: { order: 'asc' },
-      },
-    },
-    orderBy: { order: 'asc' },
-  });
-
-  return navItems;
+  return mockNavItems
+    .filter(item => item.organization_id === organizationId && item.parent_id === null && item.is_active)
+    .sort((a, b) => a.order - b.order)
+    .map(item => ({
+      ...item,
+      children: (item.children || [])
+        .filter(child => child.is_active)
+        .sort((a, b) => a.order - b.order),
+    }));
 }
 
 export async function getOrganizationWithNavItems() {
-  const organization = await db.organizations.findFirst({
-    include: {
-      teams: {
-        where: {
-          status: 'provisioned', // Only show provisioned teams in workspace switcher
-        },
-        orderBy: [
-          { sport: 'asc' },
-          { title: 'asc' }
-        ]
-      },
-      nav_items: {
-        where: {
-          parent_id: null, // Only top-level items
-          is_active: true,
-        },
-        include: {
-          children: {
-            where: { is_active: true },
-            orderBy: { order: 'asc' },
-          },
-        },
-        orderBy: { order: 'asc' },
-      },
-    }
-  });
+  const navItems = mockNavItems
+    .filter(item => item.organization_id === mockOrganization.id && item.parent_id === null && item.is_active)
+    .sort((a, b) => a.order - b.order)
+    .map(item => ({
+      ...item,
+      children: (item.children || [])
+        .filter(child => child.is_active)
+        .sort((a, b) => a.order - b.order),
+    }));
 
-  return organization;
+  const provisionedTeams = mockTeams
+    .filter(team => team.status === 'provisioned')
+    .sort((a, b) => {
+      if (a.sport !== b.sport) return a.sport.localeCompare(b.sport);
+      return a.title.localeCompare(b.title);
+    });
+
+  return {
+    ...mockOrganization,
+    teams: provisionedTeams,
+    nav_items: navItems,
+  };
 }
 
 // For prototype: Get the school administrator as the "logged in" user
 export async function getCurrentUser() {
-  const user = await db.users.findFirst({
-    where: {
-      role: 'school-administrator',
-    },
-    include: {
-      team_members: {
-        where: { role: 'admin' },
-        include: {
-          teams: true,
-        },
-      }
-    }
-  });
+  const user = mockUsers.find(u => u.role === 'school-administrator');
+  if (!user) return null;
 
-  return user;
+  const userTeamMembers = mockTeamMembers
+    .filter(tm => tm.user_id === user.id && tm.role === 'admin')
+    .map(tm => ({
+      ...tm,
+      teams: mockTeams.find(t => t.id === tm.team_id),
+    }));
+
+  return {
+    ...user,
+    team_members: userTeamMembers,
+  };
 }
 
 export type OrganizationWithTeams = Awaited<ReturnType<typeof getOrganizationWithTeams>>;

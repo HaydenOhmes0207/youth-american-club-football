@@ -1,14 +1,29 @@
 'use server';
 
-import { db } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import {
+  mockOrganization,
+  mockTeams,
+  mockSeasons,
+  mockUsers,
+  mockTeamMembers,
+  mockTeamAssignments,
+  mockRegistrationSubmissions,
+  mockAthletes,
+  getTeamAssignmentCount,
+} from '@/lib/mock-data';
+
+// In-memory state for prototype mutations
+let teams = [...mockTeams];
+let teamAssignments = [...mockTeamAssignments];
+let teamMembers = [...mockTeamMembers];
 
 export interface TeamWithStats {
   id: string;
   title: string;
   sport: string;
   gender: string;
-  grades: string | null;  // Comma-separated grade values, e.g., "1,2,3"
+  grades: string | null;
   avatar: string | null;
   primaryColor: string | null;
   secondaryColor: string | null;
@@ -36,7 +51,7 @@ export interface UpdateTeamInput {
   title?: string;
   sport?: string;
   gender?: string;
-  grades?: string | null;  // Comma-separated grade values, e.g., "1,2,3"
+  grades?: string | null;
   ageMin?: number | null;
   ageMax?: number | null;
   primaryColor?: string | null;
@@ -52,11 +67,6 @@ export interface UpdateTeamResult {
 
 export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResult> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: 'No organization found' };
-    }
-
     // Validate required fields if provided
     if (input.title !== undefined && !input.title.trim()) {
       return { success: false, error: 'Team title is required' };
@@ -86,43 +96,26 @@ export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResu
       return { success: false, error: 'Secondary color must be a valid hex color (e.g., #FF0000)' };
     }
 
-    // Check if team exists and belongs to organization
-    const existingTeam = await db.teams.findFirst({
-      where: {
-        id: input.id,
-        organization_id: organizationId,
-      },
-    });
-
-    if (!existingTeam) {
+    // Find and update team
+    const teamIndex = teams.findIndex(t => t.id === input.id);
+    if (teamIndex === -1) {
       return { success: false, error: 'Team not found' };
     }
 
-    // Build update data object with only provided fields
-    const updateData: Record<string, string | number | Date | null> = {
-      updated_at: new Date(),
+    const team = teams[teamIndex];
+    teams[teamIndex] = {
+      ...team,
+      ...(input.title !== undefined && { title: input.title.trim() }),
+      ...(input.sport !== undefined && { sport: input.sport.trim() }),
+      ...(input.gender !== undefined && { gender: input.gender.trim() }),
+      ...(input.grades !== undefined && { grades: input.grades }),
+      ...(input.ageMin !== undefined && { age_min: input.ageMin }),
+      ...(input.ageMax !== undefined && { age_max: input.ageMax }),
+      ...(input.primaryColor !== undefined && { primary_color: input.primaryColor }),
+      ...(input.secondaryColor !== undefined && { secondary_color: input.secondaryColor }),
+      ...(input.seasonId !== undefined && { season_id: input.seasonId }),
+      ...(input.avatar !== undefined && { avatar: input.avatar }),
     };
-
-    if (input.title !== undefined) updateData.title = input.title.trim();
-    if (input.sport !== undefined) updateData.sport = input.sport.trim();
-    if (input.gender !== undefined) updateData.gender = input.gender.trim();
-    if (input.grades !== undefined) updateData.grades = input.grades;
-    if (input.ageMin !== undefined) updateData.age_min = input.ageMin;
-    if (input.ageMax !== undefined) updateData.age_max = input.ageMax;
-    if (input.primaryColor !== undefined) updateData.primary_color = input.primaryColor;
-    if (input.secondaryColor !== undefined) updateData.secondary_color = input.secondaryColor;
-    if (input.seasonId !== undefined) updateData.season_id = input.seasonId;
-    if (input.avatar !== undefined) updateData.avatar = input.avatar;
-
-    await db.teams.update({
-      where: { id: input.id },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: updateData as any,
-    });
-
-    // Don't revalidate on individual updates - rely on optimistic updates in the UI
-    // This prevents table reordering while editing
-    // revalidatePath('/teams');
 
     return { success: true };
   } catch (error) {
@@ -134,53 +127,43 @@ export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResu
 
 export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResult> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: 'No organization found' };
+    const currentUser = mockUsers.find(u => u.role === 'school-administrator');
+    const teamId = `team-${Date.now()}`;
+
+    const newTeam = {
+      id: teamId,
+      organization_id: mockOrganization.id,
+      season_id: input.seasonId,
+      title: input.title,
+      sport: 'Football',
+      gender: 'Male',
+      grades: null,
+      avatar: null,
+      primary_color: null,
+      secondary_color: null,
+      status: 'draft',
+      max_roster_size: null,
+      age_min: null,
+      age_max: null,
+    };
+
+    teams.push(newTeam);
+
+    // Add current user as team admin
+    if (currentUser) {
+      teamMembers.push({
+        team_id: teamId,
+        user_id: currentUser.id,
+        role: 'admin',
+      });
     }
 
-    // Get current user to add as team admin
-    const currentUser = await db.users.findFirst({
-      where: { role: 'school-administrator' },
-    });
-
-    const teamId = crypto.randomUUID();
-
-    // Use transaction to create team and add admin
-    await db.$transaction(async (tx) => {
-      await tx.teams.create({
-        data: {
-          id: teamId,
-          organization_id: organizationId,
-          season_id: input.seasonId,
-          title: input.title,
-          sport: 'Football', // Default sport
-          gender: 'Male', // Default gender
-          status: 'draft', // New teams start as draft - only CSMs can provision
-          updated_at: new Date(),
-        },
-      });
-
-      // Add current user as team admin
-      if (currentUser) {
-        await tx.team_members.create({
-          data: {
-            team_id: teamId,
-            user_id: currentUser.id,
-            role: 'admin',
-          },
-        });
-      }
-    });
-
-    const team = await db.teams.findUnique({ where: { id: teamId } });
-
     revalidatePath('/teams');
-    revalidatePath('/', 'layout'); // Update workspace switcher
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
-      team: team ? { id: team.id, title: team.title } : undefined,
+      team: { id: teamId, title: input.title },
     };
   } catch (error) {
     console.error('Failed to create team:', error);
@@ -190,39 +173,28 @@ export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResu
 }
 
 export async function getAllTeams(organizationId: string): Promise<TeamWithStats[]> {
-  const teams = await db.teams.findMany({
-    where: {
-      organization_id: organizationId,
-    },
-    include: {
-      _count: {
-        select: {
-          team_assignments: true,
-        },
-      },
-    },
-    orderBy: [
-      { sport: 'asc' },
-      { title: 'asc' },
-    ],
-  });
-
-  return teams.map((team) => ({
-    id: team.id,
-    title: team.title,
-    sport: team.sport,
-    gender: team.gender,
-    grades: team.grades,
-    avatar: team.avatar,
-    primaryColor: team.primary_color,
-    secondaryColor: team.secondary_color,
-    status: team.status,
-    seasonId: team.season_id,
-    rosterCount: team._count.team_assignments,
-    maxRosterSize: team.max_roster_size,
-    ageMin: team.age_min,
-    ageMax: team.age_max,
-  }));
+  return teams
+    .filter(team => team.organization_id === organizationId)
+    .map(team => ({
+      id: team.id,
+      title: team.title,
+      sport: team.sport,
+      gender: team.gender,
+      grades: team.grades,
+      avatar: team.avatar,
+      primaryColor: team.primary_color,
+      secondaryColor: team.secondary_color,
+      status: team.status,
+      seasonId: team.season_id,
+      rosterCount: teamAssignments.filter(ta => ta.team_id === team.id).length,
+      maxRosterSize: team.max_roster_size,
+      ageMin: team.age_min,
+      ageMax: team.age_max,
+    }))
+    .sort((a, b) => {
+      if (a.sport !== b.sport) return a.sport.localeCompare(b.sport);
+      return a.title.localeCompare(b.title);
+    });
 }
 
 export async function getTeamsBySeason(organizationId: string, seasonId: string): Promise<TeamWithStats[]> {
@@ -232,26 +204,13 @@ export async function getTeamsBySeason(organizationId: string, seasonId: string)
 
 // Keep for backwards compatibility
 export async function getProvisionedTeams(organizationId: string): Promise<TeamWithStats[]> {
-  // Get the active season
-  const activeSeason = await db.seasons.findFirst({
-    where: {
-      organization_id: organizationId,
-      is_active: true,
-    },
-  });
-
-  if (!activeSeason) {
-    return [];
-  }
-
+  const activeSeason = mockSeasons.find(s => s.organization_id === organizationId && s.is_active);
+  if (!activeSeason) return [];
   return getTeamsBySeason(organizationId, activeSeason.id);
 }
 
 export async function getOrganizationId(): Promise<string | null> {
-  const org = await db.organizations.findFirst({
-    select: { id: true },
-  });
-  return org?.id ?? null;
+  return mockOrganization.id;
 }
 
 export interface StaffUser {
@@ -261,66 +220,28 @@ export interface StaffUser {
   email: string;
   role: string;
   avatar: string | null;
-  teamRoles: string[]; // Array of team member roles (admin, coach)
+  teamRoles: string[];
 }
 
 export async function getStaffUsers(organizationId: string): Promise<StaffUser[]> {
-  // Get users with role 'school-administrator' or 'school administrator'
-  const adminUsers = await db.users.findMany({
-    where: {
-      OR: [
-        { role: 'school-administrator' },
-        { role: 'school administrator' },
-        { role: 'team-admin' },
-        { role: 'team admin' },
-      ],
-    },
-    select: {
-      id: true,
-      first_name: true,
-      last_name: true,
-      email: true,
-      role: true,
-      avatar: true,
-    },
-  });
+  const adminUsers = mockUsers.filter(u => 
+    u.role === 'school-administrator' || 
+    u.role === 'school administrator' ||
+    u.role === 'team-admin' ||
+    u.role === 'team admin'
+  );
 
-  // Get users who are team members with role 'admin' or 'coach' for teams in this organization
-  const teamMemberUsers = await db.users.findMany({
-    where: {
-      team_members: {
-        some: {
-          role: {
-            in: ['admin', 'coach'],
-          },
-          teams: {
-            organization_id: organizationId,
-          },
-        },
-      },
-    },
-    include: {
-      team_members: {
-        where: {
-          role: {
-            in: ['admin', 'coach'],
-          },
-          teams: {
-            organization_id: organizationId,
-          },
-        },
-        select: {
-          role: true,
-        },
-      },
-    },
-  });
+  const teamMemberUserIds = new Set(
+    teamMembers
+      .filter(tm => ['admin', 'coach'].includes(tm.role))
+      .map(tm => tm.user_id)
+  );
 
-  // Combine and deduplicate users
+  const teamMemberUsers = mockUsers.filter(u => teamMemberUserIds.has(u.id));
+
   const allUserIds = new Set<string>();
   const staffUsers: StaffUser[] = [];
 
-  // Add admin users
   for (const user of adminUsers) {
     if (!allUserIds.has(user.id)) {
       allUserIds.add(user.id);
@@ -336,11 +257,14 @@ export async function getStaffUsers(organizationId: string): Promise<StaffUser[]
     }
   }
 
-  // Add team member users
   for (const user of teamMemberUsers) {
     if (!allUserIds.has(user.id)) {
       allUserIds.add(user.id);
-      const teamRoles = Array.from(new Set(user.team_members.map(tm => tm.role)));
+      const userTeamRoles = Array.from(new Set(
+        teamMembers
+          .filter(tm => tm.user_id === user.id)
+          .map(tm => tm.role)
+      ));
       staffUsers.push({
         id: user.id,
         firstName: user.first_name,
@@ -348,7 +272,7 @@ export async function getStaffUsers(organizationId: string): Promise<StaffUser[]
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        teamRoles,
+        teamRoles: userTeamRoles,
       });
     }
   }
@@ -363,49 +287,14 @@ export interface Season {
 }
 
 export async function getSeasons(organizationId: string): Promise<Season[]> {
-  // Ensure both seasons exist
-  await ensureSeasonsExist(organizationId);
-  
-  const seasons = await db.seasons.findMany({
-    where: { organization_id: organizationId },
-    orderBy: { name: 'desc' },
-  });
-
-  console.log('Fetched seasons:', seasons.map(s => s.name));
-
-  return seasons.map((season) => ({
-    id: season.id,
-    name: season.name,
-    isActive: season.is_active,
-  }));
-}
-
-async function ensureSeasonsExist(organizationId: string): Promise<void> {
-  const seasonConfigs = [
-    { name: '2025-2026', isActive: true },
-    { name: '2026-2027', isActive: false },
-  ];
-  
-  for (const config of seasonConfigs) {
-    try {
-      const existing = await db.seasons.findFirst({
-        where: { organization_id: organizationId, name: config.name },
-      });
-      
-      if (!existing) {
-        await db.seasons.create({
-          data: {
-            organization_id: organizationId,
-            name: config.name,
-            is_active: config.isActive,
-          },
-        });
-        console.log(`Created season: ${config.name}`);
-      }
-    } catch (error) {
-      console.error(`Failed to create/check season ${config.name}:`, error);
-    }
-  }
+  return mockSeasons
+    .filter(s => s.organization_id === organizationId)
+    .map(s => ({
+      id: s.id,
+      name: s.name,
+      isActive: s.is_active,
+    }))
+    .sort((a, b) => b.name.localeCompare(a.name));
 }
 
 export interface CopyOptions {
@@ -432,121 +321,76 @@ export interface CopyTeamsResult {
 
 export async function copyTeams(input: CopyTeamsInput): Promise<CopyTeamsResult> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: 'No organization found' };
-    }
-
-    // Get current user to add as team admin
-    const currentUser = await db.users.findFirst({
-      where: { role: 'school-administrator' },
-    });
-
-    // Verify target season exists
-    const targetSeason = await db.seasons.findFirst({
-      where: {
-        id: input.targetSeasonId,
-        organization_id: organizationId,
-      },
-    });
+    const currentUser = mockUsers.find(u => u.role === 'school-administrator');
+    const targetSeason = mockSeasons.find(s => s.id === input.targetSeasonId);
 
     if (!targetSeason) {
       return { success: false, error: 'Target season not found' };
     }
 
-    // Fetch source teams
-    const sourceTeams = await db.teams.findMany({
-      where: {
-        id: { in: input.sourceTeamIds },
-        organization_id: organizationId,
-      },
-    });
+    const sourceTeams = teams.filter(t => input.sourceTeamIds.includes(t.id));
 
     if (sourceTeams.length === 0) {
       return { success: false, error: 'No teams found to copy' };
     }
 
-    // Use transaction to ensure all-or-nothing copy
-    const copiedTeams = await db.$transaction(async (tx) => {
-      const newTeams = [];
+    const copiedTeams: TeamWithStats[] = [];
 
-      for (const sourceTeam of sourceTeams) {
-        const newTeamId = crypto.randomUUID();
-        
-        // Create new team with required fields (always copy name, sport, gender as they're required)
-        const newTeamData: Record<string, string | number | Date | null> = {
-          id: newTeamId,
-          organization_id: organizationId,
-          season_id: input.targetSeasonId,
-          status: 'draft', // Duplicated teams start as draft - only CSMs can provision
-          finalized_at: null,
-          updated_at: new Date(),
-          title: sourceTeam.title, // Always required
-          sport: sourceTeam.sport, // Always required
-          gender: sourceTeam.gender, // Always required
-        };
+    for (const sourceTeam of sourceTeams) {
+      const newTeamId = `team-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        // Copy individual attributes if selected
-        if (input.copyOptions.grade) {
-          newTeamData.grades = sourceTeam.grades;
-        }
+      const newTeam = {
+        id: newTeamId,
+        organization_id: mockOrganization.id,
+        season_id: input.targetSeasonId,
+        title: sourceTeam.title,
+        sport: sourceTeam.sport,
+        gender: sourceTeam.gender,
+        grades: input.copyOptions.grade ? sourceTeam.grades : null,
+        avatar: input.copyOptions.avatar ? sourceTeam.avatar : null,
+        primary_color: input.copyOptions.colors ? sourceTeam.primary_color : null,
+        secondary_color: input.copyOptions.colors ? sourceTeam.secondary_color : null,
+        status: 'draft',
+        max_roster_size: sourceTeam.max_roster_size,
+        age_min: sourceTeam.age_min,
+        age_max: sourceTeam.age_max,
+      };
 
-        if (input.copyOptions.colors) {
-          newTeamData.primary_color = sourceTeam.primary_color;
-          newTeamData.secondary_color = sourceTeam.secondary_color;
-        }
+      teams.push(newTeam);
 
-        if (input.copyOptions.avatar) {
-          newTeamData.avatar = sourceTeam.avatar;
-        }
-
-        const newTeam = await tx.teams.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: newTeamData as any,
+      if (currentUser) {
+        teamMembers.push({
+          team_id: newTeamId,
+          user_id: currentUser.id,
+          role: 'admin',
         });
-
-        // Add current user as team admin
-        if (currentUser) {
-          await tx.team_members.create({
-            data: {
-              team_id: newTeamId,
-              user_id: currentUser.id,
-              role: 'admin',
-            },
-          });
-        }
-
-        newTeams.push(newTeam);
       }
 
-      return newTeams;
-    });
+      copiedTeams.push({
+        id: newTeam.id,
+        title: newTeam.title,
+        sport: newTeam.sport,
+        gender: newTeam.gender,
+        grades: newTeam.grades,
+        avatar: newTeam.avatar,
+        primaryColor: newTeam.primary_color,
+        secondaryColor: newTeam.secondary_color,
+        status: newTeam.status,
+        seasonId: newTeam.season_id,
+        rosterCount: 0,
+        maxRosterSize: newTeam.max_roster_size,
+        ageMin: newTeam.age_min,
+        ageMax: newTeam.age_max,
+      });
+    }
 
     revalidatePath('/teams');
-    revalidatePath('/', 'layout'); // Update workspace switcher
-
-    // Map to TeamWithStats format
-    const mappedTeams: TeamWithStats[] = copiedTeams.map(team => ({
-      id: team.id,
-      title: team.title,
-      sport: team.sport,
-      gender: team.gender,
-      grades: team.grades,
-      avatar: team.avatar,
-      primaryColor: team.primary_color,
-      secondaryColor: team.secondary_color,
-      status: team.status,
-      seasonId: team.season_id,
-      rosterCount: 0,
-      maxRosterSize: team.max_roster_size,
-      ageMin: team.age_min,
-      ageMax: team.age_max,
-    }));
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
       copiedCount: copiedTeams.length,
-      teams: mappedTeams,
+      teams: copiedTeams,
     };
   } catch (error) {
     console.error('Failed to copy teams:', error);
@@ -563,40 +407,29 @@ export interface DeleteTeamsResult {
 
 export async function deleteTeams(teamIds: string[]): Promise<DeleteTeamsResult> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      return { success: false, error: 'No organization found' };
-    }
-
     if (teamIds.length === 0) {
       return { success: false, error: 'No teams to delete' };
     }
 
-    // Verify teams exist and belong to organization
-    const teams = await db.teams.findMany({
-      where: {
-        id: { in: teamIds },
-        organization_id: organizationId,
-      },
-    });
-
-    if (teams.length === 0) {
+    const teamsToDelete = teams.filter(t => teamIds.includes(t.id));
+    if (teamsToDelete.length === 0) {
       return { success: false, error: 'No teams found to delete' };
     }
 
-    // Delete teams (team_members will cascade, registration_submissions.team_id will be set to null)
-    await db.teams.deleteMany({
-      where: {
-        id: { in: teamIds },
-        organization_id: organizationId,
-      },
-    });
+    // Remove teams
+    teams = teams.filter(t => !teamIds.includes(t.id));
+
+    // Remove related team assignments
+    teamAssignments = teamAssignments.filter(ta => !teamIds.includes(ta.team_id));
+
+    // Remove related team members
+    teamMembers = teamMembers.filter(tm => !teamIds.includes(tm.team_id));
 
     revalidatePath('/teams');
 
     return {
       success: true,
-      deletedCount: teams.length,
+      deletedCount: teamsToDelete.length,
     };
   } catch (error) {
     console.error('Failed to delete teams:', error);
@@ -612,7 +445,7 @@ export async function revalidateTeamsData() {
 
 export interface AssignAthletesInput {
   teamId: string;
-  submissionIds: string[]; // registration_submission IDs
+  submissionIds: string[];
 }
 
 export interface AssignAthletesResult {
@@ -629,35 +462,33 @@ export async function assignAthletesToTeam(input: AssignAthletesInput): Promise<
       return { success: false, error: 'No athletes to assign' };
     }
 
-    // Use a transaction to batch all upserts and avoid connection pool exhaustion
-    const assignments = await db.$transaction(
-      submissionIds.map(submissionId =>
-        db.team_assignments.upsert({
-          where: {
-            team_id_submission_id: {
-              team_id: teamId,
-              submission_id: submissionId,
-            },
-          },
-          create: {
-            team_id: teamId,
-            submission_id: submissionId,
-            status: 'assigned',
-          },
-          update: {
-            status: 'assigned',
-            updated_at: new Date(),
-          },
-        })
-      )
-    );
+    let assignedCount = 0;
+
+    for (const submissionId of submissionIds) {
+      const existing = teamAssignments.find(
+        ta => ta.team_id === teamId && ta.submission_id === submissionId
+      );
+
+      if (existing) {
+        existing.status = 'assigned';
+        existing.updated_at = new Date();
+      } else {
+        teamAssignments.push({
+          team_id: teamId,
+          submission_id: submissionId,
+          status: 'assigned',
+          updated_at: new Date(),
+        });
+      }
+      assignedCount++;
+    }
 
     revalidatePath('/teams');
     revalidatePath('/teams/assignments');
 
     return {
       success: true,
-      assignedCount: assignments.length,
+      assignedCount,
     };
   } catch (error) {
     console.error('Failed to assign athletes:', error);
@@ -668,15 +499,13 @@ export async function assignAthletesToTeam(input: AssignAthletesInput): Promise<
 
 export async function unassignAthleteFromTeam(teamId: string, submissionId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Delete the team_assignment record
-    await db.team_assignments.delete({
-      where: {
-        team_id_submission_id: {
-          team_id: teamId,
-          submission_id: submissionId,
-        },
-      },
-    });
+    const index = teamAssignments.findIndex(
+      ta => ta.team_id === teamId && ta.submission_id === submissionId
+    );
+
+    if (index !== -1) {
+      teamAssignments.splice(index, 1);
+    }
 
     revalidatePath('/teams');
     revalidatePath('/teams/assignments');
@@ -709,72 +538,53 @@ export interface RosterAthlete {
 }
 
 export async function getAthletesOnProvisionedTeams(organizationId: string): Promise<RosterAthlete[]> {
-  // Query team_assignments to support multiple team assignments per athlete
-  const assignments = await db.team_assignments.findMany({
-    where: {
-      teams: {
-        organization_id: organizationId,
-        status: 'provisioned',
-      },
-    },
-    include: {
-      teams: {
-        select: {
-          id: true,
-          title: true,
-          avatar: true,
-          season_id: true,
-        },
-      },
-      registration_submissions: {
-        include: {
-          athletes: {
-            select: {
-              id: true,
-              first_name: true,
-              last_name: true,
-              birthdate: true,
-              gender: true,
-              grade: true,
-            },
-          },
-          users: {
-            select: {
-              id: true,
-              first_name: true,
-              last_name: true,
-              avatar: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: [
-      { teams: { title: 'asc' } },
-      { registration_submissions: { athletes: { last_name: 'asc' } } },
-    ],
-  });
+  const provisionedTeams = teams.filter(
+    t => t.organization_id === organizationId && t.status === 'provisioned'
+  );
 
-  return assignments.map(assignment => ({
-    id: assignment.registration_submissions.athlete_id,
-    firstName: assignment.registration_submissions.athletes.first_name,
-    lastName: assignment.registration_submissions.athletes.last_name,
-    birthdate: assignment.registration_submissions.athletes.birthdate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }),
-    gender: assignment.registration_submissions.athletes.gender,
-    grade: assignment.registration_submissions.athletes.grade,
-    teamId: assignment.teams.id,
-    teamName: assignment.teams.title,
-    teamAvatar: assignment.teams.avatar,
-    teamSeasonId: assignment.teams.season_id,
-    primaryContact: assignment.registration_submissions.users ? {
-      id: assignment.registration_submissions.users.id,
-      firstName: assignment.registration_submissions.users.first_name,
-      lastName: assignment.registration_submissions.users.last_name,
-      avatar: assignment.registration_submissions.users.avatar,
-    } : null,
-  }));
+  const provisionedTeamIds = provisionedTeams.map(t => t.id);
+
+  const relevantAssignments = teamAssignments.filter(ta => provisionedTeamIds.includes(ta.team_id));
+
+  const rosterAthletes: RosterAthlete[] = [];
+
+  for (const assignment of relevantAssignments) {
+    const team = provisionedTeams.find(t => t.id === assignment.team_id);
+    const submission = mockRegistrationSubmissions.find(s => s.id === assignment.submission_id);
+    
+    if (!team || !submission) continue;
+
+    const athlete = mockAthletes.find(a => a.id === submission.athlete_id);
+    const user = mockUsers.find(u => u.id === submission.user_id);
+
+    if (!athlete) continue;
+
+    rosterAthletes.push({
+      id: athlete.id,
+      firstName: athlete.first_name,
+      lastName: athlete.last_name,
+      birthdate: athlete.birthdate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      gender: athlete.gender,
+      grade: athlete.grade,
+      teamId: team.id,
+      teamName: team.title,
+      teamAvatar: team.avatar,
+      teamSeasonId: team.season_id,
+      primaryContact: user ? {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        avatar: user.avatar,
+      } : null,
+    });
+  }
+
+  return rosterAthletes.sort((a, b) => {
+    if (a.teamName !== b.teamName) return a.teamName.localeCompare(b.teamName);
+    return a.lastName.localeCompare(b.lastName);
+  });
 }
