@@ -26,6 +26,12 @@ interface SportSection {
 
 type Phase = 'choose' | 'paste' | 'agent' | 'review';
 
+/** Pre-built fall schedule events for chapters that assume import already happened */
+export function getFallScheduleEvents(): CalendarEvent[] {
+  const sections = generateImportEvents(true, true, true);
+  return sections.flatMap(s => s.events.map(({ opponent, isHome, facility, hasStream, hasTickets, hasCameras, status, ...ev }) => ev));
+}
+
 // Facility options for the edit view
 const FACILITY_OPTIONS: Record<string, string[]> = {
   'Football': ['Memorial Stadium', 'Practice Field A', 'Practice Field B', 'Fieldhouse'],

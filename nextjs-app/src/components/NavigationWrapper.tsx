@@ -9,7 +9,7 @@ import ProgramsTable from './ProgramsTable';
 import CommunityTable from './CommunityTable';
 import CalendarView, { EVENTS_BY_PERSONA } from './CalendarView';
 import type { CalendarEvent } from './CalendarView';
-import ScheduleImportPanel from './ScheduleImportPanel';
+import ScheduleImportPanel, { getFallScheduleEvents } from './ScheduleImportPanel';
 import FacilityResourceView from './FacilityResourceView';
 import FacilityClosurePanel from './FacilityClosurePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
@@ -122,22 +122,29 @@ export default function NavigationWrapper() {
     // Reset shared state
     setShowImportPanel(false);
     setShowClosurePanel(false);
-    setImportedEvents([]);
     setCancelledEventIds(new Set());
     setSentNotifications([]);
 
     switch (activeChapter) {
       case 'home':
         setActiveRoute('/');
+        setImportedEvents([]);
         break;
       case 'schedule-ingest':
         setActiveRoute('/calendar');
+        setImportedEvents([]);
         break;
       case 'communication':
         setActiveRoute('/');
+        setImportedEvents(getFallScheduleEvents());
         break;
       case 'external-bookings':
         setActiveRoute('/');
+        setImportedEvents(getFallScheduleEvents());
+        break;
+      default:
+        setActiveRoute('/');
+        setImportedEvents([]);
         break;
     }
   }, [activeChapter, chapterVersion]);
