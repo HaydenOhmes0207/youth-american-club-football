@@ -107,24 +107,30 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     socI++;
   }
 
-  // Cross Country: Saturday meets, no facilities/tickets/streaming/cameras
+  // Cross Country: Saturday meets — unique names, one home meet
+  const xcMeets: { name: string; location: string; isHome: boolean }[] = [
+    { name: 'Pioneers Park Twilight', location: 'Pioneers Park', isHome: false },
+    { name: 'Lincoln East Home Meet', location: 'Holmes Lake Park', isHome: true },
+    { name: 'Heartland Conference Championships', location: 'Mahoney State Park', isHome: false },
+    { name: 'Branched Oak Classic', location: 'Branched Oak Lake', isHome: false },
+    { name: 'Walton Stampede Invitational', location: 'Walton Community Course', isHome: false },
+    { name: 'UNL Pre-State Preview', location: 'UNL Cross Country Course', isHome: false },
+    { name: 'NSAA District D-1 Meet', location: 'Kearney Country Club', isHome: false },
+  ];
   const xcEvents: ImportEvent[] = [];
-  const xcLocations = ['Pioneers Park', 'Holmes Lake', 'Mahoney State Park', 'Branched Oak', 'Walton Invite', 'UNL Course'];
   const xcStart = new Date(fallStart);
   while (xcStart.getDay() !== 6) xcStart.setDate(xcStart.getDate() + 1);
-  let xcI = 0;
-  const xcEnd = new Date(2026, 9, 31);
-  while (xcStart <= xcEnd && xcI < 7) {
+  for (let xcI = 0; xcI < xcMeets.length; xcI++) {
+    const meet = xcMeets[xcI];
     xcEvents.push({
-      id: `import-xc-${xcI}`, title: `Cross Country - ${xcLocations[xcI % xcLocations.length]}`,
+      id: `import-xc-${xcI}`, title: `Cross Country - ${meet.name}`,
       date: new Date(xcStart), time: '9:00 AM', endTime: '12:00 PM',
       sport: 'Cross Country', type: 'game',
-      location: xcLocations[xcI % xcLocations.length], color: C['Cross Country'],
-      opponent: 'Invitational', isHome: false, facility: xcLocations[xcI % xcLocations.length],
+      location: meet.location, color: C['Cross Country'],
+      opponent: meet.name, isHome: meet.isHome, facility: meet.location,
       hasStream: false, hasTickets: false, hasCameras: false, status: 'pending',
     });
     xcStart.setDate(xcStart.getDate() + 14);
-    xcI++;
   }
 
   return [
