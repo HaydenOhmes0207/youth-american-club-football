@@ -7,6 +7,7 @@ import { mockNavItems } from '@/lib/mock-data';
 import PageHeader from './PageHeader';
 import ProgramsTable from './ProgramsTable';
 import CommunityTable from './CommunityTable';
+import CalendarView from './CalendarView';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 const mockPrograms: ProgramWithStats[] = [
@@ -32,12 +33,8 @@ function HomePage() {
   );
 }
 
-function SchedulesPage() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <PageHeader title="Schedules" description="View and manage game schedules, practices, and events across all teams." actions={[{ label: 'Import', buttonStyle: 'minimal' }, { label: 'Add Event', buttonStyle: 'standard' }]} />
-    </div>
-  );
+function CalendarPage() {
+  return <CalendarView />;
 }
 
 function FacilitiesPage() {
@@ -68,7 +65,7 @@ function ProgramsPage() {
 
 const PAGE_MAP: Record<string, React.FC> = {
   '/': HomePage,
-  '/schedules': SchedulesPage,
+  '/calendar': CalendarPage,
   '/facilities': FacilitiesPage,
   '/community': CommunityPage,
   '/programs': ProgramsPage,
