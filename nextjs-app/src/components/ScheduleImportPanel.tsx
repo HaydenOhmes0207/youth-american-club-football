@@ -163,6 +163,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const [optTickets, setOptTickets] = useState(true);
   const [optStreaming, setOptStreaming] = useState(true);
   const [optFocus, setOptFocus] = useState(true);
+  const [pastedUrl, setPastedUrl] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -176,8 +178,28 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setOptTickets(true);
       setOptStreaming(true);
       setOptFocus(true);
+      setPastedUrl('');
+      setIsTyping(false);
     }
   }, [isOpen]);
+
+  // Fake paste: click the input to simulate pasting a URL
+  const FAKE_URL = 'https://www.nsaa-schedule.org/district/lincoln-east/fall-2026';
+  const handleFakePaste = useCallback(() => {
+    if (pastedUrl || isTyping) return;
+    setIsTyping(true);
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 2;
+      if (i >= FAKE_URL.length) {
+        setPastedUrl(FAKE_URL);
+        setIsTyping(false);
+        clearInterval(interval);
+      } else {
+        setPastedUrl(FAKE_URL.slice(0, i));
+      }
+    }, 18);
+  }, [pastedUrl, isTyping]);
 
   // Build log based on options
   const agentLog = React.useMemo(() => buildAgentLog(optTickets, optStreaming, optFocus), [optTickets, optStreaming, optFocus]);
@@ -314,9 +336,18 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                       </button>
                     </div>
                     <div className="import-paste-content">
-                      <div className="import-paste-label">Paste your district schedule URL</div>
-                      <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
-                      <input className="import-paste-input" type="url" defaultValue="https://www.nsaa-schedule.org/district/lincoln-east/fall-2026" readOnly />
+                      <div className="import-paste-text-group">
+                        <div className="import-paste-label">Paste your district schedule URL</div>
+                        <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
+                      </div>
+                      <input
+                        className={`import-paste-input${isTyping ? ' import-paste-input--typing' : ''}`}
+                        type="url"
+                        value={pastedUrl}
+                        placeholder="Click here to paste your schedule URL"
+                        onClick={handleFakePaste}
+                        readOnly
+                      />
                       <div className="import-paste-options">
                         <div className="import-paste-options-label">For home games, automatically set up:</div>
                         <label className="import-paste-option">
@@ -335,7 +366,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                           <span>Focus recordings</span>
                         </label>
                       </div>
-                      <button className="import-paste-submit" onClick={handleStartImport}>
+                      <button className="import-paste-submit" onClick={handleStartImport} disabled={pastedUrl !== FAKE_URL}>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.625 10.333A1.333 1.333 0 015.667 9.375l-4.09-1.054a.333.333 0 010-.642L5.667 6.625A1.333 1.333 0 016.625 5.667l1.054-4.09a.333.333 0 01.642 0l1.054 4.09a1.333 1.333 0 00.958.958l4.09 1.054a.333.333 0 010 .642l-4.09 1.054a1.333 1.333 0 00-.958.958l-1.054 4.09a.333.333 0 01-.642 0z" fill="currentColor"/><path d="M13.333 2v2.667M14.667 3.333h-2.667" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
                         Import Schedule
                       </button>
