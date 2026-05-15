@@ -271,7 +271,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                   <div className="import-phase-choose">
                     <button className="import-method-card import-method-card--ai" onClick={() => setPhase('paste')}>
                       <div className="import-method-icon import-method-icon--ai">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 17l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9.937 15.5A2 2 0 008.5 14.063l-6.135-1.582a.5.5 0 010-.962L8.5 9.936A2 2 0 009.937 8.5l1.582-6.135a.5.5 0 01.962 0L14.063 8.5A2 2 0 0015.5 9.937l6.135 1.582a.5.5 0 010 .962L15.5 14.063a2 2 0 00-1.437 1.437l-1.582 6.135a.5.5 0 01-.962 0z" fill="currentColor"/><path d="M20 3v4M22 5h-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                       </div>
                       <div className="import-method-text">
                         <span className="import-method-label">AI-Assisted Schedule Import</span>
@@ -306,7 +306,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                       <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
                       <input className="import-paste-input" type="url" defaultValue="https://www.nsaa-schedule.org/district/lincoln-east/fall-2026" readOnly />
                       <button className="import-paste-submit" onClick={handleStartImport}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.625 10.333A1.333 1.333 0 015.667 9.375l-4.09-1.054a.333.333 0 010-.642L5.667 6.625A1.333 1.333 0 016.625 5.667l1.054-4.09a.333.333 0 01.642 0l1.054 4.09a1.333 1.333 0 00.958.958l4.09 1.054a.333.333 0 010 .642l-4.09 1.054a1.333 1.333 0 00-.958.958l-1.054 4.09a.333.333 0 01-.642 0z" fill="currentColor"/><path d="M13.333 2v2.667M14.667 3.333h-2.667" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
                         Import Schedule
                       </button>
                     </div>
@@ -318,7 +318,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                   <div className="import-phase-agent">
                     <div className="import-agent-header">
                       <div className="import-agent-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1L1 5.5l9 4.5 9-4.5L10 1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 14.5l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 10l9 4.5 9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8.281 12.917A1.667 1.667 0 017.083 11.719L3.003 10.667a.417.417 0 010-.803l4.08-1.052A1.667 1.667 0 008.281 7.614l1.052-4.08a.417.417 0 01.803 0l1.052 4.08a1.667 1.667 0 001.198 1.198l4.08 1.052a.417.417 0 010 .803l-4.08 1.052a1.667 1.667 0 00-1.198 1.198l-1.052 4.08a.417.417 0 01-.803 0z" fill="currentColor"/><path d="M16.667 2.5v3.333M18.333 4.167H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                       </div>
                       <span className="import-agent-title">Hudl AI is importing your schedule</span>
                     </div>
