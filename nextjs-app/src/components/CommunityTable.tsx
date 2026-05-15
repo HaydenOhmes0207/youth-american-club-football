@@ -96,7 +96,7 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
       <div className="community-sent-empty">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
         <span className="community-sent-empty-text">No notifications sent yet</span>
-        <span className="community-sent-empty-desc">When you send notifications from facility closures, they will appear here.</span>
+        <span className="community-sent-empty-desc">When you send messages or notifications, they will appear here.</span>
       </div>
     );
   }
@@ -104,22 +104,26 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
   return (
     <div className="community-sent-list">
       {notifications.map(notif => {
-        const recipientLabels: string[] = [];
-        if (notif.recipients.coaches) recipientLabels.push('Coaches');
-        if (notif.recipients.parents) recipientLabels.push('Parents & guardians');
-        if (notif.recipients.fans) recipientLabels.push('Ticket holders');
-
         const channelLabels: string[] = [];
         if (notif.channels.email) channelLabels.push('Email');
         if (notif.channels.sms) channelLabels.push('SMS');
         if (notif.channels.push) channelLabels.push('Push');
+
+        const isProgramMessage = notif.type === 'program-message';
+
+        const recipientLabels: string[] = [];
+        if (!isProgramMessage) {
+          if (notif.recipients.coaches) recipientLabels.push('Coaches');
+          if (notif.recipients.parents) recipientLabels.push('Parents & guardians');
+          if (notif.recipients.fans) recipientLabels.push('Ticket holders');
+        }
 
         return (
           <div key={notif.id} className="community-sent-card">
             <div className="community-sent-card-header">
               <div className="community-sent-card-title">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Facility Closure Notification
+                {isProgramMessage ? (notif.subject || 'Program Message') : 'Facility Closure Notification'}
               </div>
               <span className="community-sent-card-date">{formatDate(notif.sentAt)}</span>
             </div>
@@ -128,17 +132,32 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
                 <span className="community-sent-card-label">Sent by</span>
                 <span className="community-sent-card-value">{notif.sentBy}</span>
               </div>
-              <div className="community-sent-card-row">
-                <span className="community-sent-card-label">Facilities</span>
-                <span className="community-sent-card-value">{notif.facilities.join(', ')}</span>
-              </div>
-              <div className="community-sent-card-row">
-                <span className="community-sent-card-label">Events canceled</span>
-                <span className="community-sent-card-value">{notif.events.length}</span>
-              </div>
+              {isProgramMessage && notif.programTitle && (
+                <div className="community-sent-card-row">
+                  <span className="community-sent-card-label">Program</span>
+                  <span className="community-sent-card-value">{notif.programTitle}</span>
+                </div>
+              )}
+              {!isProgramMessage && (
+                <>
+                  <div className="community-sent-card-row">
+                    <span className="community-sent-card-label">Facilities</span>
+                    <span className="community-sent-card-value">{notif.facilities.join(', ')}</span>
+                  </div>
+                  <div className="community-sent-card-row">
+                    <span className="community-sent-card-label">Events canceled</span>
+                    <span className="community-sent-card-value">{notif.events.length}</span>
+                  </div>
+                </>
+              )}
               <div className="community-sent-card-row">
                 <span className="community-sent-card-label">Recipients</span>
-                <span className="community-sent-card-value">{recipientLabels.join(', ')} ({notif.recipientCount} people)</span>
+                <span className="community-sent-card-value">
+                  {isProgramMessage
+                    ? `${notif.recipientCount} families`
+                    : `${recipientLabels.join(', ')} (${notif.recipientCount} people)`
+                  }
+                </span>
               </div>
               <div className="community-sent-card-row">
                 <span className="community-sent-card-label">Channels</span>

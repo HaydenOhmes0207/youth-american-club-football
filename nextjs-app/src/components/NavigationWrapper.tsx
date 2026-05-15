@@ -13,6 +13,9 @@ import ScheduleImportPanel, { getFallScheduleEvents } from './ScheduleImportPane
 import FacilityResourceView, { ALEX_SURFACES, MARIA_SURFACES } from './FacilityResourceView';
 import FacilityClosurePanel, { ALEX_FACILITIES, MARIA_FACILITIES } from './FacilityClosurePanel';
 import ProgramDetailView from './ProgramDetailView';
+import type { Registrant } from './ProgramDetailView';
+import MessageComposePanel from './MessageComposePanel';
+import type { MessagePayload } from './MessageComposePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 export interface SentNotification {
@@ -26,6 +29,10 @@ export interface SentNotification {
   sentAt: Date;
   recipientCount: number;
   sentBy: string;
+  // Optional fields for program messages
+  subject?: string;
+  programTitle?: string;
+  type?: 'facility-closure' | 'program-message';
 }
 
 const alexPrograms: ProgramWithStats[] = [
@@ -200,6 +207,9 @@ export default function NavigationWrapper() {
   const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
   const [showClosurePanel, setShowClosurePanel] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<ProgramWithStats | null>(null);
+  const [showComposePanel, setShowComposePanel] = useState(false);
+  const [composeRecipients, setComposeRecipients] = useState<Registrant[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
 
   // Chapter switching: reset state and set initial context for each chapter
   React.useEffect(() => {
@@ -209,6 +219,9 @@ export default function NavigationWrapper() {
     setCancelledEventIds(new Set());
     setSentNotifications([]);
     setSelectedProgram(null);
+    setShowComposePanel(false);
+    setComposeRecipients([]);
+    setToast(null);
 
     switch (activeChapter) {
       case 'home':
@@ -220,8 +233,16 @@ export default function NavigationWrapper() {
         setImportedEvents([]);
         break;
       case 'communication':
-        setActiveRoute('/');
-        setImportedEvents(getFallScheduleEvents());
+        if (activePersona.id === 'maria') {
+          setActiveRoute('/programs');
+          setImportedEvents([]);
+          // Auto-drill into Summer Skills Camp
+          const camp = mariaPrograms.find(p => p.id === 'mp-camp');
+          if (camp) setSelectedProgram(camp);
+        } else {
+          setActiveRoute('/');
+          setImportedEvents(getFallScheduleEvents());
+        }
         break;
       case 'operations':
         setActiveRoute('/programs');
@@ -258,6 +279,31 @@ export default function NavigationWrapper() {
       sentAt: new Date(),
       sentBy: `${activePersona.firstName} ${activePersona.lastName}`,
     }]);
+  };
+
+  const handleEmailRegistrants = (registrants: Registrant[]) => {
+    setComposeRecipients(registrants);
+    setShowComposePanel(true);
+  };
+
+  const handleMessageSend = (payload: MessagePayload) => {
+    setSentNotifications(prev => [...prev, {
+      id: `msg-${Date.now()}`,
+      date: new Date(),
+      facilities: [],
+      events: [],
+      recipients: { coaches: false, parents: true, fans: false },
+      channels: payload.channels,
+      message: payload.message,
+      sentAt: new Date(),
+      recipientCount: payload.recipientCount,
+      sentBy: payload.sentBy,
+      subject: payload.subject,
+      programTitle: payload.programTitle,
+      type: 'program-message',
+    }]);
+    setToast(`Message sent to ${payload.recipientCount} families`);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const organization = {
@@ -324,9 +370,20 @@ export default function NavigationWrapper() {
   // Collect all events for facilities view
   const allEvents = [...(EVENTS_BY_PERSONA[activePersona.id] || []), ...importedEvents];
 
-  // Build overlay based on active route
+  // Build overlay based on active route or compose panel
   let overlay: React.ReactNode = null;
-  if (activeRoute === '/calendar') {
+  if (showComposePanel && selectedProgram) {
+    overlay = (
+      <MessageComposePanel
+        isOpen={showComposePanel}
+        onClose={() => { setShowComposePanel(false); setComposeRecipients([]); }}
+        recipients={composeRecipients}
+        programTitle={selectedProgram.title}
+        senderName={`${activePersona.firstName} ${activePersona.lastName}`}
+        onSend={handleMessageSend}
+      />
+    );
+  } else if (activeRoute === '/calendar') {
     overlay = (
       <ScheduleImportPanel
         isOpen={showImportPanel}
@@ -369,7 +426,7 @@ export default function NavigationWrapper() {
     if (selectedProgram) {
       pageContent = (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', flex: 1, minHeight: 0 }}>
-          <ProgramDetailView program={selectedProgram} onBack={() => setSelectedProgram(null)} />
+          <ProgramDetailView program={selectedProgram} onBack={() => setSelectedProgram(null)} onEmailRegistrants={handleEmailRegistrants} />
         </div>
       );
     } else {
@@ -421,6 +478,12 @@ export default function NavigationWrapper() {
       overlay={overlay}
     >
       {pageContent}
+      {toast && (
+        <div className="compose-toast">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+          {toast}
+        </div>
+      )}
     </LegacyNavigation>
   );
 }

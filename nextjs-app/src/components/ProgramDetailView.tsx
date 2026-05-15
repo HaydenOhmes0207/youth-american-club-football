@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 /* ── Mock registrant data per program ── */
-interface Registrant {
+export interface Registrant {
   id: string;
   name: string;
   grade: string;
@@ -26,7 +26,7 @@ function seededRandom(seed: number) {
   return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
 }
 
-function generateRegistrants(program: ProgramWithStats): Registrant[] {
+export function generateRegistrants(program: ProgramWithStats): Registrant[] {
   const count = program.registrantCount;
   const fee = program.feePerPlayer || 0;
   const rand = seededRandom(program.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0));
@@ -89,14 +89,25 @@ function SearchIcon() {
   );
 }
 
+function MailIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="1" y="2.5" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.25"/>
+      <path d="M1 4.5l6 4 6-4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 interface ProgramDetailViewProps {
   program: ProgramWithStats;
   onBack: () => void;
+  onEmailRegistrants?: (selectedRegistrants: Registrant[]) => void;
 }
 
-export default function ProgramDetailView({ program, onBack }: ProgramDetailViewProps) {
+export default function ProgramDetailView({ program, onBack, onEmailRegistrants }: ProgramDetailViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Paid' | 'Partial' | 'Unpaid'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const registrants = React.useMemo(() => generateRegistrants(program), [program]);
 
   const filtered = registrants.filter(r => {
@@ -108,11 +119,34 @@ export default function ProgramDetailView({ program, onBack }: ProgramDetailView
     return true;
   });
 
+  const allFilteredSelected = filtered.length > 0 && filtered.every(r => selectedIds.has(r.id));
+
+  const toggleAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map(r => r.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   const totalPaid = registrants.reduce((s, r) => s + r.paid, 0);
   const totalFees = registrants.reduce((s, r) => s + r.fee, 0);
   const totalOutstanding = totalFees - totalPaid;
   const unpaidCount = registrants.filter(r => r.status === 'Unpaid').length;
   const partialCount = registrants.filter(r => r.status === 'Partial').length;
+
+  const handleEmailClick = () => {
+    const selectedRegistrants = registrants.filter(r => selectedIds.has(r.id));
+    onEmailRegistrants?.(selectedRegistrants);
+  };
 
   return (
     <div className="program-detail">
@@ -154,6 +188,18 @@ export default function ProgramDetailView({ program, onBack }: ProgramDetailView
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="bulk-action-bar">
+          <span className="bulk-action-count">{selectedIds.size} selected</span>
+          <button className="bulk-action-btn" onClick={handleEmailClick}>
+            <MailIcon />
+            Email Registrants
+          </button>
+          <button className="bulk-action-clear" onClick={() => setSelectedIds(new Set())}>Clear</button>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="program-detail-toolbar">
         <div className="program-detail-search">
@@ -174,6 +220,14 @@ export default function ProgramDetailView({ program, onBack }: ProgramDetailView
       <div className="table-scroll-container">
         <div className="programs-table" style={{ minWidth: '900px' }}>
           <div className="table-row table-header">
+            <div className="table-cell cell-checkbox">
+              <input
+                type="checkbox"
+                checked={allFilteredSelected}
+                onChange={toggleAll}
+                aria-label="Select all registrants"
+              />
+            </div>
             <div className="table-cell cell-title"><span className="header-label">Athlete</span></div>
             <div className="table-cell cell-type"><span className="header-label">Grade</span></div>
             <div className="table-cell" style={{ width: '160px', flexShrink: 0 }}><span className="header-label">Team</span></div>
@@ -183,7 +237,15 @@ export default function ProgramDetailView({ program, onBack }: ProgramDetailView
             <div className="table-cell cell-registration"><span className="header-label">Status</span></div>
           </div>
           {filtered.map(r => (
-            <div key={r.id} className="table-row table-data">
+            <div key={r.id} className={`table-row table-data ${selectedIds.has(r.id) ? 'table-row--selected' : ''}`}>
+              <div className="table-cell cell-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(r.id)}
+                  onChange={() => toggleOne(r.id)}
+                  aria-label={`Select ${r.name}`}
+                />
+              </div>
               <div className="table-cell cell-title emphasized">{r.name}</div>
               <div className="table-cell cell-type">{r.grade}</div>
               <div className="table-cell" style={{ width: '160px', flexShrink: 0 }}>{r.team || '\u2014'}</div>
