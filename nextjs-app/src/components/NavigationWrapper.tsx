@@ -17,7 +17,7 @@ export default function NavigationWrapper({ children }: { children: React.ReactN
     id: activePersona.orgId,
     name: activePersona.orgName,
     primary_sport: 'Football',
-    avatar: null as string | null,
+    avatar: activePersona.orgAvatar,
     primary_color: activePersona.primaryColor,
     secondary_color: activePersona.secondaryColor,
   };
