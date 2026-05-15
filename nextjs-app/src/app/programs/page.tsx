@@ -14,6 +14,7 @@ const mockPrograms: ProgramWithStats[] = [
     registrantCount: 45,
     programValue: 1125000,
     createdBy: {
+      id: 'user-david-mitchell',
       firstName: 'David',
       lastName: 'Mitchell',
       avatar: null,

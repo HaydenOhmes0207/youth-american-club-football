@@ -29,7 +29,11 @@ type Phase = 'choose' | 'paste' | 'agent' | 'review';
 /** Pre-built fall schedule events for chapters that assume import already happened */
 export function getFallScheduleEvents(): CalendarEvent[] {
   const sections = generateImportEvents(true, true, true);
-  return sections.flatMap(s => s.events.map(({ opponent: _o, isHome: _h, facility: _f, hasStream: _s, hasTickets: _t, hasCameras: _c, status: _st, ...ev }) => ev));
+  return sections.flatMap(s => s.events.map((ev): CalendarEvent => ({
+    id: ev.id, title: ev.title, date: ev.date, time: ev.time,
+    endTime: ev.endTime, sport: ev.sport, type: ev.type,
+    location: ev.location, color: ev.color,
+  })));
 }
 
 // Facility options for the edit view
@@ -264,7 +268,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   }, []);
 
   // Accept / Reject
-  const setEventStatus = useCallback((eventId: string, status: 'accepted' | 'rejected') => {
+  const setEventStatus = useCallback((eventId: string, status: 'pending' | 'accepted' | 'rejected') => {
     setSections(prev => prev.map(s => ({
       ...s,
       events: s.events.map(e => e.id === eventId ? { ...e, status } : e),

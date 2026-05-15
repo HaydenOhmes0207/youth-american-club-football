@@ -169,7 +169,6 @@ function generateAlexEvents(): CalendarEvent[] {
   }
   const xcMeetNames = ['Pioneers Park Invitational', 'Elkhorn Invite', 'Heartland Conference Meet', 'Millard Invite', 'District Meet', 'State Qualifier'];
   const xcMeetLocs = ['Pioneers Park', 'Elkhorn Country Club', 'Walnut Creek', 'Millard West', 'Chalco Hills', 'Kearney Country Club'];
-  let xcI = 0;
   repeatWeekly(events, 'axcm', { title: '', time: '8:00 AM', endTime: '12:00 PM', sport: 'Cross Country', type: 'game', location: '', color: C['Cross Country'] }, fallStart, new Date(2026, 9, 31), 6, 2);
   // patch XC meet titles
   events.filter(e => e.id.startsWith('axcm')).forEach((e, i) => {

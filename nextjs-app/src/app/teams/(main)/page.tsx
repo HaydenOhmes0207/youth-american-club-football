@@ -2,11 +2,7 @@ import { getAllTeams, getOrganizationId, getSeasons, getStaffUsers, getAthletesO
 import { getCurrentUser } from '@/lib/data';
 import TeamsPageClient from './TeamsPageClient';
 
-export default function TeamsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ season?: string }>;
-}) {
+export default function TeamsPage() {
   const organizationId = getOrganizationId();
 
   const teams = organizationId ? getAllTeams(organizationId) : [];

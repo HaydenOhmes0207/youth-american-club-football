@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import SubNavItem from './SubNavigation';
-import Button from './Button';
 import './LegacyNavigation.css';
 
 // Icon paths for public folder
@@ -154,14 +153,6 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
     : 'JS';
   const [isExpanded, setIsExpanded] = useState(true);
   
-  // Derive active item from activeRoute prop
-  const getActiveItemFromRoute = () => {
-    const path = activeRoute || '/';
-    const pathWithoutSlash = path.replace('/', '') || '';
-    const navItem = directorNavItems.find(item => item.route?.replace('/', '') === pathWithoutSlash);
-    if (navItem) return navItem.id;
-    return directorNavItems[0]?.id || 'Home';
-  };
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isOrgPopoverOpen, setIsOrgPopoverOpen] = useState(false);

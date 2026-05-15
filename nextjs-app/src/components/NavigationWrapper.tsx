@@ -38,7 +38,7 @@ const mockPrograms: ProgramWithStats[] = [
     status: 'published',
     registrantCount: 45,
     programValue: 1125000,
-    createdBy: { firstName: 'David', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-david-mitchell', firstName: 'David', lastName: 'Mitchell', avatar: null },
   },
 ];
 
@@ -154,7 +154,7 @@ export default function NavigationWrapper() {
     setImportedEvents(prev => [...prev, ...events]);
   };
 
-  const handleClosure = (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt'>) => {
+  const handleClosure = (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt' | 'sentBy'>) => {
     setCancelledEventIds(prev => {
       const next = new Set(prev);
       eventIds.forEach(id => next.add(id));

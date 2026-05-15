@@ -29,7 +29,7 @@ interface FacilityClosurePanelProps {
   onClose: () => void;
   allEvents: CalendarEvent[];
   cancelledEventIds: Set<string>;
-  onConfirm: (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt'>) => void;
+  onConfirm: (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt' | 'sentBy'>) => void;
 }
 
 type Phase = 'configure' | 'review';
