@@ -58,7 +58,8 @@ export default function NavigationWrapper({ children }: { children: React.ReactN
   }
 
   return (
-    <LegacyNavigation 
+    <LegacyNavigation
+      key={activePersona.id}
       organization={organization} 
       teams={teams} 
       navItems={navItems}
