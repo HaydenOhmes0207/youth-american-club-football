@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Barlow } from 'next/font/google';
 import './globals.css';
+import '@/components/components.css';
 import NavigationWrapper from '@/components/NavigationWrapper';
 import { ToastProvider } from '@/components/Toast';
 import { getOrganizationWithNavItems, getCurrentUser } from '@/lib/data';
