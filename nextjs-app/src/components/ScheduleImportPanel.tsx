@@ -107,10 +107,31 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     socI++;
   }
 
+  // Cross Country: Saturday meets, no facilities/tickets/streaming/cameras
+  const xcEvents: ImportEvent[] = [];
+  const xcLocations = ['Pioneers Park', 'Holmes Lake', 'Mahoney State Park', 'Branched Oak', 'Walton Invite', 'UNL Course'];
+  const xcStart = new Date(fallStart);
+  while (xcStart.getDay() !== 6) xcStart.setDate(xcStart.getDate() + 1);
+  let xcI = 0;
+  const xcEnd = new Date(2026, 9, 31);
+  while (xcStart <= xcEnd && xcI < 7) {
+    xcEvents.push({
+      id: `import-xc-${xcI}`, title: `Cross Country - ${xcLocations[xcI % xcLocations.length]}`,
+      date: new Date(xcStart), time: '9:00 AM', endTime: '12:00 PM',
+      sport: 'Cross Country', type: 'game',
+      location: xcLocations[xcI % xcLocations.length], color: C['Cross Country'],
+      opponent: 'Invitational', isHome: false, facility: xcLocations[xcI % xcLocations.length],
+      hasStream: false, hasTickets: false, hasCameras: false, status: 'pending',
+    });
+    xcStart.setDate(xcStart.getDate() + 14);
+    xcI++;
+  }
+
   return [
     { sport: 'Football', teamName: 'Varsity Football', color: C['Football'], events: fbEvents },
     { sport: 'Girls Volleyball', teamName: 'Varsity Girls Volleyball', color: C['Girls Volleyball'], events: vbEvents },
     { sport: 'Boys Soccer', teamName: 'Varsity Boys Soccer', color: C['Boys Soccer'], events: socEvents },
+    { sport: 'Cross Country', teamName: 'Varsity Cross Country', color: C['Cross Country'], events: xcEvents },
   ];
 }
 
@@ -123,6 +144,7 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
     { text: 'Found 9 Varsity Football games (Aug 28 - Oct 30)', type: 'found' },
     { text: 'Found 11 Varsity Girls Volleyball matches + 1 tournament', type: 'found' },
     { text: 'Found 8 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },
+    { text: 'Found 7 Varsity Cross Country meets (Aug 29 - Oct 31)', type: 'found' },
     { text: 'Mapping home games to facilities...', type: 'working' },
     { text: 'Memorial Stadium assigned to 5 football home games', type: 'done' },
     { text: 'Main Gym assigned to 6 volleyball home matches', type: 'done' },
@@ -131,7 +153,7 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
   if (streaming) log.push({ text: 'Configuring live streams for 15 home events...', type: 'working' });
   if (tickets) log.push({ text: 'Creating ticketed events for 15 home games...', type: 'working' });
   if (focus) log.push({ text: 'Linking Focus cameras for 15 home events...', type: 'working' });
-  log.push({ text: 'Schedule import complete — 28 events ready for review', type: 'done' });
+  log.push({ text: 'Schedule import complete — 35 events ready for review', type: 'done' });
   return log;
 }
 
