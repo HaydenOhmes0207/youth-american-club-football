@@ -261,7 +261,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
   // Manual form state
   const [manualEventType, setManualEventType] = useState<'game' | 'practice' | 'other'>('other');
   const [manualTitle, setManualTitle] = useState('Championship Saturday');
-  const [manualDate, setManualDate] = useState('2026-11-07');
+  const [manualStartDate, setManualStartDate] = useState('2026-11-07');
+  const [manualEndDate, setManualEndDate] = useState('2026-11-07');
   const [manualStartTime, setManualStartTime] = useState('8:00 AM');
   const [manualEndTime, setManualEndTime] = useState('6:00 PM');
   const [manualDescription, setManualDescription] = useState(
@@ -288,7 +289,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
       // Reset manual form
       setManualEventType('other');
       setManualTitle('Championship Saturday');
-      setManualDate('2026-11-07');
+      setManualStartDate('2026-11-07');
+      setManualEndDate('2026-11-07');
       setManualStartTime('8:00 AM');
       setManualEndTime('6:00 PM');
       setManualDescription('End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.');
@@ -675,6 +677,45 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                       </div>
                     )}
 
+                    {/* Opponent (only for games) */}
+                    {manualEventType === 'game' && (
+                      <div className="closure-review-section">
+                        <div className="closure-section-label">Opponent <span style={{ color: '#dc2626' }}>*</span></div>
+                        <select className="compose-subject-input">
+                          <option value="">Select an opponent</option>
+                          {alexOpponents.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Date (Start + End) */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Date <span style={{ color: '#dc2626' }}>*</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input className="compose-subject-input" style={{ flex: 1 }} type="date" value={manualStartDate} onChange={e => { setManualStartDate(e.target.value); if (e.target.value > manualEndDate) setManualEndDate(e.target.value); }} />
+                        <span className="compose-field-value" style={{ flexShrink: 0 }}>to</span>
+                        <input className="compose-subject-input" style={{ flex: 1 }} type="date" value={manualEndDate} min={manualStartDate} onChange={e => setManualEndDate(e.target.value)} />
+                      </div>
+                    </div>
+
+                    {/* Time */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Start Time <span style={{ color: '#dc2626' }}>*</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualStartTime} onChange={e => setManualStartTime(e.target.value)}>
+                          {['6:00 AM','7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                        <span className="compose-field-value" style={{ flexShrink: 0 }}>to</span>
+                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualEndTime} onChange={e => setManualEndTime(e.target.value)}>
+                          {['2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM'].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     {/* Location / Venue */}
                     <div className="closure-review-section">
                       <div className="closure-section-label">Location <span style={{ color: '#dc2626' }}>*</span></div>
@@ -747,41 +788,6 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                           )}
                         </div>
                       )}
-                    </div>
-
-                    {/* Opponent (only for games) */}
-                    {manualEventType === 'game' && (
-                      <div className="closure-review-section">
-                        <div className="closure-section-label">Opponent <span style={{ color: '#dc2626' }}>*</span></div>
-                        <select className="compose-subject-input">
-                          <option value="">Select an opponent</option>
-                          {alexOpponents.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* Date */}
-                    <div className="closure-review-section">
-                      <div className="closure-section-label">Date <span style={{ color: '#dc2626' }}>*</span></div>
-                      <input className="compose-subject-input" type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} />
-                    </div>
-
-                    {/* Time */}
-                    <div className="closure-review-section">
-                      <div className="closure-section-label">Start Time <span style={{ color: '#dc2626' }}>*</span></div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualStartTime} onChange={e => setManualStartTime(e.target.value)}>
-                          {['6:00 AM','7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'].map(t => (
-                            <option key={t} value={t}>{t}</option>
-                          ))}
-                        </select>
-                        <span className="compose-field-value" style={{ flexShrink: 0 }}>to</span>
-                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualEndTime} onChange={e => setManualEndTime(e.target.value)}>
-                          {['2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM'].map(t => (
-                            <option key={t} value={t}>{t}</option>
-                          ))}
-                        </select>
-                      </div>
                     </div>
 
                     {/* External venue notice + amenities */}
@@ -883,7 +889,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                   setTimeout(() => {
                     onManualSubmit({
                       title: manualTitle,
-                      date: manualDate,
+                      date: manualStartDate,
                       timeBlock: `${manualStartTime} - ${manualEndTime}`,
                       location: selectedVenue.name,
                       isExternal: true,
@@ -910,8 +916,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                   onClick={() => {
                     if (!onManualSubmit) return;
                     onManualSubmit({
-                      title: manualTitle, date: manualDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
-                      location: selectedVenue?.name || '', isExternal: false, amenities: [], description: manualDescription,
+                    title: manualTitle, date: manualStartDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
+                    location: selectedVenue?.name || '', isExternal: false, amenities: [], description: manualDescription,
                     });
                   }}
                 >Save &amp; Add Another</button>
@@ -922,7 +928,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                   onClick={() => {
                     if (!onManualSubmit) return;
                     onManualSubmit({
-                      title: manualTitle, date: manualDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
+                      title: manualTitle, date: manualStartDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
                       location: selectedVenue?.name || '', isExternal: false, amenities: [], description: manualDescription,
                     });
                   }}
