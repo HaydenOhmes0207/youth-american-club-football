@@ -362,14 +362,14 @@
 }
 .cal-month-cell-events { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; overflow: hidden; }
 .cal-month-event {
-  display: flex; align-items: center; gap: 4px; padding: 1px 4px; border-radius: 2px;
+  display: flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 3px;
   border-left: 3px solid transparent; background: var(--u-color-background-subtle, #f5f6f7);
   overflow: hidden; cursor: pointer; transition: background 0.1s ease;
 }
 .cal-month-event:hover { background: var(--u-color-background-default, #e8eaec); }
-.cal-month-event-time { font-family: var(--u-font-body); font-size: 10px; font-weight: 600; color: var(--u-color-base-foreground-subtle, #607081); white-space: nowrap; flex-shrink: 0; }
-.cal-month-event-title { font-family: var(--u-font-body); font-size: 11px; font-weight: 500; color: var(--u-color-base-foreground-contrast, #071c31); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cal-month-more { font-family: var(--u-font-body); font-size: 10px; font-weight: 600; color: var(--u-color-emphasis-background-contrast, #0273e3); padding: 1px 4px; cursor: pointer; }
+.cal-month-event-time { font-family: var(--u-font-body); font-size: 11px; font-weight: 600; color: var(--u-color-base-foreground-subtle, #607081); white-space: nowrap; flex-shrink: 0; }
+.cal-month-event-title { font-family: var(--u-font-body); font-size: 13px; font-weight: 500; color: var(--u-color-base-foreground-contrast, #071c31); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.cal-month-more { font-family: var(--u-font-body); font-size: 11px; font-weight: 600; color: var(--u-color-emphasis-background-contrast, #0273e3); padding: 2px 6px; cursor: pointer; }
 
 /* Week View */
 .cal-week { display: flex; flex-direction: column; min-height: 600px; }
