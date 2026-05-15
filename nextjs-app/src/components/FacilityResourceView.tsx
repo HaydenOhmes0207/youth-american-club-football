@@ -160,9 +160,10 @@ export default function FacilityResourceView({ events, cancelledEventIds, simula
                         }}
                       >
                         <span className={`resource-event-title ${isCancelled ? 'resource-event-title--cancelled' : ''}`}>
-                          {isCancelled ? 'CANCELED - ' : ''}{ev.title}
+                          {ev.title}
                         </span>
                         <span className="resource-event-time">{ev.time} - {ev.endTime || ''}</span>
+                        {isCancelled && <span className="cal-cancelled-badge cal-cancelled-badge--small">Canceled</span>}
                       </div>
                     );
                   })}

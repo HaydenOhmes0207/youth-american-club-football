@@ -1077,9 +1077,9 @@
   font-family: var(--u-font-body); font-size: 10px;
   color: var(--u-color-base-foreground-subtle, #607081); white-space: nowrap;
 }
-/* Cancelled in resource view */
-.resource-event--cancelled { opacity: 0.5; }
-.resource-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
+  /* Canceled in resource view -- matches calendar treatment */
+  .resource-event--cancelled { }
+  .resource-event-title--cancelled { text-decoration: line-through; color: var(--u-color-base-foreground-subtle, #607081); }
 
 /* === Canceled Events (Calendar) === */
   .cal-month-event--cancelled { background: #f3f4f6; }
