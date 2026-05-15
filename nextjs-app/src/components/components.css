@@ -1846,10 +1846,10 @@
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 
-/* Tasks + Activity Row */
+/* Tasks + Activity Row - must match Overview grid */
 .db-tasks-activity {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 320px;
   gap: 48px;
   align-items: start;
 }
@@ -1971,17 +1971,17 @@
   overflow: hidden;
 }
 
-/* Activity Section */
+/* Activity Section - matches sidebar width (320px) */
 .db-activity {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 280px;
+  width: 100%;
 }
 .db-activity-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 32px;
 }
 .db-activity-card {
   display: flex;
