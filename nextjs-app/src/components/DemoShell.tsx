@@ -12,22 +12,18 @@ function DemoBar() {
     <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
       <div className="demo-bar-left">
         <div className="demo-bar-label">{activePersona.label}</div>
-        {chapters.length > 1 && (
-          <div className="demo-bar-separator" />
-        )}
-        {chapters.length > 1 && (
-          <div className="demo-bar-chapters">
-            {chapters.map(ch => (
-              <button
-                key={ch.id}
-                className={`demo-bar-chapter ${activeChapter === ch.id ? 'demo-bar-chapter--active' : ''}`}
-                onClick={() => setActiveChapter(ch.id)}
-              >
-                {ch.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="demo-bar-separator" />
+        <div className="demo-bar-chapters">
+          {chapters.map(ch => (
+            <button
+              key={ch.id}
+              className={`demo-bar-chapter ${activeChapter === ch.id ? 'demo-bar-chapter--active' : ''}`}
+              onClick={() => setActiveChapter(ch.id)}
+            >
+              {ch.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="demo-bar-personas">
         {(Object.keys(personas) as PersonaId[]).map((id) => {

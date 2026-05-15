@@ -4,7 +4,10 @@ import React, { createContext, useContext, useState } from 'react';
 
 export type PersonaId = 'alex' | 'maria';
 
-export type ChapterId = 'home' | 'schedule-ingest' | 'communication' | 'external-bookings';
+// Each persona has their own chapters -- they tell independent stories
+export type AlexChapterId = 'home' | 'schedule-ingest' | 'communication' | 'external-bookings';
+export type MariaChapterId = 'home' | 'registration' | 'game-day' | 'volunteer-coordination';
+export type ChapterId = AlexChapterId | MariaChapterId;
 
 export interface Chapter {
   id: ChapterId;
@@ -20,6 +23,9 @@ export const CHAPTERS_BY_PERSONA: Record<PersonaId, Chapter[]> = {
   ],
   maria: [
     { id: 'home', label: 'Home' },
+    { id: 'registration', label: 'Registration' },
+    { id: 'game-day', label: 'Game Day' },
+    { id: 'volunteer-coordination', label: 'Volunteer Coordination' },
   ],
 };
 
