@@ -423,13 +423,13 @@
 
 /* === Schedule Import Panel === */
 .import-panel-backdrop {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 1000;
+  position: absolute; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 1000;
   animation: fadeIn 0.2s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .import-panel {
-  position: fixed; top: 0; right: 0; bottom: 0; width: 520px; max-width: 100vw;
+  position: absolute; top: 0; right: 0; bottom: 0; width: 520px; max-width: 100%;
   background: var(--u-color-background-container, #fefefe); z-index: 1001;
   display: flex; flex-direction: column;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);

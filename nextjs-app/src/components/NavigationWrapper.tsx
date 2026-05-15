@@ -35,28 +35,15 @@ function HomePage() {
   );
 }
 
-function CalendarPage() {
-  const [showImportPanel, setShowImportPanel] = useState(false);
-  const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>([]);
-
-  const handleImport = (events: CalendarEvent[]) => {
-    setImportedEvents(prev => [...prev, ...events]);
-  };
-
+function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+    <>
       <PageHeader
         title="Calendar"
         description="View and manage camps, clinics, and events across your organization."
-        actions={[{ label: 'Add Event', buttonStyle: 'standard', onClick: () => setShowImportPanel(true) }]}
+        actions={[{ label: 'Add Event', buttonStyle: 'standard', onClick: onOpenImport }]}
       />
-      <CalendarView extraEvents={importedEvents} />
-      <ScheduleImportPanel
-        isOpen={showImportPanel}
-        onClose={() => setShowImportPanel(false)}
-        onImport={handleImport}
-      />
-    </div>
+    </>
   );
 }
 
@@ -86,9 +73,8 @@ function ProgramsPage() {
   );
 }
 
-const PAGE_MAP: Record<string, React.FC> = {
+const STATIC_PAGE_MAP: Record<string, React.FC> = {
   '/': HomePage,
-  '/calendar': CalendarPage,
   '/facilities': FacilitiesPage,
   '/community': CommunityPage,
   '/programs': ProgramsPage,
@@ -97,6 +83,12 @@ const PAGE_MAP: Record<string, React.FC> = {
 export default function NavigationWrapper() {
   const { activePersona } = usePersona();
   const [activeRoute, setActiveRoute] = useState('/');
+  const [showImportPanel, setShowImportPanel] = useState(false);
+  const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>([]);
+
+  const handleImport = (events: CalendarEvent[]) => {
+    setImportedEvents(prev => [...prev, ...events]);
+  };
 
   const organization = {
     id: activePersona.orgId,
@@ -147,7 +139,16 @@ export default function NavigationWrapper() {
     role: activePersona.role,
   };
 
-  const ActivePage = PAGE_MAP[activeRoute] || HomePage;
+  const isCalendar = activeRoute === '/calendar';
+  const StaticPage = STATIC_PAGE_MAP[activeRoute];
+
+  const calendarOverlay = isCalendar ? (
+    <ScheduleImportPanel
+      isOpen={showImportPanel}
+      onClose={() => setShowImportPanel(false)}
+      onImport={handleImport}
+    />
+  ) : null;
 
   return (
     <LegacyNavigation
@@ -158,8 +159,18 @@ export default function NavigationWrapper() {
       currentUser={currentUser}
       activeRoute={activeRoute}
       onNavigate={(route) => setActiveRoute(route)}
+      overlay={calendarOverlay}
     >
-      <ActivePage />
+      {isCalendar ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+          <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
+          <CalendarView extraEvents={importedEvents} />
+        </div>
+      ) : StaticPage ? (
+        <StaticPage />
+      ) : (
+        <HomePage />
+      )}
     </LegacyNavigation>
   );
 }

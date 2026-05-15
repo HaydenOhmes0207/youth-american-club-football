@@ -562,6 +562,7 @@
 
 /* Content Area */
 .main-content {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: stretch;

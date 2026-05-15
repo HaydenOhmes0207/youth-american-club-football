@@ -108,6 +108,7 @@ interface LegacyNavigationProps {
   activeRoute?: string;
   onNavigate?: (route: string) => void;
   children?: React.ReactNode;
+  overlay?: React.ReactNode;
 }
 
 function getInitials(name: string): string {
@@ -143,6 +144,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
   activeRoute = '/',
   onNavigate,
   children,
+  overlay,
 }) => {
   const userName = currentUser 
     ? `${currentUser.firstName} ${currentUser.lastName}` 
@@ -541,6 +543,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
         <div className="content-inner">
           {children}
         </div>
+        {overlay}
       </div>
     </div>
   );
