@@ -10,35 +10,26 @@ function DemoBar() {
 
   return (
     <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
-      <div className="demo-bar-left">
-        <div className="demo-bar-label">{activePersona.label}</div>
-        <div className="demo-bar-separator" />
-        <div className="demo-bar-chapters">
-          {chapters.map(ch => (
-            <button
-              key={ch.id}
-              className={`demo-bar-chapter ${activeChapter === ch.id ? 'demo-bar-chapter--active' : ''}`}
-              onClick={() => setActiveChapter(ch.id)}
-            >
-              {ch.label}
-            </button>
+      <div className="demo-bar-label">{activePersona.label}</div>
+      <div className="demo-bar-selects">
+        <select
+          className="demo-bar-select"
+          value={activePersona.id}
+          onChange={(e) => setActivePersonaId(e.target.value as PersonaId)}
+        >
+          {(Object.keys(personas) as PersonaId[]).map((id) => (
+            <option key={id} value={id}>{personas[id].firstName}</option>
           ))}
-        </div>
-      </div>
-      <div className="demo-bar-personas">
-        {(Object.keys(personas) as PersonaId[]).map((id) => {
-          const persona = personas[id];
-          const isActive = activePersona.id === id;
-          return (
-            <button
-              key={id}
-              className={`demo-bar-persona ${isActive ? 'demo-bar-persona--active' : ''}`}
-              onClick={() => setActivePersonaId(id)}
-            >
-              {persona.firstName}
-            </button>
-          );
-        })}
+        </select>
+        <select
+          className="demo-bar-select"
+          value={activeChapter}
+          onChange={(e) => setActiveChapter(e.target.value as ChapterId)}
+        >
+          {chapters.map(ch => (
+            <option key={ch.id} value={ch.id}>{ch.label}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
