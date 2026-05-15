@@ -1,7 +1,7 @@
-import ProgramsPageClient from './ProgramsPageClient';
+import PageHeader from '@/components/PageHeader';
+import ProgramsTable from '@/components/ProgramsTable';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
-// Minimal mock data - just one row for the prototype
 const mockPrograms: ProgramWithStats[] = [
   {
     id: 'program-1',
@@ -22,5 +22,13 @@ const mockPrograms: ProgramWithStats[] = [
 ];
 
 export default function ProgramsPage() {
-  return <ProgramsPageClient programs={mockPrograms} />;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader
+        title="Programs"
+        description="Manage your registration programs, seasons, and events."
+      />
+      <ProgramsTable programs={mockPrograms} />
+    </div>
+  );
 }

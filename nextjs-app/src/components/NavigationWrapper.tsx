@@ -1,13 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-
-const LegacyNavigation = dynamic(
-  () => import('./LegacyNavigation'),
-  { ssr: false }
-);
+import LegacyNavigation from './LegacyNavigation';
 
 interface Organization {
   id: string;
