@@ -1,5 +1,12 @@
-import { redirect } from 'next/navigation';
+import PageHeader from '@/components/PageHeader';
 
 export default function HomePage() {
-  redirect('/programs');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+      <PageHeader 
+        title="Home"
+        description="Welcome to Lincoln Youth Football. View your organization overview and quick actions."
+      />
+    </div>
+  );
 }

@@ -28,10 +28,18 @@ export async function getNavItems(organizationId: string) {
     .filter(item => item.organization_id === organizationId && item.parent_id === null && item.is_active)
     .sort((a, b) => a.order - b.order)
     .map(item => ({
-      ...item,
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      route: item.route,
       children: (item.children || [])
-        .filter(child => child.is_active)
-        .sort((a, b) => a.order - b.order),
+        .filter((child: { is_active?: boolean }) => child.is_active !== false)
+        .sort((a: { order?: number }, b: { order?: number }) => (a.order || 0) - (b.order || 0))
+        .map((child: { id: string; label: string; route?: string }) => ({
+          id: child.id,
+          label: child.label,
+          route: child.route || null,
+        })),
     }));
 }
 
@@ -40,10 +48,18 @@ export async function getOrganizationWithNavItems() {
     .filter(item => item.organization_id === mockOrganization.id && item.parent_id === null && item.is_active)
     .sort((a, b) => a.order - b.order)
     .map(item => ({
-      ...item,
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      route: item.route,
       children: (item.children || [])
-        .filter(child => child.is_active)
-        .sort((a, b) => a.order - b.order),
+        .filter((child: { is_active?: boolean }) => child.is_active !== false)
+        .sort((a: { order?: number }, b: { order?: number }) => (a.order || 0) - (b.order || 0))
+        .map((child: { id: string; label: string; route?: string }) => ({
+          id: child.id,
+          label: child.label,
+          route: child.route || null,
+        })),
     }));
 
   const provisionedTeams = mockTeams
