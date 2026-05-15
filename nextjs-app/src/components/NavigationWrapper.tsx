@@ -241,7 +241,11 @@ function FacilitiesPageContent({ onOpenClosure, activeTab, onTabChange }: {
   );
 }
 
-function BookingListItem({ request, onReview }: { request: BookingRequest; onReview: () => void }) {
+function BookingListItem({ request, onReview, isOutgoing }: { request: BookingRequest; onReview: () => void; isOutgoing?: boolean }) {
+  const statusLabel = request.status === 'pending'
+    ? (isOutgoing ? 'Awaiting Response' : 'Pending Review')
+    : request.status === 'approved' ? 'Approved' : 'Declined';
+
   return (
     <button className="booking-list-item" onClick={onReview}>
       <div className="booking-list-item-left">
@@ -255,7 +259,7 @@ function BookingListItem({ request, onReview }: { request: BookingRequest; onRev
       </div>
       <div className="booking-list-item-right">
         <span className={`booking-list-status booking-list-status--${request.status}`}>
-          {request.status === 'pending' ? 'Pending Review' : request.status === 'approved' ? 'Approved' : 'Declined'}
+          {statusLabel}
         </span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </div>
@@ -614,10 +618,20 @@ export default function NavigationWrapper() {
       </div>
     );
   } else if (activeRoute === '/facilities') {
-    // Build bookings list -- Alex sees Maria's request when it's been submitted
+    // Build bookings list
     const bookingRequests: BookingRequest[] = [];
     if (activePersona.id === 'alex' && activeChapter === 'external-bookings') {
+      // Alex sees Maria's incoming request
       bookingRequests.push({ ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' });
+    } else if (activePersona.id === 'maria' && bookingRequestSubmitted) {
+      // Maria sees her own outgoing request (pending or approved based on Alex's action in his chapter)
+      bookingRequests.push({
+        ...mariaBookingRequest,
+        status: 'pending', // From Maria's POV it stays pending until she gets a response
+        fromOrg: 'Memorial Stadium', // Flip perspective -- she requested FROM Memorial Stadium
+        fromDirector: 'Alex Thompson',
+        fromRole: 'Athletic Director',
+      });
     }
 
     pageContent = (
@@ -638,7 +652,7 @@ export default function NavigationWrapper() {
               </div>
             ) : (
               bookingRequests.map(req => (
-                <BookingListItem key={req.id} request={req} onReview={() => setShowBookingPanel(true)} />
+                <BookingListItem key={req.id} request={req} onReview={() => setShowBookingPanel(true)} isOutgoing={activePersona.id === 'maria'} />
               ))
             )}
           </div>
