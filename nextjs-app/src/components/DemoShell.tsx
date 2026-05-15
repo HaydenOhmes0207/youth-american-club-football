@@ -8,7 +8,7 @@ function DemoBar() {
   const { activePersona, setActivePersonaId, personas } = usePersona();
 
   return (
-    <div className="demo-bar">
+    <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
       <div className="demo-bar-label">{activePersona.label}</div>
       <div className="demo-bar-personas">
         {(Object.keys(personas) as PersonaId[]).map((id) => {

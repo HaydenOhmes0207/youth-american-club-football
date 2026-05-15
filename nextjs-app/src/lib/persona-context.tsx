@@ -15,6 +15,7 @@ export interface Persona {
   orgId: string;
   primaryColor: string;
   secondaryColor: string;
+  barColor: string;
 }
 
 const personas: Record<PersonaId, Persona> = {
@@ -29,6 +30,7 @@ const personas: Record<PersonaId, Persona> = {
     orgId: 'org-hs',
     primaryColor: '#1e40af',
     secondaryColor: '#fbbf24',
+    barColor: '#2d4a3e',
   },
   maria: {
     id: 'maria',
@@ -41,6 +43,7 @@ const personas: Record<PersonaId, Persona> = {
     orgId: 'org-club',
     primaryColor: '#16a34a',
     secondaryColor: '#ffffff',
+    barColor: '#1e293b',
   },
 };
 
