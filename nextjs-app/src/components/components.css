@@ -1702,12 +1702,12 @@
 .db-home {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
   width: 100%;
 }
 .db-section-title {
   font-family: var(--u-font-heading);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
   margin: 0;
@@ -1717,26 +1717,22 @@
 .db-overview {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 .db-overview-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 24px;
-  background: var(--u-color-background-surface, #fff);
-  border: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  border-radius: 12px;
-  padding: 24px;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
 }
 .db-chart-area {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 .db-this-week {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 .db-this-week-label {
   font-family: var(--u-font-body);
@@ -1745,23 +1741,25 @@
 }
 .db-this-week-amount {
   font-family: var(--u-font-heading);
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
+  line-height: 1.1;
 }
 .db-this-week-change {
   font-family: var(--u-font-body);
   font-size: 13px;
   color: var(--u-color-base-foreground-subtle, #607081);
+  margin-top: 2px;
 }
 .db-chart {
   flex: 1;
-  min-height: 200px;
+  min-height: 220px;
 }
 .db-chart-container {
   width: 100%;
-  height: 200px;
+  height: 220px;
   aspect-ratio: unset !important;
 }
 
@@ -1769,20 +1767,18 @@
 .db-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border-left: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  padding-left: 24px;
+  gap: 24px;
 }
 .db-payout {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 .db-payout-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 .db-payout-label {
   font-family: var(--u-font-body);
@@ -1791,53 +1787,58 @@
 }
 .db-payout-badge {
   font-family: var(--u-font-body);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--u-color-base-foreground-subtle, #607081);
-  background: var(--u-color-background-canvas, #eff0f0);
-  padding: 4px 10px;
-  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--u-color-line-subtle, #d0d2d4);
+  padding: 4px 12px;
+  border-radius: 14px;
 }
 .db-payout-amount {
   font-family: var(--u-font-heading);
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
   letter-spacing: -0.5px;
+  line-height: 1.1;
 }
 .db-payout-date {
   font-family: var(--u-font-body);
   font-size: 13px;
   color: var(--u-color-base-foreground-subtle, #607081);
+  margin-top: 4px;
 }
 
 /* Metrics Grid */
 .db-metrics-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px 32px;
 }
 .db-metric {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 .db-metric-label {
   font-family: var(--u-font-body);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 .db-metric-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 .db-metric-amount {
   font-family: var(--u-font-heading);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
+}
+.db-metric-sparkline {
+  margin-left: auto;
 }
 .db-metric-change {
   font-family: var(--u-font-body);
@@ -1848,8 +1849,9 @@
 /* Tasks + Activity Row */
 .db-tasks-activity {
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 32px;
+  grid-template-columns: 1fr auto;
+  gap: 48px;
+  align-items: start;
 }
 
 /* Tasks Section */
@@ -1861,12 +1863,13 @@
 .db-tasks-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
 }
 .db-tasks-pagination {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 .db-tasks-page {
   font-family: var(--u-font-body);
@@ -1874,28 +1877,28 @@
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 .db-tasks-nav {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  background: var(--u-color-background-surface, #fff);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--u-color-base-foreground-subtle, #607081);
-  transition: background 0.15s, border-color 0.15s;
+  transition: color 0.15s;
 }
 .db-tasks-nav:hover:not(:disabled) {
-  background: var(--u-color-background-subtle, #f5f6f7);
+  color: var(--u-color-base-foreground, #36485c);
 }
 .db-tasks-nav:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 .db-tasks-list {
   display: flex;
-  gap: 16px;
+  gap: 24px;
 }
 .db-tasks-empty {
   flex: 1;
@@ -1905,32 +1908,27 @@
   justify-content: center;
   gap: 12px;
   padding: 40px;
-  background: var(--u-color-background-surface, #fff);
-  border: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  border-radius: 12px;
   color: var(--u-color-base-foreground-subtle, #607081);
   font-family: var(--u-font-body);
   font-size: 14px;
 }
 
-/* Task Card */
+/* Task Card - no borders */
 .db-task-card {
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  background: var(--u-color-background-surface, #fff);
-  border: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  border-radius: 12px;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: opacity 0.15s;
 }
 .db-task-card:hover {
-  border-color: var(--u-color-line, #c4c6c8);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  opacity: 0.7;
 }
 .db-task-header {
   display: flex;
@@ -1943,7 +1941,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--u-font-body);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--u-color-base-foreground-subtle, #607081);
 }
@@ -1978,37 +1976,36 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 280px;
 }
 .db-activity-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 .db-activity-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: var(--u-color-background-surface, #fff);
-  border: 1px solid var(--u-color-line-subtle, #e0e1e3);
-  border-radius: 10px;
-  padding: 14px;
+  gap: 0;
 }
 .db-activity-label {
   font-family: var(--u-font-body);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 .db-activity-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 .db-activity-value {
   font-family: var(--u-font-heading);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
+}
+.db-activity-sparkline {
+  margin-left: auto;
 }
 .db-activity-change {
   font-family: var(--u-font-body);
@@ -2045,8 +2042,7 @@
 }
 .db-week-day--today {
   background: var(--u-color-background-subtle, #f5f6f7);
-  border-color: var(--u-color-emphasis-background-contrast, #0273e3);
-  border-width: 2px;
+  border-color: var(--u-color-base-foreground, #36485c);
 }
 .db-week-day-name {
   font-family: var(--u-font-body);
@@ -2058,9 +2054,6 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
-}
-.db-week-day--today .db-week-day-num {
-  color: var(--u-color-emphasis-background-contrast, #0273e3);
 }
 
 /* === Manual Event Form === */

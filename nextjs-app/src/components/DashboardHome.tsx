@@ -109,26 +109,37 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   )
 }
 
-// Category indicator - dot or warning triangle
+// Category indicator - hatched circle or warning triangle
 function CategoryIndicator({ category, variant }: { category: string; variant?: string }) {
   if (variant === 'warning') {
     return (
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 1L13 12H1L7 1Z" fill="#dc2626" stroke="#dc2626" strokeWidth="1.5" strokeLinejoin="round"/>
-        <path d="M7 5v3M7 10v.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2L14 13H2L8 2Z" fill="#dc2626" stroke="#dc2626" strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M8 6v3M8 11v.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
     )
   }
   
+  // Hatched/striped circle pattern
   const colors: Record<string, string> = {
     facility: '#607081',
     programs: '#16a34a',
     registration: '#1e40af',
   }
+  const color = colors[category] || '#607081'
   
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <circle cx="7" cy="7" r="5" fill={colors[category] || '#607081'} />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <defs>
+        <pattern id={`hatch-${category}`} patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="3" stroke={color} strokeWidth="1.5" />
+        </pattern>
+        <clipPath id={`circle-${category}`}>
+          <circle cx="8" cy="8" r="6" />
+        </clipPath>
+      </defs>
+      <circle cx="8" cy="8" r="6" stroke={color} strokeWidth="1.5" fill="none" />
+      <rect x="0" y="0" width="16" height="16" fill={`url(#hatch-${category})`} clipPath={`url(#circle-${category})`} />
     </svg>
   )
 }
@@ -255,36 +266,44 @@ export default function DashboardHome({
             </div>
             <div className="db-metrics-grid">
               <div className="db-metric">
-                <span className="db-metric-label">Programs</span>
-                <div className="db-metric-row">
-                  <span className="db-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
-                  <Sparkline data={programsSparkline} color="#1e40af" />
-                </div>
-                <span className="db-metric-change">{metrics.programs.change}% vs prior</span>
-              </div>
-              <div className="db-metric">
                 <span className="db-metric-label">Tickets</span>
                 <div className="db-metric-row">
                   <span className="db-metric-amount">${metrics.tickets.amount.toLocaleString()}</span>
-                  <Sparkline data={ticketsSparkline} color="#16a34a" />
+                  <span className="db-metric-sparkline">
+                    <Sparkline data={ticketsSparkline} color="#16a34a" />
+                  </span>
                 </div>
                 <span className="db-metric-change">{metrics.tickets.change}% vs prior</span>
               </div>
               <div className="db-metric">
-                <span className="db-metric-label">Sponsorships</span>
+                <span className="db-metric-label">Programs</span>
                 <div className="db-metric-row">
-                  <span className="db-metric-amount">${metrics.sponsorships.amount.toLocaleString()}</span>
-                  <Sparkline data={sponsorshipsSparkline} color="#ea580c" />
+                  <span className="db-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
+                  <span className="db-metric-sparkline">
+                    <Sparkline data={programsSparkline} color="#1e40af" />
+                  </span>
                 </div>
-                <span className="db-metric-change">{metrics.sponsorships.change}% vs prior</span>
+                <span className="db-metric-change">{metrics.programs.change}% vs prior</span>
               </div>
               <div className="db-metric">
                 <span className="db-metric-label">Streaming</span>
                 <div className="db-metric-row">
                   <span className="db-metric-amount">${metrics.streaming.amount.toLocaleString()}</span>
-                  <Sparkline data={streamingSparkline} color="#7c3aed" />
+                  <span className="db-metric-sparkline">
+                    <Sparkline data={streamingSparkline} color="#ea580c" />
+                  </span>
                 </div>
                 <span className="db-metric-change">{metrics.streaming.change}% vs prior</span>
+              </div>
+              <div className="db-metric">
+                <span className="db-metric-label">Sponsorships</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.sponsorships.amount.toLocaleString()}</span>
+                  <span className="db-metric-sparkline">
+                    <Sparkline data={sponsorshipsSparkline} color="#7c3aed" />
+                  </span>
+                </div>
+                <span className="db-metric-change">{metrics.sponsorships.change}% vs prior</span>
               </div>
             </div>
           </div>
@@ -335,7 +354,9 @@ export default function DashboardHome({
               <span className="db-activity-label">Video Uploaded</span>
               <div className="db-activity-row">
                 <span className="db-activity-value">{metrics.videoUploaded.value}</span>
-                <Sparkline data={[80, 95, 88, 110, 105, 120, 124]} color="#16a34a" />
+                <span className="db-activity-sparkline">
+                  <Sparkline data={[80, 95, 88, 110, 105, 120, 124]} color="#607081" />
+                </span>
               </div>
               <span className="db-activity-change">{metrics.videoUploaded.change} vs prior</span>
             </div>
@@ -343,7 +364,9 @@ export default function DashboardHome({
               <span className="db-activity-label">Video Watched</span>
               <div className="db-activity-row">
                 <span className="db-activity-value">{metrics.videoWatched.value}</span>
-                <Sparkline data={[200, 220, 240, 255, 270, 280, 287]} color="#16a34a" />
+                <span className="db-activity-sparkline">
+                  <Sparkline data={[200, 220, 240, 255, 270, 280, 287]} color="#607081" />
+                </span>
               </div>
               <span className="db-activity-change">{metrics.videoWatched.change} vs prior</span>
             </div>
