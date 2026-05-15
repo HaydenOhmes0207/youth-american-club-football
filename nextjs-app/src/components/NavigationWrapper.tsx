@@ -368,12 +368,19 @@ export default function NavigationWrapper() {
   };
 
   const handleEventCreate = (result: ManualEventResult) => {
+    const [startTime, endTime] = result.timeBlock.split(' - ');
+    const dateParts = result.date.split('-');
+    const eventDate = new Date(
+      parseInt(dateParts[0]),
+      parseInt(dateParts[1]) - 1,
+      parseInt(dateParts[2])
+    );
     const pendingEvent: CalendarEvent = {
-      id: 'pending-champ-saturday',
+      id: `pending-${Date.now()}`,
       title: result.title,
-      date: new Date(2026, 10, 7),
-      time: '8:00 AM',
-      endTime: '6:00 PM',
+      date: eventDate,
+      time: startTime,
+      endTime: endTime,
       location: result.location,
       sport: 'Football',
       type: 'game',
