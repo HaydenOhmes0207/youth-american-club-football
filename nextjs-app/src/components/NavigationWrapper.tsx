@@ -382,7 +382,7 @@ export default function NavigationWrapper() {
       isPending: true,
     };
     setImportedEvents(prev => [...prev, pendingEvent]);
-    setShowEventCreatePanel(false);
+    setShowImportPanel(false);
     setBookingRequestSubmitted(true);
     showToast(
       result.isExternal
