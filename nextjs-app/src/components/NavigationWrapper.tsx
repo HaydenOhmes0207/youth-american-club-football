@@ -210,6 +210,15 @@ export default function NavigationWrapper() {
 
   const StaticPage = STATIC_PAGE_MAP[activeRoute];
 
+  // Simulated "today" per chapter
+  const simulatedToday = React.useMemo(() => {
+    switch (activeChapter) {
+      case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
+      case 'communication': return new Date(2026, 8, 4);    // Sep 4
+      default: return undefined;
+    }
+  }, [activeChapter]);
+
   // Collect all events for facilities view
   const allEvents = [...(EVENTS_BY_PERSONA[activePersona.id] || []), ...importedEvents];
 
@@ -241,7 +250,7 @@ export default function NavigationWrapper() {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
         <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
-        <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} />
+        <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );
   } else if (activeRoute === '/facilities') {

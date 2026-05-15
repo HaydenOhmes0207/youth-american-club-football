@@ -371,10 +371,9 @@ function TypeDot({ color }: { color: string }) {
 }
 
 // ---- MONTH VIEW ----
-function MonthView({ year, month, events, cancelledEventIds }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
+function MonthView({ year, month, events, cancelledEventIds, today }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string>; today: Date }) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
@@ -419,14 +418,13 @@ function MonthView({ year, month, events, cancelledEventIds }: { year: number; m
 }
 
 // ---- WEEK VIEW ----
-function WeekView({ weekStart, events, cancelledEventIds }: { weekStart: Date; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
+function WeekView({ weekStart, events, cancelledEventIds, today }: { weekStart: Date; events: CalendarEvent[]; cancelledEventIds: Set<string>; today: Date }) {
   const days: Date[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + i);
     days.push(d);
   }
-  const today = new Date();
   const hours = Array.from({ length: 15 }, (_, i) => i + 6); // 6am-8pm
 
   return (
@@ -479,7 +477,7 @@ function WeekView({ weekStart, events, cancelledEventIds }: { weekStart: Date; e
 }
 
 // ---- AGENDA VIEW ----
-function AgendaView({ year, month, events, cancelledEventIds }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string> }) {
+function AgendaView({ year, month, events, cancelledEventIds, today }: { year: number; month: number; events: CalendarEvent[]; cancelledEventIds: Set<string>; today: Date }) {
   const monthEvents = events
     .filter(e => e.date.getFullYear() === year && e.date.getMonth() === month)
     .sort((a, b) => a.date.getTime() - b.date.getTime() || a.time.localeCompare(b.time));
@@ -490,8 +488,6 @@ function AgendaView({ year, month, events, cancelledEventIds }: { year: number; 
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(e);
   });
-
-  const today = new Date();
 
   return (
     <div className="cal-agenda">
@@ -535,12 +531,19 @@ function AgendaView({ year, month, events, cancelledEventIds }: { year: number; 
 interface CalendarViewProps {
   extraEvents?: CalendarEvent[];
   cancelledEventIds?: Set<string>;
+  simulatedToday?: Date;
 }
 
-export default function CalendarView({ extraEvents = [], cancelledEventIds = new Set() }: CalendarViewProps) {
+export default function CalendarView({ extraEvents = [], cancelledEventIds = new Set(), simulatedToday }: CalendarViewProps) {
   const { activePersona } = usePersona();
+  const today = simulatedToday || new Date(2026, 4, 15);
   const [view, setView] = useState<ViewMode>('month');
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // May 2026
+  const [currentDate, setCurrentDate] = useState(today);
+
+  // Reset calendar position when simulated today changes (chapter switch)
+  React.useEffect(() => {
+    setCurrentDate(today);
+  }, [today.getTime()]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -566,7 +569,7 @@ export default function CalendarView({ extraEvents = [], cancelledEventIds = new
     }
   }
   function goToday() {
-    setCurrentDate(new Date(2026, 4, 15));
+    setCurrentDate(today);
   }
 
   const weekEnd = new Date(weekStart);
@@ -601,9 +604,9 @@ export default function CalendarView({ extraEvents = [], cancelledEventIds = new
         </div>
       </div>
       <div className="cal-body">
-        {view === 'month' && <MonthView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} />}
-        {view === 'week' && <WeekView weekStart={weekStart} events={events} cancelledEventIds={cancelledEventIds} />}
-        {view === 'agenda' && <AgendaView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} />}
+        {view === 'month' && <MonthView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} today={today} />}
+        {view === 'week' && <WeekView weekStart={weekStart} events={events} cancelledEventIds={cancelledEventIds} today={today} />}
+        {view === 'agenda' && <AgendaView year={year} month={month} events={events} cancelledEventIds={cancelledEventIds} today={today} />}
       </div>
     </div>
   );
