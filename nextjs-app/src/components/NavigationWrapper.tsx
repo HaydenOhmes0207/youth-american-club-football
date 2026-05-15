@@ -616,11 +616,22 @@ export default function NavigationWrapper() {
       />
     );
   } else if (activeRoute === '/facilities' && showBookingPanel) {
+    // Build the correct request object based on persona and chapter
+    const panelRequest: BookingRequest = activePersona.id === 'maria'
+      ? {
+          ...mariaBookingRequest,
+          status: activeChapter === 'booking-request' ? 'approved' : 'pending',
+          fromOrg: 'Memorial Stadium',
+          fromDirector: 'Alex Thompson',
+          fromRole: 'Athletic Director',
+        }
+      : { ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' };
+
     overlay = (
       <BookingRequestPanel
         isOpen={showBookingPanel}
         onClose={() => setShowBookingPanel(false)}
-        request={mariaBookingRequest}
+        request={panelRequest}
         onApprove={handleBookingApprove}
         onDecline={() => setShowBookingPanel(false)}
         isOutgoing={activePersona.id === 'maria'}
