@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { LineChart, Line, XAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 
 // --- Types ---
-interface TaskItem {
+export interface TaskItem {
   id: string
   category: 'facility' | 'programs' | 'registration'
   categoryLabel: string
@@ -22,11 +22,8 @@ interface TaskItem {
 }
 
 interface DashboardHomeProps {
-  // Persona
   personaId: 'alex' | 'maria'
-  // Alerts as tasks
   tasks?: TaskItem[]
-  // Week calendar
   simulatedToday?: Date
   onNavigateToCalendar?: () => void
 }
@@ -85,25 +82,25 @@ const MARIA_METRICS = {
   videoWatched: { value: '156h', change: '6hr' },
 }
 
-// Mini sparkline component
+// Sparkline SVG
 function Sparkline({ data, color }: { data: number[]; color: string }) {
   const max = Math.max(...data)
   const min = Math.min(...data)
   const range = max - min || 1
-  const width = 48
-  const height = 20
+  const width = 56
+  const height = 24
   const points = data.map((v, i) => {
     const x = (i / (data.length - 1)) * width
-    const y = height - ((v - min) / range) * height
+    const y = height - ((v - min) / range) * (height - 4) - 2
     return `${x},${y}`
   }).join(' ')
 
   return (
-    <svg width={width} height={height} className="sparkline">
+    <svg width={width} height={height} style={{ display: 'block' }}>
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         points={points}
@@ -112,38 +109,51 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   )
 }
 
-// Task card component
-function TaskCard({ task }: { task: TaskItem }) {
-  const categoryColors: Record<string, string> = {
+// Category indicator - dot or warning triangle
+function CategoryIndicator({ category, variant }: { category: string; variant?: string }) {
+  if (variant === 'warning') {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1L13 12H1L7 1Z" fill="#dc2626" stroke="#dc2626" strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M7 5v3M7 10v.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    )
+  }
+  
+  const colors: Record<string, string> = {
     facility: '#607081',
-    programs: '#ea580c',
-    registration: '#16a34a',
+    programs: '#16a34a',
+    registration: '#1e40af',
   }
-  const categoryIcons: Record<string, JSX.Element> = {
-    facility: <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 14V6l6-4 6 4v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-    programs: <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
-    registration: <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
-  }
-
+  
   return (
-    <button className="dashboard-task-card" onClick={task.onClick}>
-      <div className="dashboard-task-header">
-        <div className="dashboard-task-category" style={{ color: categoryColors[task.category] || '#607081' }}>
-          {categoryIcons[task.category]}
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <circle cx="7" cy="7" r="5" fill={colors[category] || '#607081'} />
+    </svg>
+  )
+}
+
+// Task card
+function TaskCard({ task }: { task: TaskItem }) {
+  return (
+    <button className="db-task-card" onClick={task.onClick}>
+      <div className="db-task-header">
+        <div className="db-task-category">
+          <CategoryIndicator category={task.category} variant={task.variant} />
           <span>{task.categoryLabel}</span>
         </div>
-        <span className="dashboard-task-time">{task.timestamp}</span>
+        <span className="db-task-time">{task.timestamp}</span>
       </div>
-      <div className="dashboard-task-title">{task.title}</div>
-      <div className="dashboard-task-desc">{task.description}</div>
+      <div className="db-task-title">{task.title}</div>
+      <div className="db-task-desc">{task.description}</div>
     </button>
   )
 }
 
-// Week strip component
+// Week calendar strip
 function WeekStrip({ simulatedToday, onDayClick }: { simulatedToday: Date; onDayClick?: () => void }) {
   const startOfWeek = new Date(simulatedToday)
-  startOfWeek.setDate(simulatedToday.getDate() - simulatedToday.getDay() + 1) // Monday
+  startOfWeek.setDate(simulatedToday.getDate() - simulatedToday.getDay() + 1)
 
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const weekDates: Date[] = []
@@ -157,24 +167,24 @@ function WeekStrip({ simulatedToday, onDayClick }: { simulatedToday: Date; onDay
   const startDay = startOfWeek.getDate()
 
   return (
-    <div className="dashboard-week-section">
-      <h3 className="dashboard-section-title">Week of {monthName} {startDay}</h3>
-      <div className="dashboard-week-strip">
+    <section className="db-week-section">
+      <h3 className="db-section-title">Week of {monthName} {startDay}</h3>
+      <div className="db-week-grid">
         {weekDates.map((date, i) => {
           const isToday = date.toDateString() === simulatedToday.toDateString()
           return (
             <button
               key={i}
-              className={`dashboard-week-day ${isToday ? 'dashboard-week-day--today' : ''}`}
+              className={`db-week-day${isToday ? ' db-week-day--today' : ''}`}
               onClick={onDayClick}
             >
-              <span className="dashboard-week-day-name">{days[i]}</span>
-              <span className="dashboard-week-day-num">{date.getDate()}</span>
+              <span className="db-week-day-name">{days[i]}</span>
+              <span className="db-week-day-num">{date.getDate()}</span>
             </button>
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -188,126 +198,129 @@ export default function DashboardHome({
   const weeklyData = personaId === 'alex' ? ALEX_WEEKLY_DATA : MARIA_WEEKLY_DATA
   const [taskPage, setTaskPage] = useState(0)
   const tasksPerPage = 3
-  const totalPages = Math.ceil(tasks.length / tasksPerPage)
+  const totalPages = Math.max(1, Math.ceil(tasks.length / tasksPerPage))
   const visibleTasks = tasks.slice(taskPage * tasksPerPage, (taskPage + 1) * tasksPerPage)
-  const taskScrollRef = useRef<HTMLDivElement>(null)
 
-  // Sparkline data extraction
+  // Sparkline data
   const programsSparkline = weeklyData.map(d => d.programs)
   const ticketsSparkline = weeklyData.map(d => d.tickets)
   const sponsorshipsSparkline = weeklyData.map(d => d.sponsorships)
   const streamingSparkline = weeklyData.map(d => d.streaming)
 
   return (
-    <div className="dashboard-home">
-      {/* Overview Section */}
-      <section className="dashboard-overview">
-        <h2 className="dashboard-section-title">Overview</h2>
-        <div className="dashboard-overview-grid">
-          {/* Left: This Week + Chart */}
-          <div className="dashboard-overview-main">
-            <div className="dashboard-this-week">
-              <span className="dashboard-this-week-label">This Week</span>
-              <span className="dashboard-this-week-amount">${metrics.thisWeek.toLocaleString()}</span>
-              <span className="dashboard-this-week-change">+{metrics.vsLastWeek}% vs prior week</span>
+    <div className="db-home">
+      {/* Overview */}
+      <section className="db-overview">
+        <h2 className="db-section-title">Overview</h2>
+        <div className="db-overview-layout">
+          {/* Chart area */}
+          <div className="db-chart-area">
+            <div className="db-this-week">
+              <span className="db-this-week-label">This Week</span>
+              <span className="db-this-week-amount">${metrics.thisWeek.toLocaleString()}</span>
+              <span className="db-this-week-change">+{metrics.vsLastWeek}% vs prior week</span>
             </div>
-            <div className="dashboard-chart">
-              <ChartContainer config={CHART_CONFIG} className="dashboard-chart-container">
-                <LineChart data={weeklyData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#607081' }} />
-                  <YAxis hide />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="programs" stroke="var(--color-programs)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-programs)' }} />
-                  <Line type="monotone" dataKey="tickets" stroke="var(--color-tickets)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-tickets)' }} />
-                  <Line type="monotone" dataKey="sponsorships" stroke="var(--color-sponsorships)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-sponsorships)' }} />
-                  <Line type="monotone" dataKey="streaming" stroke="var(--color-streaming)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-streaming)' }} />
-                </LineChart>
+            <div className="db-chart">
+              <ChartContainer config={CHART_CONFIG} className="db-chart-container">
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={weeklyData} margin={{ top: 20, right: 12, bottom: 0, left: 12 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="day" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 13, fill: '#607081' }}
+                      dy={8}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line type="monotone" dataKey="programs" stroke="var(--color-programs)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-programs)', strokeWidth: 0 }} />
+                    <Line type="monotone" dataKey="tickets" stroke="var(--color-tickets)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-tickets)', strokeWidth: 0 }} />
+                    <Line type="monotone" dataKey="sponsorships" stroke="var(--color-sponsorships)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-sponsorships)', strokeWidth: 0 }} />
+                    <Line type="monotone" dataKey="streaming" stroke="var(--color-streaming)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-streaming)', strokeWidth: 0 }} />
+                  </LineChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </div>
           </div>
 
-          {/* Right: Next Payout + Breakdown */}
-          <div className="dashboard-overview-side">
-            <div className="dashboard-payout">
-              <div className="dashboard-payout-header">
-                <span className="dashboard-payout-label">Next Payout</span>
-                <span className="dashboard-payout-badge">Automatic Transfer</span>
+          {/* Sidebar: Payout + Metrics */}
+          <div className="db-sidebar">
+            <div className="db-payout">
+              <div className="db-payout-header">
+                <span className="db-payout-label">Next Payout</span>
+                <span className="db-payout-badge">Automatic Transfer</span>
               </div>
-              <span className="dashboard-payout-amount">${metrics.nextPayout.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              <span className="dashboard-payout-date">Scheduled for {metrics.payoutDate}</span>
+              <span className="db-payout-amount">${metrics.nextPayout.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span className="db-payout-date">Scheduled for {metrics.payoutDate}</span>
             </div>
-            <div className="dashboard-breakdown">
-              <div className="dashboard-metric-card">
-                <span className="dashboard-metric-label">Programs</span>
-                <div className="dashboard-metric-row">
-                  <span className="dashboard-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
+            <div className="db-metrics-grid">
+              <div className="db-metric">
+                <span className="db-metric-label">Programs</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
                   <Sparkline data={programsSparkline} color="#1e40af" />
                 </div>
-                <span className="dashboard-metric-change">{metrics.programs.change}% vs prior</span>
+                <span className="db-metric-change">{metrics.programs.change}% vs prior</span>
               </div>
-              <div className="dashboard-metric-card">
-                <span className="dashboard-metric-label">Tickets</span>
-                <div className="dashboard-metric-row">
-                  <span className="dashboard-metric-amount">${metrics.tickets.amount.toLocaleString()}</span>
+              <div className="db-metric">
+                <span className="db-metric-label">Tickets</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.tickets.amount.toLocaleString()}</span>
                   <Sparkline data={ticketsSparkline} color="#16a34a" />
                 </div>
-                <span className="dashboard-metric-change">{metrics.tickets.change}% vs prior</span>
+                <span className="db-metric-change">{metrics.tickets.change}% vs prior</span>
               </div>
-              <div className="dashboard-metric-card">
-                <span className="dashboard-metric-label">Sponsorships</span>
-                <div className="dashboard-metric-row">
-                  <span className="dashboard-metric-amount">${metrics.sponsorships.amount.toLocaleString()}</span>
+              <div className="db-metric">
+                <span className="db-metric-label">Sponsorships</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.sponsorships.amount.toLocaleString()}</span>
                   <Sparkline data={sponsorshipsSparkline} color="#ea580c" />
                 </div>
-                <span className="dashboard-metric-change">{metrics.sponsorships.change}% vs prior</span>
+                <span className="db-metric-change">{metrics.sponsorships.change}% vs prior</span>
               </div>
-              <div className="dashboard-metric-card">
-                <span className="dashboard-metric-label">Streaming</span>
-                <div className="dashboard-metric-row">
-                  <span className="dashboard-metric-amount">${metrics.streaming.amount.toLocaleString()}</span>
+              <div className="db-metric">
+                <span className="db-metric-label">Streaming</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.streaming.amount.toLocaleString()}</span>
                   <Sparkline data={streamingSparkline} color="#7c3aed" />
                 </div>
-                <span className="dashboard-metric-change">{metrics.streaming.change}% vs prior</span>
+                <span className="db-metric-change">{metrics.streaming.change}% vs prior</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tasks + Activity Row */}
-      <div className="dashboard-tasks-activity-row">
-        {/* Tasks Section */}
-        <section className="dashboard-tasks-section">
-          <div className="dashboard-tasks-header">
-            <h3 className="dashboard-section-title">Tasks</h3>
-            {tasks.length > 0 && (
-              <div className="dashboard-tasks-pagination">
-                <span className="dashboard-tasks-page">{taskPage + 1} of {totalPages || 1}</span>
-                <button
-                  className="dashboard-tasks-nav"
-                  onClick={() => setTaskPage(p => Math.max(0, p - 1))}
-                  disabled={taskPage === 0}
-                  aria-label="Previous tasks"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-                <button
-                  className="dashboard-tasks-nav"
-                  onClick={() => setTaskPage(p => Math.min(totalPages - 1, p + 1))}
-                  disabled={taskPage >= totalPages - 1}
-                  aria-label="Next tasks"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-              </div>
-            )}
+      {/* Tasks + Activity */}
+      <div className="db-tasks-activity">
+        <section className="db-tasks">
+          <div className="db-tasks-header">
+            <h3 className="db-section-title">Tasks</h3>
+            <div className="db-tasks-pagination">
+              <span className="db-tasks-page">{Math.min(taskPage + 1, totalPages)} of {totalPages}</span>
+              <button
+                className="db-tasks-nav"
+                onClick={() => setTaskPage(p => Math.max(0, p - 1))}
+                disabled={taskPage === 0}
+                aria-label="Previous"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              <button
+                className="db-tasks-nav"
+                onClick={() => setTaskPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={taskPage >= totalPages - 1 || tasks.length === 0}
+                aria-label="Next"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
           </div>
-          <div className="dashboard-tasks-list" ref={taskScrollRef}>
+          <div className="db-tasks-list">
             {visibleTasks.length > 0 ? (
               visibleTasks.map(task => <TaskCard key={task.id} task={task} />)
             ) : (
-              <div className="dashboard-tasks-empty">
+              <div className="db-tasks-empty">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 <span>No tasks right now</span>
               </div>
@@ -315,25 +328,24 @@ export default function DashboardHome({
           </div>
         </section>
 
-        {/* Activity Section */}
-        <section className="dashboard-activity-section">
-          <h3 className="dashboard-section-title">Activity</h3>
-          <div className="dashboard-activity-grid">
-            <div className="dashboard-activity-card">
-              <span className="dashboard-activity-label">Video Uploaded</span>
-              <div className="dashboard-activity-row">
-                <span className="dashboard-activity-value">{metrics.videoUploaded.value}</span>
+        <section className="db-activity">
+          <h3 className="db-section-title">Activity</h3>
+          <div className="db-activity-cards">
+            <div className="db-activity-card">
+              <span className="db-activity-label">Video Uploaded</span>
+              <div className="db-activity-row">
+                <span className="db-activity-value">{metrics.videoUploaded.value}</span>
                 <Sparkline data={[80, 95, 88, 110, 105, 120, 124]} color="#16a34a" />
               </div>
-              <span className="dashboard-activity-change">{metrics.videoUploaded.change} vs prior</span>
+              <span className="db-activity-change">{metrics.videoUploaded.change} vs prior</span>
             </div>
-            <div className="dashboard-activity-card">
-              <span className="dashboard-activity-label">Video Watched</span>
-              <div className="dashboard-activity-row">
-                <span className="dashboard-activity-value">{metrics.videoWatched.value}</span>
+            <div className="db-activity-card">
+              <span className="db-activity-label">Video Watched</span>
+              <div className="db-activity-row">
+                <span className="db-activity-value">{metrics.videoWatched.value}</span>
                 <Sparkline data={[200, 220, 240, 255, 270, 280, 287]} color="#16a34a" />
               </div>
-              <span className="dashboard-activity-change">{metrics.videoWatched.change} vs prior</span>
+              <span className="db-activity-change">{metrics.videoWatched.change} vs prior</span>
             </div>
           </div>
         </section>
@@ -344,5 +356,3 @@ export default function DashboardHome({
     </div>
   )
 }
-
-export type { TaskItem }
