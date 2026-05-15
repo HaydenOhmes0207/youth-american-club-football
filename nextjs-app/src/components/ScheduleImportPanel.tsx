@@ -164,7 +164,6 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const [optStreaming, setOptStreaming] = useState(true);
   const [optFocus, setOptFocus] = useState(true);
   const [pastedUrl, setPastedUrl] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -179,27 +178,15 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setOptStreaming(true);
       setOptFocus(true);
       setPastedUrl('');
-      setIsTyping(false);
     }
   }, [isOpen]);
 
-  // Fake paste: click the input to simulate pasting a URL
+  // Fake paste: click the input to instantly fill the URL
   const FAKE_URL = 'https://www.nsaa-schedule.org/district/lincoln-east/fall-2026';
   const handleFakePaste = useCallback(() => {
-    if (pastedUrl || isTyping) return;
-    setIsTyping(true);
-    let i = 0;
-    const interval = setInterval(() => {
-      i += 2;
-      if (i >= FAKE_URL.length) {
-        setPastedUrl(FAKE_URL);
-        setIsTyping(false);
-        clearInterval(interval);
-      } else {
-        setPastedUrl(FAKE_URL.slice(0, i));
-      }
-    }, 18);
-  }, [pastedUrl, isTyping]);
+    if (pastedUrl) return;
+    setPastedUrl(FAKE_URL);
+  }, [pastedUrl]);
 
   // Build log based on options
   const agentLog = React.useMemo(() => buildAgentLog(optTickets, optStreaming, optFocus), [optTickets, optStreaming, optFocus]);
@@ -341,7 +328,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                         <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
                       </div>
                       <input
-                        className={`import-paste-input${isTyping ? ' import-paste-input--typing' : ''}`}
+                        className="import-paste-input"
                         type="url"
                         value={pastedUrl}
                         placeholder="Click here to paste your schedule URL"
