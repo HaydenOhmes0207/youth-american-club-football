@@ -502,6 +502,9 @@ export default function NavigationWrapper() {
         }}
         onReviewPrograms={() => {
           setActiveRoute('/programs');
+          const overduePrograms = mariaPrograms.filter(p => (p.outstandingAmount ?? 0) > 0);
+          setComposeOverduePrograms(overduePrograms);
+          setShowComposePanel(true);
         }}
       />
     );
