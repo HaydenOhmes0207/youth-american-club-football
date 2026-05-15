@@ -343,16 +343,17 @@ export default function NavigationWrapper() {
     setBookingApproved(false);
     setBookingRequestSubmitted(false);
     setSubmittedEventResult(null);
-    setFacilitiesTab('schedule');
 
     switch (activeChapter) {
       case 'home':
         setActiveRoute('/');
         setImportedEvents([]);
+        setFacilitiesTab('schedule');
         break;
       case 'schedule-ingest':
         setActiveRoute('/calendar');
         setImportedEvents([]);
+        setFacilitiesTab('schedule');
         break;
       case 'communication':
         setActiveRoute('/');
@@ -361,23 +362,28 @@ export default function NavigationWrapper() {
         } else {
           setImportedEvents([]);
         }
+        setFacilitiesTab('schedule');
         break;
       case 'operations':
         setActiveRoute('/programs');
         setImportedEvents([]);
+        setFacilitiesTab('schedule');
         break;
       case 'external-bookings':
         setActiveRoute('/');
         setImportedEvents(getFallScheduleEvents());
         setBookingApproved(false);
+        setFacilitiesTab('schedule');
         break;
       case 'booking-request':
-        setActiveRoute('/calendar');
+        setActiveRoute('/facilities');
+        setFacilitiesTab('bookings');
         setImportedEvents([]);
         break;
       default:
         setActiveRoute('/');
         setImportedEvents([]);
+        setFacilitiesTab('schedule');
         break;
     }
   }, [activeChapter, chapterVersion]);
@@ -549,7 +555,31 @@ export default function NavigationWrapper() {
   }, [activeChapter]);
 
   // Collect all events for facilities view
-  const allEvents = [...(EVENTS_BY_PERSONA[activePersona.id] || []), ...importedEvents];
+  // In Maria's chapter 4, her booking has been approved so events are no longer pending
+  const isMariaChapter4 = activePersona.id === 'maria' && activeChapter === 'booking-request';
+  const baseEvents = [...(EVENTS_BY_PERSONA[activePersona.id] || []), ...importedEvents];
+  
+  // For Maria's chapter 4, add the confirmed Championship Saturday event if not already in importedEvents
+  const chapter4Event: CalendarEvent | null = isMariaChapter4 && importedEvents.length === 0 ? {
+    id: 'confirmed-champ-saturday',
+    title: 'Championship Saturday',
+    date: new Date(2026, 10, 7),
+    time: '8:00 AM',
+    endTime: '9:00 PM',
+    location: 'Spartan Field',
+    sport: 'Football',
+    type: 'other',
+    color: '#16a34a', // Green for confirmed
+    isExternal: true,
+    isPending: false,
+  } : null;
+  
+  const allEvents = isMariaChapter4
+    ? [
+        ...baseEvents.map(e => ({ ...e, isPending: false })), // Mark all as confirmed
+        ...(chapter4Event ? [chapter4Event] : []),
+      ]
+    : baseEvents;
 
   // Build overlay based on active route or compose panel
   let overlay: React.ReactNode = null;
@@ -623,11 +653,13 @@ export default function NavigationWrapper() {
     if (activePersona.id === 'alex' && activeChapter === 'external-bookings') {
       // Alex sees Maria's incoming request
       bookingRequests.push({ ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' });
-    } else if (activePersona.id === 'maria' && bookingRequestSubmitted) {
-      // Maria sees her own outgoing request (pending or approved based on Alex's action in his chapter)
+    } else if (activePersona.id === 'maria' && (bookingRequestSubmitted || activeChapter === 'booking-request')) {
+      // Maria sees her own outgoing request
+      // In chapter 4 (booking-request), the booking has been approved by Alex
+      const isApprovedInChapter4 = activeChapter === 'booking-request';
       bookingRequests.push({
         ...mariaBookingRequest,
-        status: 'pending', // From Maria's POV it stays pending until she gets a response
+        status: isApprovedInChapter4 ? 'approved' : 'pending',
         fromOrg: 'Memorial Stadium', // Flip perspective -- she requested FROM Memorial Stadium
         fromDirector: 'Alex Thompson',
         fromRole: 'Athletic Director',
