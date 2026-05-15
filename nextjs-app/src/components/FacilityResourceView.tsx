@@ -14,7 +14,7 @@ interface Surface {
 const SURFACES: Surface[] = [
   { id: 'spartan-field', name: 'Spartan Field', venue: 'Memorial Stadium', matchLocations: ['Memorial Stadium'] },
   { id: 'field-1', name: 'Field 1', venue: 'Soccer Complex', matchLocations: ['Soccer Complex'] },
-  { id: 'field-2', name: 'Field 2', venue: 'Soccer Complex', matchLocations: [] }, // extra field, no events
+  { id: 'field-2', name: 'Field 2', venue: 'Soccer Complex', matchLocations: [] },
   { id: 'court-1', name: 'Court 1', venue: 'Main Gym', matchLocations: ['Main Gym'] },
   { id: 'court-2', name: 'Court 2', venue: 'Main Gym', matchLocations: [] },
   { id: 'courts-1-4', name: 'Courts 1-4', venue: 'Tennis Courts', matchLocations: ['Tennis Courts'] },
@@ -23,9 +23,9 @@ const SURFACES: Surface[] = [
   { id: 'stage', name: 'Stage', venue: 'Auditorium', matchLocations: ['Auditorium'] },
 ];
 
-const HOURS_START = 6; // 6 AM
-const HOURS_END = 22;  // 10 PM
-const HOUR_HEIGHT = 60; // px per hour
+const HOURS_START = 6;
+const HOURS_END = 22;
+const HOUR_HEIGHT = 60;
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -48,10 +48,17 @@ function sameDay(a: Date, b: Date): boolean {
 interface FacilityResourceViewProps {
   events: CalendarEvent[];
   cancelledEventIds: Set<string>;
+  simulatedToday?: Date;
 }
 
-export default function FacilityResourceView({ events, cancelledEventIds }: FacilityResourceViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 15)); // Default May 15
+export default function FacilityResourceView({ events, cancelledEventIds, simulatedToday }: FacilityResourceViewProps) {
+  const today = simulatedToday || new Date(2026, 4, 15);
+  const [currentDate, setCurrentDate] = useState(today);
+
+  // Reset when simulated today changes (chapter switch)
+  React.useEffect(() => {
+    setCurrentDate(today);
+  }, [today.getTime()]);
 
   function prevDay() {
     const d = new Date(currentDate);
@@ -64,15 +71,13 @@ export default function FacilityResourceView({ events, cancelledEventIds }: Faci
     setCurrentDate(d);
   }
   function goToday() {
-    setCurrentDate(new Date(2026, 4, 15));
+    setCurrentDate(today);
   }
 
-  const dateLabel = `${DAYS_OF_WEEK[currentDate.getDay()]}, ${MONTHS[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+  const headerLabel = `${DAYS_OF_WEEK[currentDate.getDay()]}, ${MONTHS[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
 
-  // Get events for the current day
+  // Get events for the current day, map to surfaces
   const dayEvents = events.filter(ev => sameDay(ev.date, currentDate));
-
-  // Map events to surfaces
   function getEventsForSurface(surface: Surface): CalendarEvent[] {
     return dayEvents.filter(ev => surface.matchLocations.includes(ev.location));
   }
@@ -80,8 +85,8 @@ export default function FacilityResourceView({ events, cancelledEventIds }: Faci
   const totalHeight = (HOURS_END - HOURS_START) * HOUR_HEIGHT;
 
   return (
-    <div className="resource-container">
-      {/* Toolbar */}
+    <div className="cal-container">
+      {/* Toolbar -- same structure as CalendarView */}
       <div className="toolbar">
         <div className="toolbar-left">
           <div className="cal-nav-group">
@@ -94,14 +99,14 @@ export default function FacilityResourceView({ events, cancelledEventIds }: Faci
             </button>
           </div>
         </div>
-        <span className="cal-header-label">{dateLabel}</span>
+        <span className="cal-header-label">{headerLabel}</span>
         <div className="toolbar-right" />
       </div>
 
-      {/* Resource grid */}
-      <div className="resource-scroll">
-        <div className="resource-grid" style={{ minWidth: `${SURFACES.length * 140 + 60}px` }}>
-          {/* Header row: surface names */}
+      {/* Day resource grid -- uses cal-body as the scroll container */}
+      <div className="cal-body" style={{ overflow: 'auto' }}>
+        <div style={{ minWidth: `${SURFACES.length * 140 + 64}px` }}>
+          {/* Header row: surface columns */}
           <div className="resource-header">
             <div className="resource-time-gutter resource-header-cell" />
             {SURFACES.map(surface => (
@@ -132,12 +137,10 @@ export default function FacilityResourceView({ events, cancelledEventIds }: Faci
               const surfaceEvents = getEventsForSurface(surface);
               return (
                 <div key={surface.id} className="resource-column">
-                  {/* Hour grid lines */}
                   {Array.from({ length: HOURS_END - HOURS_START }, (_, i) => (
                     <div key={i} className="resource-hour-line" style={{ top: `${i * HOUR_HEIGHT}px` }} />
                   ))}
 
-                  {/* Event blocks */}
                   {surfaceEvents.map(ev => {
                     const start = parseTime(ev.time);
                     const end = ev.endTime ? parseTime(ev.endTime) : start + 1;
@@ -153,7 +156,7 @@ export default function FacilityResourceView({ events, cancelledEventIds }: Faci
                           top: `${top}px`,
                           height: `${height}px`,
                           borderLeftColor: isCancelled ? '#9ca3af' : ev.color,
-                          background: isCancelled ? '#f3f4f6' : undefined,
+                          background: isCancelled ? '#f3f4f6' : ev.color + '18',
                         }}
                       >
                         <span className={`resource-event-title ${isCancelled ? 'resource-event-title--cancelled' : ''}`}>

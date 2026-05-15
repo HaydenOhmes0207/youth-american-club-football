@@ -1002,13 +1002,6 @@
 .closure-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* === Facility Resource View === */
-.resource-container {
-  display: flex; flex-direction: column; flex: 1; min-height: 0;
-  border: 1px solid var(--u-color-line-subtle, #c4c6c8); border-radius: var(--u-border-radius-medium, 4px);
-  background: var(--u-color-background-container, #fefefe); overflow: hidden;
-}
-.resource-scroll { flex: 1; overflow: auto; min-height: 0; }
-.resource-grid { display: flex; flex-direction: column; min-width: 100%; }
 .resource-header {
   display: flex; position: sticky; top: 0; z-index: 10;
   border-bottom: 1px solid var(--u-color-line-subtle, #c4c6c8);

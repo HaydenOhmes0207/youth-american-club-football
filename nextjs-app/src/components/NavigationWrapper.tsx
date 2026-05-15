@@ -257,7 +257,7 @@ export default function NavigationWrapper() {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
         <FacilitiesPageContent onOpenClosure={() => setShowClosurePanel(true)} />
-        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} />
+        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );
   } else if (activeRoute === '/community') {
