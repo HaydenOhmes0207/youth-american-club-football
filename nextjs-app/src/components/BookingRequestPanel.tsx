@@ -76,9 +76,7 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
           </button>
         </div>
 
-        <div className="import-panel-body-wrapper">
-          <div className="import-panel-slider">
-            <div className="import-panel-pane" style={{ width: '100%' }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <div className="import-panel-body">
                 <div className="closure-phase-review">
                   {/* Requesting Organization */}
@@ -146,20 +144,19 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
                   </div>
                 </div>
               </div>
-              <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
-                <button className="booking-decline-btn" onClick={handleDecline} disabled={isApproving}>
-                  Decline
-                </button>
-                <button className="booking-approve-btn" onClick={handleApprove} disabled={isApproving}>
-                  {isApproving ? (
-                    <><span className="import-btn-spinner import-btn-spinner--light" />Approving...</>
-                  ) : (
-                    'Approve & Unlock Camera'
-                  )}
-                </button>
               </div>
-            </div>
-          </div>
+        </div>
+        <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
+          <button className="booking-decline-btn" onClick={handleDecline} disabled={isApproving}>
+            Decline
+          </button>
+          <button className="booking-approve-btn" onClick={handleApprove} disabled={isApproving}>
+            {isApproving ? (
+              <><span className="import-btn-spinner import-btn-spinner--light" />Approving...</>
+            ) : (
+              'Approve & Unlock Camera'
+            )}
+          </button>
         </div>
       </div>
     </>

@@ -991,8 +991,8 @@
 }
 
 /* Phase 2: Review */
-.closure-phase-review { display: flex; flex-direction: column; gap: var(--u-space-one-and-half, 24px); }
-.closure-review-section { display: flex; flex-direction: column; gap: var(--u-space-half, 8px); }
+.closure-phase-review { display: flex; flex-direction: column; gap: var(--u-space-one-and-half, 24px); min-width: 0; }
+.closure-review-section { display: flex; flex-direction: column; gap: var(--u-space-half, 8px); min-width: 0; }
 .closure-event-list {
   border: 1px solid var(--u-color-line-subtle, #c4c6c8); border-radius: var(--u-border-radius-medium, 4px);
   overflow: hidden;
@@ -1440,6 +1440,7 @@
 .booking-event-card {
   display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
   background: var(--u-color-background-subtle, #f5f6f7); border-radius: var(--u-border-radius-medium, 4px);
+  min-width: 0; overflow: hidden;
 }
 .booking-event-title {
   font-family: var(--u-font-body); font-size: 14px; font-weight: 600;
@@ -1448,6 +1449,7 @@
 .booking-event-desc {
   font-family: var(--u-font-body); font-size: 13px; line-height: 1.4;
   color: var(--u-color-base-foreground-subtle, #607081);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .booking-amenities { display: flex; flex-wrap: wrap; gap: 6px; }
 .booking-amenity-chip {
@@ -1460,6 +1462,7 @@
 .booking-availability {
   display: flex; align-items: center; gap: 8px; padding: 8px 12px;
   background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--u-border-radius-medium, 4px);
+  min-width: 0; overflow-wrap: break-word;
 }
 .booking-availability-dot {
   width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0;

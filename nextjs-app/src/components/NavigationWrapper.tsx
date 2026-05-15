@@ -251,7 +251,15 @@ export default function NavigationWrapper() {
   const [showBookingPanel, setShowBookingPanel] = useState(false);
   const [bookingApproved, setBookingApproved] = useState(false);
   const [bookingRequestSubmitted, setBookingRequestSubmitted] = useState(false);
+  const [submittedEventResult, setSubmittedEventResult] = useState<ManualEventResult | null>(null);
   const { showToast } = useToast();
+
+  const AMENITY_ID_TO_BOOKING: Record<string, { label: string; icon: 'camera' | 'scoreboard' | 'pa' | 'pressbox' }> = {
+    camera: { label: 'Camera / Streaming', icon: 'camera' },
+    scoreboard: { label: 'Scoreboard', icon: 'scoreboard' },
+    pa: { label: 'PA System', icon: 'pa' },
+    pressbox: { label: 'Press Box', icon: 'pressbox' },
+  };
 
   const mariaBookingRequest: BookingRequest = {
     id: 'booking-1',
@@ -260,16 +268,20 @@ export default function NavigationWrapper() {
     fromRole: 'Club Director',
     facility: 'Spartan Field',
     venue: 'Memorial Stadium',
-    date: '2026-11-07',
-    dateLabel: 'Saturday, November 7, 2026',
-    timeBlock: '8:00 AM - 6:00 PM',
-    eventTitle: 'Championship Saturday',
-    description: 'End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.',
-    amenities: [
-      { label: 'Camera / Streaming', icon: 'camera' },
-      { label: 'Scoreboard', icon: 'scoreboard' },
-      { label: 'PA System', icon: 'pa' },
-    ],
+    date: submittedEventResult?.date || '2026-11-07',
+    dateLabel: submittedEventResult
+      ? new Date(submittedEventResult.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      : 'Saturday, November 7, 2026',
+    timeBlock: submittedEventResult?.timeBlock || '8:00 AM - 6:00 PM',
+    eventTitle: submittedEventResult?.title || 'Championship Saturday',
+    description: submittedEventResult?.description || 'End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.',
+    amenities: submittedEventResult
+      ? submittedEventResult.amenities.map(id => AMENITY_ID_TO_BOOKING[id]).filter(Boolean)
+      : [
+          { label: 'Camera / Streaming', icon: 'camera' },
+          { label: 'Scoreboard', icon: 'scoreboard' },
+          { label: 'PA System', icon: 'pa' },
+        ],
     status: 'pending',
   };
 
@@ -287,6 +299,7 @@ export default function NavigationWrapper() {
     setShowBookingPanel(false);
     setBookingApproved(false);
     setBookingRequestSubmitted(false);
+    setSubmittedEventResult(null);
 
     switch (activeChapter) {
       case 'home':
@@ -391,6 +404,7 @@ export default function NavigationWrapper() {
     setImportedEvents(prev => [...prev, pendingEvent]);
     setShowImportPanel(false);
     setBookingRequestSubmitted(true);
+    setSubmittedEventResult(result);
     showToast(
       result.isExternal
         ? `Booking request sent to ${result.externalOrg}`
