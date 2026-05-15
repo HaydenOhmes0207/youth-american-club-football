@@ -887,6 +887,34 @@
 }
 .storm-alert-action:hover { background: #fffbeb; }
 
+/* === Payment Alert Card === */
+.payment-alert-card {
+  display: flex; align-items: flex-start; gap: var(--u-space-one, 16px);
+  padding: var(--u-space-one, 16px) var(--u-space-one-and-half, 24px);
+  background: #fef2f2; border: 1px solid #f87171; border-radius: var(--u-border-radius-medium, 4px);
+}
+.payment-alert-icon {
+  display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+  border-radius: var(--u-border-radius-medium, 4px); background: #fca5a5; color: #7f1d1d; flex-shrink: 0;
+}
+.payment-alert-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.payment-alert-title {
+  font-family: var(--u-font-body); font-size: var(--u-font-size-default, 16px);
+  font-weight: var(--u-font-weight-bold, 700); color: #7f1d1d;
+}
+.payment-alert-desc {
+  font-family: var(--u-font-body); font-size: var(--u-font-size-200, 14px);
+  color: #991b1b; line-height: 1.4;
+}
+.payment-alert-action {
+  flex-shrink: 0; height: 36px; padding: 0 var(--u-space-one, 16px);
+  border: 1px solid #ef4444; border-radius: var(--u-border-radius-medium, 4px);
+  background: #fff; font-family: var(--u-font-body); font-size: var(--u-font-size-200, 14px);
+  font-weight: var(--u-font-weight-medium, 500); color: #991b1b; cursor: pointer;
+  transition: background 0.15s ease; align-self: center;
+}
+.payment-alert-action:hover { background: #fef2f2; }
+
 /* === Facility Closure Panel === */
 .closure-phase-configure { display: flex; flex-direction: column; gap: var(--u-space-one-and-half, 24px); }
 .closure-date-display {

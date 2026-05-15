@@ -126,7 +126,15 @@ function DeskIcon({ type }: { type: DeskItem['icon'] }) {
   );
 }
 
-function HomePage({ onTakeAction, showStormAlert, deskItems }: { onTakeAction?: () => void; showStormAlert?: boolean; deskItems?: DeskItem[] }) {
+interface HomePageProps {
+  onTakeAction?: () => void;
+  showStormAlert?: boolean;
+  showPaymentAlert?: boolean;
+  onReviewPrograms?: () => void;
+  deskItems?: DeskItem[];
+}
+
+function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, onReviewPrograms, deskItems }: HomePageProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
       <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
@@ -140,6 +148,18 @@ function HomePage({ onTakeAction, showStormAlert, deskItems }: { onTakeAction?: 
             <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
           </div>
           <button className="storm-alert-action" onClick={onTakeAction}>Take Action</button>
+        </div>
+      )}
+      {showPaymentAlert && (
+        <div className="payment-alert-card">
+          <div className="payment-alert-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <div className="payment-alert-content">
+            <div className="payment-alert-title">Overdue Payments Across 3 Programs</div>
+            <div className="payment-alert-desc"><strong>$17,545</strong> outstanding across Fall Tackle Football, Fall Flag Football, and Fall Cheer. <strong>72 families</strong> have unpaid balances that need follow-up before the season starts.</div>
+          </div>
+          <button className="payment-alert-action" onClick={onReviewPrograms}>Review Programs</button>
         </div>
       )}
       {deskItems && deskItems.length > 0 && (
@@ -235,12 +255,11 @@ export default function NavigationWrapper() {
         setImportedEvents([]);
         break;
       case 'communication':
-        if (activePersona.id === 'maria') {
-          setActiveRoute('/programs');
-          setImportedEvents([]);
-        } else {
-          setActiveRoute('/');
+        setActiveRoute('/');
+        if (activePersona.id !== 'maria') {
           setImportedEvents(getFallScheduleEvents());
+        } else {
+          setImportedEvents([]);
         }
         break;
       case 'operations':
@@ -464,29 +483,25 @@ export default function NavigationWrapper() {
       );
     }
   } else if (activeRoute === '/') {
-    const mariaDeskItems: DeskItem[] = activePersona.id === 'maria' && activeChapter !== 'home' ? [
-      { id: 'desk-1', icon: 'payment', label: '$13,680 outstanding across Fall Tackle Football', detail: '48 families have unpaid balances' },
-      { id: 'desk-2', icon: 'assignment', label: '14 athletes unassigned to teams', detail: 'Fall Tackle Football registration' },
-      { id: 'desk-3', icon: 'registration', label: '12 new registrations this week', detail: 'Flag Football is filling up fast' },
+    const isAlex = activePersona.id === 'alex';
+    const isMaria = activePersona.id === 'maria';
+
+    const mariaDeskItems: DeskItem[] = isMaria && activeChapter !== 'home' ? [
+      { id: 'desk-1', icon: 'assignment', label: '14 athletes unassigned to teams', detail: 'Fall Tackle Football registration' },
+      { id: 'desk-2', icon: 'registration', label: '12 new registrations this week', detail: 'Flag Football is filling up fast' },
     ] : [];
 
     pageContent = (
       <HomePage
-        showStormAlert={activeChapter === 'communication'}
+        showStormAlert={isAlex && activeChapter === 'communication'}
+        showPaymentAlert={isMaria && activeChapter === 'communication'}
         deskItems={mariaDeskItems}
         onTakeAction={() => {
           setActiveRoute('/facilities');
           setShowClosurePanel(true);
         }}
-      />
-    );
-  } else {
-    pageContent = (
-      <HomePage
-        showStormAlert={activeChapter === 'communication'}
-        onTakeAction={() => {
-          setActiveRoute('/facilities');
-          setShowClosurePanel(true);
+        onReviewPrograms={() => {
+          setActiveRoute('/programs');
         }}
       />
     );
