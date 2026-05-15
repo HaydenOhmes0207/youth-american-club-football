@@ -936,6 +936,71 @@ export default function NavigationWrapper() {
       });
     }
 
+    // Default generic tasks if none are set (for demo purposes)
+    if (dashboardTasks.length === 0) {
+      if (isAlex) {
+        dashboardTasks.push(
+          {
+            id: 'alex-equipment',
+            category: 'facility',
+            categoryLabel: 'Facility',
+            timestamp: '1h ago',
+            title: 'Equipment Check',
+            description: 'Varsity equipment inventory due before Friday practice.',
+            onClick: () => setActiveRoute('/facilities'),
+          },
+          {
+            id: 'alex-roster',
+            category: 'programs',
+            categoryLabel: 'Programs',
+            timestamp: '3h ago',
+            title: 'Roster Update',
+            description: '3 athletes need medical clearance forms submitted.',
+            onClick: () => setActiveRoute('/programs'),
+          },
+          {
+            id: 'alex-film',
+            category: 'programs',
+            categoryLabel: 'Programs',
+            timestamp: '5h ago',
+            title: 'Film Review',
+            description: 'Upload game film from last Saturday for team review session.',
+            onClick: () => setActiveRoute('/programs'),
+          }
+        );
+      } else if (isMaria) {
+        dashboardTasks.push(
+          {
+            id: 'maria-registration',
+            category: 'registration',
+            categoryLabel: 'Registration',
+            timestamp: '45m ago',
+            title: 'Pending Approvals',
+            description: '12 new registrations awaiting review for Fall Season.',
+            onClick: () => setActiveRoute('/programs'),
+          },
+          {
+            id: 'maria-volunteer',
+            category: 'programs',
+            categoryLabel: 'Programs',
+            timestamp: '2h ago',
+            title: 'Volunteer Signup',
+            description: 'Need 4 more parent volunteers for Saturday concessions.',
+            onClick: () => setActiveRoute('/community'),
+          },
+          {
+            id: 'maria-uniform',
+            category: 'programs',
+            categoryLabel: 'Programs',
+            timestamp: '4h ago',
+            title: 'Uniform Distribution',
+            description: '8U team uniforms arriving Wednesday - schedule pickup times.',
+            onClick: () => setActiveRoute('/programs'),
+          }
+        );
+      }
+    }
+
     pageContent = (
       <DashboardHome
         personaId={activePersona.id as 'alex' | 'maria'}
