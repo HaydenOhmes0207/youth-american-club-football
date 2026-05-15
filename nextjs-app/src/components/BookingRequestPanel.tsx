@@ -68,7 +68,7 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
   return (
     <>
       <div className="import-panel-backdrop" onClick={onClose} />
-      <div className="import-panel">
+      <div className="import-panel" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div className="import-panel-header">
           <h2 className="import-panel-title">Booking Request</h2>
           <button className="import-panel-close" onClick={onClose} aria-label="Close">
@@ -76,74 +76,74 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
           </button>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <div className="import-panel-body">
-                <div className="closure-phase-review">
-                  {/* Requesting Organization */}
-                  <div className="closure-review-section">
-                    <div className="closure-section-label">Requesting organization</div>
-                    <div className="booking-org-card">
-                      <div className="booking-org-avatar">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/></svg>
-                      </div>
-                      <div className="booking-org-info">
-                        <span className="booking-org-name">{request.fromOrg}</span>
-                        <span className="booking-org-director">{request.fromDirector} &middot; {request.fromRole}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Facility & Date */}
-                  <div className="closure-review-section">
-                    <div className="closure-section-label">Facility</div>
-                    <div className="booking-detail-rows">
-                      <div className="booking-detail-row">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.333l6 3v7.334l-6 3-6-3V4.333l6-3z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/><path d="M8 8v6.667M2 4.333L8 8l6-3.667" stroke="currentColor" strokeWidth="1.25"/></svg>
-                        <span className="booking-detail-text"><strong>{request.facility}</strong> &middot; {request.venue}</span>
-                      </div>
-                      <div className="booking-detail-row">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.333" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.25"/><path d="M2.5 6.333h11" stroke="currentColor" strokeWidth="1.25"/><path d="M5.5 1.333v2M10.5 1.333v2" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
-                        <span className="booking-detail-text">{request.dateLabel}</span>
-                      </div>
-                      <div className="booking-detail-row">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.25"/><path d="M8 4v4l2.5 2.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
-                        <span className="booking-detail-text">{request.timeBlock}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Event */}
-                  <div className="closure-review-section">
-                    <div className="closure-section-label">Event</div>
-                    <div className="booking-event-card">
-                      <span className="booking-event-title">{request.eventTitle}</span>
-                      <span className="booking-event-desc">{request.description}</span>
-                    </div>
-                  </div>
-
-                  {/* Requested Amenities */}
-                  <div className="closure-review-section">
-                    <div className="closure-section-label">Requested amenities</div>
-                    <div className="booking-amenities">
-                      {request.amenities.map((a, i) => (
-                        <div key={i} className="booking-amenity-chip">
-                          <AmenityIcon type={a.icon} />
-                          <span>{a.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Availability */}
-                  <div className="closure-review-section">
-                    <div className="closure-section-label">Availability</div>
-                    <div className="booking-availability">
-                      <div className="booking-availability-dot" />
-                      <span className="booking-availability-text">Spartan Field is <strong>available</strong> on {request.dateLabel}</span>
-                    </div>
-                  </div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px' }}>
+          <div className="closure-phase-review">
+            {/* Requesting Organization */}
+            <div className="closure-review-section">
+              <div className="closure-section-label">Requesting organization</div>
+              <div className="booking-org-card">
+                <div className="booking-org-avatar">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M17 19v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/></svg>
+                </div>
+                <div className="booking-org-info">
+                  <span className="booking-org-name">{request.fromOrg}</span>
+                  <span className="booking-org-director">{request.fromDirector} &middot; {request.fromRole}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Facility & Date */}
+            <div className="closure-review-section">
+              <div className="closure-section-label">Facility</div>
+              <div className="booking-detail-rows">
+                <div className="booking-detail-row">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.333l6 3v7.334l-6 3-6-3V4.333l6-3z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/><path d="M8 8v6.667M2 4.333L8 8l6-3.667" stroke="currentColor" strokeWidth="1.25"/></svg>
+                  <span className="booking-detail-text"><strong>{request.facility}</strong> &middot; {request.venue}</span>
+                </div>
+                <div className="booking-detail-row">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.333" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.25"/><path d="M2.5 6.333h11" stroke="currentColor" strokeWidth="1.25"/><path d="M5.5 1.333v2M10.5 1.333v2" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+                  <span className="booking-detail-text">{request.dateLabel}</span>
+                </div>
+                <div className="booking-detail-row">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.25"/><path d="M8 4v4l2.5 2.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+                  <span className="booking-detail-text">{request.timeBlock}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Event */}
+            <div className="closure-review-section">
+              <div className="closure-section-label">Event</div>
+              <div className="booking-event-card">
+                <span className="booking-event-title">{request.eventTitle}</span>
+                <span className="booking-event-desc">{request.description}</span>
+              </div>
+            </div>
+
+            {/* Requested Amenities */}
+            {request.amenities.length > 0 && (
+              <div className="closure-review-section">
+                <div className="closure-section-label">Requested amenities</div>
+                <div className="booking-amenities">
+                  {request.amenities.map((a, i) => (
+                    <div key={i} className="booking-amenity-chip">
+                      <AmenityIcon type={a.icon} />
+                      <span>{a.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Availability */}
+            <div className="closure-review-section">
+              <div className="closure-section-label">Availability</div>
+              <div className="booking-availability">
+                <div className="booking-availability-dot" />
+                <span className="booking-availability-text">{request.facility} is <strong>available</strong> on {request.dateLabel}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
