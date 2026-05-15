@@ -13,16 +13,58 @@ interface CommunityMember {
   status: 'active' | 'pending' | 'inactive';
 }
 
-const mockCommunityData: CommunityMember[] = [
-  {
-    id: 'member-1',
-    name: 'David Mitchell',
-    email: 'david.mitchell@lincoln.edu',
-    role: 'Administrator',
-    teams: ['Lions Varsity', 'Lions JV'],
-    status: 'active',
-  },
-];
+// Name generation data
+const firstNames = ['James', 'Michael', 'Robert', 'David', 'William', 'Richard', 'Joseph', 'Thomas', 'Christopher', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward', 'Jason', 'Jeffrey', 'Ryan', 'Jacob', 'Gary', 'Nicholas', 'Eric', 'Jonathan', 'Stephen', 'Larry', 'Justin', 'Scott', 'Brandon', 'Benjamin', 'Samuel', 'Raymond', 'Gregory', 'Frank', 'Alexander', 'Patrick', 'Raymond', 'Jack', 'Dennis', 'Jerry', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Barbara', 'Elizabeth', 'Susan', 'Jessica', 'Sarah', 'Karen', 'Lisa', 'Nancy', 'Betty', 'Margaret', 'Sandra', 'Ashley', 'Kimberly', 'Emily', 'Donna', 'Michelle', 'Dorothy', 'Carol', 'Amanda', 'Melissa', 'Deborah', 'Stephanie', 'Rebecca', 'Sharon', 'Laura', 'Cynthia', 'Kathleen', 'Amy', 'Angela', 'Shirley', 'Anna', 'Brenda', 'Pamela', 'Emma', 'Nicole', 'Helen', 'Samantha', 'Katherine', 'Christine', 'Debra', 'Rachel', 'Carolyn', 'Janet', 'Catherine', 'Maria', 'Heather'];
+const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts', 'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes', 'Stewart', 'Morris', 'Morales', 'Murphy', 'Cook', 'Rogers', 'Gutierrez', 'Ortiz', 'Morgan', 'Cooper', 'Peterson', 'Bailey', 'Reed', 'Kelly', 'Howard', 'Ramos', 'Kim', 'Cox', 'Ward', 'Richardson', 'Watson', 'Brooks', 'Chavez', 'Wood', 'James', 'Bennett', 'Gray', 'Mendoza', 'Ruiz', 'Hughes', 'Price', 'Alvarez', 'Castillo', 'Sanders', 'Patel', 'Myers', 'Long', 'Ross', 'Foster', 'Jimenez'];
+const roles = ['Parent/Guardian', 'Parent/Guardian', 'Parent/Guardian', 'Parent/Guardian', 'Parent/Guardian', 'Parent/Guardian', 'Coach', 'Coach', 'Assistant Coach', 'Team Manager', 'Volunteer', 'Administrator', 'Athlete'];
+const alexTeams = ['Varsity Football', 'JV Football', 'Freshman Football'];
+const mariaTeams = ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U', 'Mustangs 8U', 'Flag 6U', 'Flag 8U', 'Cheer Squad', 'Mini Cheer'];
+const statuses: ('active' | 'pending' | 'inactive')[] = ['active', 'active', 'active', 'active', 'active', 'active', 'active', 'active', 'pending', 'inactive'];
+
+function generateMembers(count: number, teams: string[], emailDomain: string): CommunityMember[] {
+  const members: CommunityMember[] = [];
+  for (let i = 0; i < count; i++) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const role = roles[Math.floor(Math.random() * roles.length)];
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const memberTeams = role === 'Athlete' || role === 'Parent/Guardian' || role === 'Coach' || role === 'Assistant Coach'
+      ? [teams[Math.floor(Math.random() * teams.length)]]
+      : role === 'Administrator'
+        ? teams.slice(0, Math.min(3, teams.length))
+        : [teams[Math.floor(Math.random() * teams.length)]];
+    
+    members.push({
+      id: `member-${i + 1}`,
+      name: `${firstName} ${lastName}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@${emailDomain}`,
+      role,
+      teams: memberTeams,
+      status,
+    });
+  }
+  return members;
+}
+
+// Generate 520 members for Alex (High School) and 540 for Maria (Youth)
+const alexCommunityData = generateMembers(520, alexTeams, 'lincolnhs.edu');
+const mariaCommunityData = generateMembers(540, mariaTeams, 'lincolnyouthfootball.org');
+
+// Add some specific notable members at the top
+alexCommunityData.unshift(
+  { id: 'alex-admin-1', name: 'David Mitchell', email: 'david.mitchell@lincolnhs.edu', role: 'Administrator', teams: ['Varsity Football', 'JV Football', 'Freshman Football'], status: 'active' },
+  { id: 'alex-coach-1', name: 'Marcus Thompson', email: 'marcus.thompson@lincolnhs.edu', role: 'Head Coach', teams: ['Varsity Football'], status: 'active' },
+  { id: 'alex-coach-2', name: 'Derek Williams', email: 'derek.williams@lincolnhs.edu', role: 'Coach', teams: ['JV Football'], status: 'active' },
+  { id: 'alex-coach-3', name: 'Tony Rodriguez', email: 'tony.rodriguez@lincolnhs.edu', role: 'Coach', teams: ['Freshman Football'], status: 'active' },
+);
+
+mariaCommunityData.unshift(
+  { id: 'maria-admin-1', name: 'Maria Santos', email: 'maria.santos@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U'], status: 'active' },
+  { id: 'maria-admin-2', name: 'Carlos Mendez', email: 'carlos.mendez@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 8U', 'Flag 6U', 'Flag 8U'], status: 'active' },
+  { id: 'maria-coach-1', name: 'Robert Jackson', email: 'robert.jackson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 14U'], status: 'active' },
+  { id: 'maria-coach-2', name: 'Steve Patterson', email: 'steve.patterson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 12U'], status: 'active' },
+  { id: 'maria-cheer-1', name: 'Lisa Anderson', email: 'lisa.anderson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Cheer Squad'], status: 'active' },
+);
 
 function MoreOptionsIcon() {
   return (
@@ -181,9 +223,11 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
 
 interface CommunityTableProps {
   sentNotifications?: SentNotification[];
+  personaId?: 'alex' | 'maria';
 }
 
-export default function CommunityTable({ sentNotifications = [] }: CommunityTableProps) {
+export default function CommunityTable({ sentNotifications = [], personaId = 'alex' }: CommunityTableProps) {
+  const mockCommunityData = personaId === 'maria' ? mariaCommunityData : alexCommunityData;
   const [activeTab, setActiveTab] = useState<CommunityTab>('directory');
   const [roleFilter, setRoleFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
