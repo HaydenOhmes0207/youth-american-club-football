@@ -34,61 +34,213 @@ const SPORT_COLORS: Record<string, string> = {
   'Club Admin': '#64748b',
 };
 
+// Helper to push a repeating weekly event across a date range
+function repeatWeekly(
+  events: CalendarEvent[], prefix: string, opts: Omit<CalendarEvent, 'id' | 'date'>,
+  startDate: Date, endDate: Date, dayOfWeek: number, everyN = 1,
+) {
+  const d = new Date(startDate);
+  // advance to first matching dayOfWeek
+  while (d.getDay() !== dayOfWeek) d.setDate(d.getDate() + 1);
+  let weekCount = 0;
+  while (d <= endDate) {
+    if (weekCount % everyN === 0) {
+      events.push({ ...opts, id: `${prefix}-${events.length}`, date: new Date(d) });
+    }
+    d.setDate(d.getDate() + 7);
+    weekCount++;
+  }
+}
+
+const alexOpponents = ['Westview', 'Eastside', 'Central', 'North Platte', 'Elkhorn', 'Millard North', 'Papillion', 'Bellevue', 'Ralston', 'Burke'];
+const mariaOpponents = ['Omaha Wolves', 'Bellevue Bears', 'Papillion Hawks', 'Ralston Raiders', 'Elkhorn Eagles', 'Millard Mustangs', 'Gretna Grizzlies', 'Blair Bears', 'Bennington Badgers', 'Waverly Vikings'];
+
 function generateAlexEvents(): CalendarEvent[] {
   const events: CalendarEvent[] = [];
-  const year = 2026;
-  const month = 4; // May (0-indexed)
   const C = SPORT_COLORS;
 
-  // --- WEEK 1 (Mon 5/4 - Sat 5/9) ---
+  // ===== MAY & JUNE: Summer camps, clinics, open gyms =====
+  const summerStart = new Date(2026, 4, 4);  // May 4
+  const summerEnd = new Date(2026, 6, 24);   // July 24
+
+  // S&C open 3x/week (Mon, Wed, Fri)
+  repeatWeekly(events, 'asc', { title: 'Strength & Conditioning (Open)', time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] }, summerStart, summerEnd, 1);
+  repeatWeekly(events, 'asc', { title: 'Strength & Conditioning (Open)', time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] }, summerStart, summerEnd, 3);
+  repeatWeekly(events, 'asc', { title: 'Strength & Conditioning (Open)', time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] }, summerStart, summerEnd, 5);
+
+  // XC summer miles club (Tue, Thu)
+  repeatWeekly(events, 'axc', { title: 'XC Summer Miles Club', time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] }, summerStart, summerEnd, 2);
+  repeatWeekly(events, 'axc', { title: 'XC Summer Miles Club', time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] }, summerStart, summerEnd, 4);
+
+  // Soccer clinic Tuesdays
+  repeatWeekly(events, 'asoc', { title: 'Soccer Summer Clinic', time: '5:00 PM', endTime: '7:00 PM', sport: 'Boys Soccer', type: 'event', location: 'Soccer Complex', color: C['Boys Soccer'] }, summerStart, summerEnd, 2);
+
+  // VB open gym Saturdays every 2 weeks
+  repeatWeekly(events, 'avb', { title: 'Volleyball Open Gym', time: '9:00 AM', endTime: '11:00 AM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] }, summerStart, summerEnd, 6, 2);
+
+  // Tennis clinic Wednesdays every 2 weeks
+  repeatWeekly(events, 'atn', { title: 'Girls Tennis Clinic', time: '4:00 PM', endTime: '6:00 PM', sport: 'Girls Tennis', type: 'event', location: 'Tennis Courts', color: C['Girls Tennis'] }, summerStart, summerEnd, 3, 2);
+
+  // Football camps (specific weeks in June)
   events.push(
-    { id: 'a1', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 4), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a2', title: 'AD Staff Meeting', date: new Date(year, month, 4), time: '9:00 AM', endTime: '10:00 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] },
-    { id: 'a3', title: 'Football Skills Camp (Day 1)', date: new Date(year, month, 5), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a4', title: 'Soccer Summer Clinic', date: new Date(year, month, 5), time: '5:00 PM', endTime: '7:00 PM', sport: 'Boys Soccer', type: 'event', location: 'Soccer Complex', color: C['Boys Soccer'] },
-    { id: 'a5', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 6), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a6', title: 'Football Skills Camp (Day 2)', date: new Date(year, month, 6), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a7', title: 'Girls Tennis Clinic', date: new Date(year, month, 6), time: '4:00 PM', endTime: '6:00 PM', sport: 'Girls Tennis', type: 'event', location: 'Tennis Courts', color: C['Girls Tennis'] },
-    { id: 'a8', title: 'Football Skills Camp (Day 3)', date: new Date(year, month, 7), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a9', title: 'XC Summer Miles Club', date: new Date(year, month, 7), time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] },
-    { id: 'a10', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 8), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a11', title: 'Volleyball Open Gym', date: new Date(year, month, 9), time: '9:00 AM', endTime: '11:00 AM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'afbc1', title: 'Football Skills Camp (Day 1)', date: new Date(2026, 4, 5), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afbc2', title: 'Football Skills Camp (Day 2)', date: new Date(2026, 4, 6), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afbc3', title: 'Football Skills Camp (Day 3)', date: new Date(2026, 4, 7), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afb7a', title: 'Football 7-on-7 Camp (Day 1)', date: new Date(2026, 5, 8), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afb7b', title: 'Football 7-on-7 Camp (Day 2)', date: new Date(2026, 5, 9), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afb7c', title: 'Football 7-on-7 Camp (Day 3)', date: new Date(2026, 5, 10), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afblc1', title: 'Football Lineman Camp (Day 1)', date: new Date(2026, 5, 22), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afblc2', title: 'Football Lineman Camp (Day 2)', date: new Date(2026, 5, 23), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afbqb1', title: 'QB & Receiver Camp (Day 1)', date: new Date(2026, 6, 6), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afbqb2', title: 'QB & Receiver Camp (Day 2)', date: new Date(2026, 6, 7), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'afbqb3', title: 'QB & Receiver Camp (Day 3)', date: new Date(2026, 6, 8), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
   );
 
-  // --- WEEK 2 (Mon 5/11 - Sat 5/16) ---
+  // VB summer camp in June
   events.push(
-    { id: 'a12', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 11), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a13', title: 'Booster Club Meeting', date: new Date(year, month, 11), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
-    { id: 'a14', title: 'Soccer Summer Clinic', date: new Date(year, month, 12), time: '5:00 PM', endTime: '7:00 PM', sport: 'Boys Soccer', type: 'event', location: 'Soccer Complex', color: C['Boys Soccer'] },
-    { id: 'a15', title: 'XC Summer Miles Club', date: new Date(year, month, 12), time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] },
-    { id: 'a16', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 13), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a17', title: 'Football 7-on-7 Camp (Day 1)', date: new Date(year, month, 13), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a18', title: 'NSAA Compliance Call', date: new Date(year, month, 14), time: '10:00 AM', endTime: '11:00 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] },
-    { id: 'a19', title: 'Football 7-on-7 Camp (Day 2)', date: new Date(year, month, 14), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a20', title: 'XC Summer Miles Club', date: new Date(year, month, 14), time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] },
-  );
-  // Today (5/15)
-  events.push(
-    { id: 'a21', title: 'Volleyball Summer Camp (Day 1)', date: new Date(year, month, 15), time: '9:00 AM', endTime: '12:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
-    { id: 'a22', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 15), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a23', title: 'Girls Tennis Clinic', date: new Date(year, month, 15), time: '4:00 PM', endTime: '6:00 PM', sport: 'Girls Tennis', type: 'event', location: 'Tennis Courts', color: C['Girls Tennis'] },
-  );
-  events.push(
-    { id: 'a24', title: 'Volleyball Summer Camp (Day 2)', date: new Date(year, month, 16), time: '9:00 AM', endTime: '12:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
-    { id: 'a25', title: 'Soccer Summer Clinic', date: new Date(year, month, 16), time: '10:00 AM', endTime: '12:00 PM', sport: 'Boys Soccer', type: 'event', location: 'Soccer Complex', color: C['Boys Soccer'] },
+    { id: 'avbcamp1', title: 'Volleyball Summer Camp (Day 1)', date: new Date(2026, 5, 15), time: '9:00 AM', endTime: '12:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'avbcamp2', title: 'Volleyball Summer Camp (Day 2)', date: new Date(2026, 5, 16), time: '9:00 AM', endTime: '12:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'avbcamp3', title: 'Volleyball Summer Camp (Day 3)', date: new Date(2026, 5, 17), time: '9:00 AM', endTime: '12:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
   );
 
-  // --- WEEK 3 (Mon 5/18 - Sat 5/23) ---
+  // AD meetings (biweekly Mon)
+  repeatWeekly(events, 'aadm', { title: 'AD Staff Meeting', time: '9:00 AM', endTime: '10:00 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] }, summerStart, summerEnd, 1, 2);
+
+  // One-off admin events
   events.push(
-    { id: 'a26', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 18), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a27', title: 'Coaches All-Sport Planning Mtg', date: new Date(year, month, 18), time: '8:30 AM', endTime: '9:30 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] },
-    { id: 'a28', title: 'Football Lineman Camp', date: new Date(year, month, 19), time: '8:00 AM', endTime: '11:00 AM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
-    { id: 'a29', title: 'Soccer Summer Clinic', date: new Date(year, month, 19), time: '5:00 PM', endTime: '7:00 PM', sport: 'Boys Soccer', type: 'event', location: 'Soccer Complex', color: C['Boys Soccer'] },
-    { id: 'a30', title: 'Strength & Conditioning (Open)', date: new Date(year, month, 20), time: '7:00 AM', endTime: '8:30 AM', sport: 'Strength & Conditioning', type: 'practice', location: 'Weight Room', color: C['Strength & Conditioning'] },
-    { id: 'a31', title: 'XC Summer Miles Club', date: new Date(year, month, 20), time: '6:30 AM', endTime: '7:30 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] },
-    { id: 'a32', title: 'Fall Sports Parent Info Night', date: new Date(year, month, 21), time: '6:30 PM', endTime: '8:00 PM', sport: 'AD Admin', type: 'event', location: 'Auditorium', color: C['AD Admin'] },
-    { id: 'a33', title: 'Volleyball Open Gym', date: new Date(year, month, 23), time: '9:00 AM', endTime: '11:00 AM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
-    { id: 'a34', title: 'Girls Tennis Clinic', date: new Date(year, month, 23), time: '10:00 AM', endTime: '12:00 PM', sport: 'Girls Tennis', type: 'event', location: 'Tennis Courts', color: C['Girls Tennis'] },
+    { id: 'aboost', title: 'Booster Club Meeting', date: new Date(2026, 4, 11), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
+    { id: 'ansaa', title: 'NSAA Compliance Call', date: new Date(2026, 4, 14), time: '10:00 AM', endTime: '11:00 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] },
+    { id: 'aparent', title: 'Fall Sports Parent Info Night', date: new Date(2026, 6, 16), time: '6:30 PM', endTime: '8:00 PM', sport: 'AD Admin', type: 'event', location: 'Auditorium', color: C['AD Admin'] },
+  );
+
+  // ===== AUGUST: Preseason / Tryouts (Aug 3 - Aug 21) =====
+  const preStart = new Date(2026, 7, 3);
+  const preEnd = new Date(2026, 7, 21);
+
+  // Football practice daily M-F
+  for (let dow = 1; dow <= 5; dow++) {
+    repeatWeekly(events, 'afbpre', { title: 'Football - Preseason Practice', time: '7:00 AM', endTime: '10:00 AM', sport: 'Football', type: 'practice', location: 'Memorial Stadium', color: C['Football'] }, preStart, preEnd, dow);
+  }
+  // VB tryouts week 1, practice after
+  events.push(
+    { id: 'avbtry1', title: 'Volleyball Tryouts (Day 1)', date: new Date(2026, 7, 3), time: '3:00 PM', endTime: '5:00 PM', sport: 'Girls Volleyball', type: 'tryout', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'avbtry2', title: 'Volleyball Tryouts (Day 2)', date: new Date(2026, 7, 4), time: '3:00 PM', endTime: '5:00 PM', sport: 'Girls Volleyball', type: 'tryout', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'avbtry3', title: 'Volleyball Tryouts (Day 3)', date: new Date(2026, 7, 5), time: '3:00 PM', endTime: '5:00 PM', sport: 'Girls Volleyball', type: 'tryout', location: 'Main Gym', color: C['Girls Volleyball'] },
+  );
+  repeatWeekly(events, 'avbpre', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, new Date(2026, 7, 10), preEnd, 1);
+  repeatWeekly(events, 'avbpre', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, new Date(2026, 7, 10), preEnd, 3);
+  repeatWeekly(events, 'avbpre', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, new Date(2026, 7, 10), preEnd, 5);
+
+  // Soccer tryouts
+  events.push(
+    { id: 'asoctry1', title: 'Boys Soccer Tryouts (Day 1)', date: new Date(2026, 7, 10), time: '4:00 PM', endTime: '6:00 PM', sport: 'Boys Soccer', type: 'tryout', location: 'Soccer Complex', color: C['Boys Soccer'] },
+    { id: 'asoctry2', title: 'Boys Soccer Tryouts (Day 2)', date: new Date(2026, 7, 11), time: '4:00 PM', endTime: '6:00 PM', sport: 'Boys Soccer', type: 'tryout', location: 'Soccer Complex', color: C['Boys Soccer'] },
+  );
+  // Tennis tryouts
+  events.push(
+    { id: 'atntry1', title: 'Girls Tennis Tryouts', date: new Date(2026, 7, 10), time: '3:00 PM', endTime: '5:00 PM', sport: 'Girls Tennis', type: 'tryout', location: 'Tennis Courts', color: C['Girls Tennis'] },
+  );
+  // XC preseason M-F
+  for (let dow = 1; dow <= 5; dow++) {
+    repeatWeekly(events, 'axcpre', { title: 'Cross Country - Preseason Run', time: '6:30 AM', endTime: '8:00 AM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] }, preStart, preEnd, dow);
+  }
+  events.push(
+    { id: 'afbscrim', title: 'Football - Preseason Scrimmage', date: new Date(2026, 7, 21), time: '7:00 PM', endTime: '9:00 PM', sport: 'Football', type: 'game', location: 'Memorial Stadium', color: C['Football'] },
+  );
+
+  // ===== FALL SEASON: Aug 28 - Nov 28 =====
+  const fallStart = new Date(2026, 7, 28);  // Aug 28
+  const fallEnd = new Date(2026, 10, 28);   // Nov 28
+
+  // Football practices (Mon, Wed) + games (Fri)
+  repeatWeekly(events, 'afbp', { title: 'Football - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Football', type: 'practice', location: 'Memorial Stadium', color: C['Football'] }, fallStart, fallEnd, 1);
+  repeatWeekly(events, 'afbp', { title: 'Football - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Football', type: 'practice', location: 'Memorial Stadium', color: C['Football'] }, fallStart, fallEnd, 3);
+  // Football Friday games (9 game regular season)
+  const fbFridays: Date[] = [];
+  const fd = new Date(fallStart);
+  while (fd.getDay() !== 5) fd.setDate(fd.getDate() + 1);
+  for (let g = 0; g < 9 && fd <= fallEnd; g++) {
+    fbFridays.push(new Date(fd));
+    fd.setDate(fd.getDate() + 7);
+  }
+  fbFridays.forEach((d, i) => {
+    const opp = alexOpponents[i % alexOpponents.length];
+    const home = i % 2 === 0;
+    events.push({ id: `afbg-${i}`, title: `Football vs. ${opp}`, date: d, time: '7:00 PM', endTime: '9:30 PM', sport: 'Football', type: 'game', location: home ? 'Memorial Stadium' : `${opp} HS`, color: C['Football'] });
+  });
+
+  // Boys Soccer practices (Mon, Wed, Thu) + games (Tue, Sat)
+  repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 1);
+  repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 3);
+  repeatWeekly(events, 'asocp', { title: 'Boys Soccer - Practice', time: '4:00 PM', endTime: '5:45 PM', sport: 'Boys Soccer', type: 'practice', location: 'Soccer Complex', color: C['Boys Soccer'] }, fallStart, fallEnd, 4);
+  const socEnd = new Date(2026, 9, 24); // soccer ends late Oct
+  const socTue: Date[] = [];
+  const st = new Date(fallStart);
+  while (st.getDay() !== 2) st.setDate(st.getDate() + 1);
+  for (let g = 0; g < 8 && st <= socEnd; g++) { socTue.push(new Date(st)); st.setDate(st.getDate() + 14); }
+  socTue.forEach((d, i) => {
+    const opp = alexOpponents[(i + 3) % alexOpponents.length];
+    events.push({ id: `asocg-${i}`, title: `Boys Soccer vs. ${opp}`, date: d, time: '4:30 PM', endTime: '6:30 PM', sport: 'Boys Soccer', type: 'game', location: i % 2 === 0 ? 'Soccer Complex' : `${opp} HS`, color: C['Boys Soccer'] });
+  });
+
+  // XC practices (Mon-Fri) + meets (Sat every 2 weeks)
+  for (let dow = 1; dow <= 5; dow++) {
+    repeatWeekly(events, 'axcp', { title: 'Cross Country - Practice', time: '3:30 PM', endTime: '5:00 PM', sport: 'Cross Country', type: 'practice', location: 'Trails / City Park', color: C['Cross Country'] }, fallStart, new Date(2026, 9, 31), dow);
+  }
+  const xcMeetNames = ['Pioneers Park Invitational', 'Elkhorn Invite', 'Heartland Conference Meet', 'Millard Invite', 'District Meet', 'State Qualifier'];
+  const xcMeetLocs = ['Pioneers Park', 'Elkhorn Country Club', 'Walnut Creek', 'Millard West', 'Chalco Hills', 'Kearney Country Club'];
+  let xcI = 0;
+  repeatWeekly(events, 'axcm', { title: '', time: '8:00 AM', endTime: '12:00 PM', sport: 'Cross Country', type: 'game', location: '', color: C['Cross Country'] }, fallStart, new Date(2026, 9, 31), 6, 2);
+  // patch XC meet titles
+  events.filter(e => e.id.startsWith('axcm')).forEach((e, i) => {
+    e.title = xcMeetNames[i % xcMeetNames.length];
+    e.location = xcMeetLocs[i % xcMeetLocs.length];
+  });
+
+  // VB practices (Mon, Wed, Fri) + matches (Tue, Thu alternating)
+  repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 1);
+  repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 3);
+  repeatWeekly(events, 'avbp', { title: 'Volleyball - Practice', time: '3:30 PM', endTime: '5:30 PM', sport: 'Girls Volleyball', type: 'practice', location: 'Main Gym', color: C['Girls Volleyball'] }, fallStart, fallEnd, 5);
+  // VB matches Tuesdays
+  const vbMatchEnd = new Date(2026, 10, 7);
+  const vbTue: Date[] = [];
+  const vt = new Date(fallStart);
+  while (vt.getDay() !== 2) vt.setDate(vt.getDate() + 1);
+  while (vt <= vbMatchEnd) { vbTue.push(new Date(vt)); vt.setDate(vt.getDate() + 7); }
+  vbTue.forEach((d, i) => {
+    const opp = alexOpponents[(i + 5) % alexOpponents.length];
+    events.push({ id: `avbg-${i}`, title: `Volleyball vs. ${opp}`, date: d, time: '6:00 PM', endTime: '8:00 PM', sport: 'Girls Volleyball', type: 'game', location: i % 2 === 0 ? 'Main Gym' : `${opp} HS`, color: C['Girls Volleyball'] });
+  });
+  // VB tournament
+  events.push({ id: 'avbtourney', title: 'Volleyball - Heartland Tournament', date: new Date(2026, 9, 10), time: '8:00 AM', endTime: '5:00 PM', sport: 'Girls Volleyball', type: 'game', location: 'Main Gym', color: C['Girls Volleyball'] });
+
+  // Tennis practices (Mon, Wed) + duals/invites
+  repeatWeekly(events, 'atnp', { title: 'Girls Tennis - Practice', time: '3:30 PM', endTime: '5:00 PM', sport: 'Girls Tennis', type: 'practice', location: 'Tennis Courts', color: C['Girls Tennis'] }, fallStart, new Date(2026, 9, 17), 1);
+  repeatWeekly(events, 'atnp', { title: 'Girls Tennis - Practice', time: '3:30 PM', endTime: '5:00 PM', sport: 'Girls Tennis', type: 'practice', location: 'Tennis Courts', color: C['Girls Tennis'] }, fallStart, new Date(2026, 9, 17), 3);
+  const tnThur: Date[] = [];
+  const tt = new Date(fallStart);
+  while (tt.getDay() !== 4) tt.setDate(tt.getDate() + 1);
+  for (let g = 0; g < 6 && tt <= new Date(2026, 9, 17); g++) { tnThur.push(new Date(tt)); tt.setDate(tt.getDate() + 14); }
+  tnThur.forEach((d, i) => {
+    const opp = alexOpponents[(i + 1) % alexOpponents.length];
+    events.push({ id: `atng-${i}`, title: `Tennis Dual vs. ${opp}`, date: d, time: '4:00 PM', endTime: '6:00 PM', sport: 'Girls Tennis', type: 'game', location: i % 2 === 0 ? 'Tennis Courts' : `${opp} HS`, color: C['Girls Tennis'] });
+  });
+  events.push({ id: 'atninv', title: 'Tennis - Conference Invitational', date: new Date(2026, 9, 3), time: '9:00 AM', endTime: '3:00 PM', sport: 'Girls Tennis', type: 'game', location: 'Mahoney Park', color: C['Girls Tennis'] });
+
+  // AD fall meetings biweekly Mon
+  repeatWeekly(events, 'aadmf', { title: 'AD Staff Meeting', time: '7:30 AM', endTime: '8:15 AM', sport: 'AD Admin', type: 'meeting', location: 'AD Office', color: C['AD Admin'] }, fallStart, fallEnd, 1, 2);
+  // Booster club monthly
+  events.push(
+    { id: 'aboostf1', title: 'Booster Club Meeting', date: new Date(2026, 8, 14), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
+    { id: 'aboostf2', title: 'Booster Club Meeting', date: new Date(2026, 9, 12), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
+    { id: 'aboostf3', title: 'Booster Club Meeting', date: new Date(2026, 10, 9), time: '6:00 PM', endTime: '7:00 PM', sport: 'AD Admin', type: 'meeting', location: 'Library', color: C['AD Admin'] },
+  );
+  // Special events
+  events.push(
+    { id: 'ahomecoming', title: 'Homecoming Game & Ceremony', date: new Date(2026, 9, 2), time: '6:00 PM', endTime: '10:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'aseniornite', title: 'Senior Night - Football', date: new Date(2026, 9, 23), time: '6:30 PM', endTime: '10:00 PM', sport: 'Football', type: 'event', location: 'Memorial Stadium', color: C['Football'] },
+    { id: 'avbsenior', title: 'Senior Night - Volleyball', date: new Date(2026, 9, 20), time: '5:30 PM', endTime: '8:00 PM', sport: 'Girls Volleyball', type: 'event', location: 'Main Gym', color: C['Girls Volleyball'] },
+    { id: 'afallbanq', title: 'Fall Sports Awards Banquet', date: new Date(2026, 10, 19), time: '6:00 PM', endTime: '8:30 PM', sport: 'AD Admin', type: 'event', location: 'Auditorium', color: C['AD Admin'] },
   );
 
   return events;
@@ -96,55 +248,129 @@ function generateAlexEvents(): CalendarEvent[] {
 
 function generateMariaEvents(): CalendarEvent[] {
   const events: CalendarEvent[] = [];
-  const year = 2026;
-  const month = 4; // May
   const C = SPORT_COLORS;
 
-  // --- WEEK 1 (Mon 5/4 - Sat 5/9) ---
+  // ===== MAY - JULY: Summer camps, clinics =====
+  const summerStart = new Date(2026, 4, 4);
+  const summerEnd = new Date(2026, 6, 24);
+
+  // Speed & agility Mondays
+  repeatWeekly(events, 'msa', { title: 'Speed & Agility Clinic (All Ages)', time: '5:30 PM', endTime: '7:00 PM', sport: 'Speed & Agility', type: 'event', location: 'Pioneer Park Field 2', color: C['Speed & Agility'] }, summerStart, summerEnd, 1);
+
+  // Flag football clinics Thursdays
+  repeatWeekly(events, 'mffc', { title: 'Flag Football Clinic (3rd-4th)', time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] }, summerStart, summerEnd, 4);
+
+  // Cheer camp Wednesdays
+  repeatWeekly(events, 'mcheer', { title: 'Cheer Camp', time: '5:00 PM', endTime: '7:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] }, summerStart, summerEnd, 3);
+
+  // Board meeting 1st Thursday of month
   events.push(
-    { id: 'm1', title: 'Tackle Football Camp (5th-6th) Day 1', date: new Date(year, month, 4), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm2', title: 'Speed & Agility Clinic (All Ages)', date: new Date(year, month, 4), time: '5:30 PM', endTime: '7:00 PM', sport: 'Speed & Agility', type: 'event', location: 'Pioneer Park Field 2', color: C['Speed & Agility'] },
-    { id: 'm3', title: 'Tackle Football Camp (5th-6th) Day 2', date: new Date(year, month, 5), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm4', title: 'Flag Football Intro Clinic (3rd-4th)', date: new Date(year, month, 5), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] },
-    { id: 'm5', title: 'Tackle Football Camp (5th-6th) Day 3', date: new Date(year, month, 6), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm6', title: 'Cheer Summer Camp (Day 1)', date: new Date(year, month, 6), time: '5:00 PM', endTime: '7:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
-    { id: 'm7', title: 'Cheer Summer Camp (Day 2)', date: new Date(year, month, 7), time: '5:00 PM', endTime: '7:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
-    { id: 'm8', title: 'Board Meeting', date: new Date(year, month, 7), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
-    { id: 'm9', title: 'Cheer Summer Camp (Day 3)', date: new Date(year, month, 8), time: '5:00 PM', endTime: '7:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
-    { id: 'm10', title: 'Flag Football Jamboree (3rd-4th)', date: new Date(year, month, 9), time: '9:00 AM', endTime: '12:00 PM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Fields', color: C['Flag Football Clinic'] },
+    { id: 'mbd1', title: 'Board Meeting', date: new Date(2026, 4, 7), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mbd2', title: 'Board Meeting', date: new Date(2026, 5, 4), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mbd3', title: 'Board Meeting', date: new Date(2026, 6, 2), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
   );
 
-  // --- WEEK 2 (Mon 5/11 - Sat 5/16) ---
+  // Tackle football camps - multi-day blocks
   events.push(
-    { id: 'm11', title: 'Tackle Football Camp (3rd-4th) Day 1', date: new Date(year, month, 11), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm12', title: 'Speed & Agility Clinic (All Ages)', date: new Date(year, month, 11), time: '5:30 PM', endTime: '7:00 PM', sport: 'Speed & Agility', type: 'event', location: 'Pioneer Park Field 2', color: C['Speed & Agility'] },
-    { id: 'm13', title: 'Tackle Football Camp (3rd-4th) Day 2', date: new Date(year, month, 12), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm14', title: 'Coach Certification Workshop', date: new Date(year, month, 12), time: '6:00 PM', endTime: '8:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
-    { id: 'm15', title: 'Tackle Football Camp (3rd-4th) Day 3', date: new Date(year, month, 13), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm16', title: 'QB & Receiver Clinic (5th-6th)', date: new Date(year, month, 13), time: '5:30 PM', endTime: '7:30 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 2', color: C['Football Camp'] },
-    { id: 'm17', title: 'Equipment Fitting Day (All Teams)', date: new Date(year, month, 14), time: '10:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Storage Building', color: C['Club Admin'] },
-  );
-  // Today (5/15)
-  events.push(
-    { id: 'm18', title: 'Summer Coaches Meeting', date: new Date(year, month, 15), time: '6:00 PM', endTime: '7:30 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
-    { id: 'm19', title: 'Flag Football Clinic (3rd-4th)', date: new Date(year, month, 15), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] },
-  );
-  events.push(
-    { id: 'm20', title: 'Lineman Camp (5th-6th)', date: new Date(year, month, 16), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm21', title: 'Cheer Tryout Prep Clinic', date: new Date(year, month, 16), time: '10:00 AM', endTime: '12:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
+    { id: 'mtfc1a', title: 'Tackle Football Camp (5th-6th) Day 1', date: new Date(2026, 4, 5), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mtfc1b', title: 'Tackle Football Camp (5th-6th) Day 2', date: new Date(2026, 4, 6), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mtfc1c', title: 'Tackle Football Camp (5th-6th) Day 3', date: new Date(2026, 4, 7), time: '9:00 AM', endTime: '12:00 PM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mtfc2a', title: 'Tackle Football Camp (3rd-4th) Day 1', date: new Date(2026, 4, 11), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mtfc2b', title: 'Tackle Football Camp (3rd-4th) Day 2', date: new Date(2026, 4, 12), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mtfc2c', title: 'Tackle Football Camp (3rd-4th) Day 3', date: new Date(2026, 4, 13), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mdfsc', title: 'Defensive Skills Camp (5th-6th)', date: new Date(2026, 5, 15), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mqbr1', title: 'QB & Receiver Clinic (5th-6th)', date: new Date(2026, 5, 16), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 2', color: C['Football Camp'] },
+    { id: 'mlinc1', title: 'Lineman Camp (5th-6th) Day 1', date: new Date(2026, 5, 29), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mlinc2', title: 'Lineman Camp (5th-6th) Day 2', date: new Date(2026, 5, 30), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mcampscrim', title: 'End-of-Camp Scrimmage (5th-6th)', date: new Date(2026, 6, 18), time: '9:00 AM', endTime: '11:00 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
+    { id: 'mflagfun', title: 'Flag Football Fun Day (3rd-4th)', date: new Date(2026, 6, 18), time: '9:00 AM', endTime: '11:00 AM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] },
   );
 
-  // --- WEEK 3 (Mon 5/18 - Sat 5/23) ---
+  // Club admin summer events
   events.push(
-    { id: 'm22', title: 'Speed & Agility Clinic (All Ages)', date: new Date(year, month, 18), time: '5:30 PM', endTime: '7:00 PM', sport: 'Speed & Agility', type: 'event', location: 'Pioneer Park Field 2', color: C['Speed & Agility'] },
-    { id: 'm23', title: 'Fundraiser Committee', date: new Date(year, month, 18), time: '7:30 PM', endTime: '8:30 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
-    { id: 'm24', title: 'Flag Football Clinic (3rd-4th)', date: new Date(year, month, 19), time: '5:30 PM', endTime: '7:00 PM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] },
-    { id: 'm25', title: 'Defensive Skills Camp (5th-6th)', date: new Date(year, month, 20), time: '9:00 AM', endTime: '11:30 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm26', title: 'Cheer Choreography Workshop', date: new Date(year, month, 20), time: '5:00 PM', endTime: '7:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
-    { id: 'm27', title: 'Fall Registration Opens - Info Session', date: new Date(year, month, 21), time: '6:00 PM', endTime: '7:30 PM', sport: 'Club Admin', type: 'event', location: 'Community Center', color: C['Club Admin'] },
-    { id: 'm28', title: 'End-of-Camp Scrimmage (5th-6th)', date: new Date(year, month, 23), time: '9:00 AM', endTime: '11:00 AM', sport: 'Football Camp', type: 'event', location: 'Pioneer Park Field 1', color: C['Football Camp'] },
-    { id: 'm29', title: 'Flag Football Fun Day (3rd-4th)', date: new Date(year, month, 23), time: '9:00 AM', endTime: '11:00 AM', sport: 'Flag Football Clinic', type: 'event', location: 'Pioneer Park Field 3', color: C['Flag Football Clinic'] },
-    { id: 'm30', title: 'Cheer Showcase', date: new Date(year, month, 23), time: '11:30 AM', endTime: '1:00 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
+    { id: 'mcoach', title: 'Coach Certification Workshop', date: new Date(2026, 4, 12), time: '6:00 PM', endTime: '8:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mequip', title: 'Equipment Fitting Day (All Teams)', date: new Date(2026, 4, 14), time: '10:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Storage Building', color: C['Club Admin'] },
+    { id: 'mcoachm', title: 'Summer Coaches Meeting', date: new Date(2026, 4, 15), time: '6:00 PM', endTime: '7:30 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mfund', title: 'Fundraiser Committee', date: new Date(2026, 4, 18), time: '7:30 PM', endTime: '8:30 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mreg', title: 'Fall Registration Opens - Info Session', date: new Date(2026, 5, 18), time: '6:00 PM', endTime: '7:30 PM', sport: 'Club Admin', type: 'event', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mcheershow', title: 'Cheer Showcase', date: new Date(2026, 6, 23), time: '6:00 PM', endTime: '7:30 PM', sport: 'Cheer Camp', type: 'event', location: 'Community Center Gym', color: C['Cheer Camp'] },
+  );
+
+  // ===== AUGUST: Equipment handout, preseason practices =====
+  // Equipment handout
+  events.push(
+    { id: 'mequipf', title: 'Equipment Handout Day (All Teams)', date: new Date(2026, 7, 1), time: '9:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Storage Building', color: C['Club Admin'] },
+  );
+  // Preseason practices: 6th/5th Mon+Wed, 4th/3rd Tue+Thu, Cheer Wed
+  const preStart = new Date(2026, 7, 3);
+  const preEnd = new Date(2026, 7, 22);
+  repeatWeekly(events, 'mpre6', { title: '6th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, preStart, preEnd, 1);
+  repeatWeekly(events, 'mpre6', { title: '6th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, preStart, preEnd, 3);
+  repeatWeekly(events, 'mpre5', { title: '5th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['Football Camp'] }, preStart, preEnd, 1);
+  repeatWeekly(events, 'mpre5', { title: '5th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['Football Camp'] }, preStart, preEnd, 3);
+  repeatWeekly(events, 'mpre4', { title: '4th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, preStart, preEnd, 2);
+  repeatWeekly(events, 'mpre4', { title: '4th Grade Football - Preseason', time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, preStart, preEnd, 4);
+  repeatWeekly(events, 'mpre3', { title: '3rd Grade Football - Preseason', time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['Football Camp'] }, preStart, preEnd, 2);
+  repeatWeekly(events, 'mpre3', { title: '3rd Grade Football - Preseason', time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['Football Camp'] }, preStart, preEnd, 4);
+  repeatWeekly(events, 'mprech', { title: 'All Cheer - Preseason Practice', time: '5:00 PM', endTime: '6:30 PM', sport: 'Cheer Camp', type: 'practice', location: 'Community Center Gym', color: C['Cheer Camp'] }, preStart, preEnd, 3);
+  events.push(
+    { id: 'mpreboard', title: 'Board Meeting', date: new Date(2026, 7, 6), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mphoto', title: 'Photo Day (All Teams)', date: new Date(2026, 7, 15), time: '9:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Pioneer Park', color: C['Club Admin'] },
+    { id: 'mprscrim', title: 'Preseason Scrimmage (All Grades)', date: new Date(2026, 7, 22), time: '9:00 AM', endTime: '1:00 PM', sport: 'Football Camp', type: 'game', location: 'Pioneer Park Fields', color: C['Football Camp'] },
+  );
+
+  // ===== FALL SEASON: Aug 29 - Nov 14 (10-week season) =====
+  const fallStart = new Date(2026, 7, 29);
+  const fallEnd = new Date(2026, 10, 14);
+
+  // Weekly practices: 6th/5th Mon+Wed, 4th/3rd Tue+Thu, Cheer Wed
+  repeatWeekly(events, 'mf6p', { title: '6th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, fallStart, fallEnd, 1);
+  repeatWeekly(events, 'mf6p', { title: '6th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '6th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, fallStart, fallEnd, 3);
+  repeatWeekly(events, 'mf5p', { title: '5th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['Football Camp'] }, fallStart, fallEnd, 1);
+  repeatWeekly(events, 'mf5p', { title: '5th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '5th Football', type: 'practice', location: 'Pioneer Park Field 2', color: C['Football Camp'] }, fallStart, fallEnd, 3);
+  repeatWeekly(events, 'mf4p', { title: '4th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, fallStart, fallEnd, 2);
+  repeatWeekly(events, 'mf4p', { title: '4th Grade Football - Practice', time: '5:30 PM', endTime: '7:00 PM', sport: '4th Football', type: 'practice', location: 'Pioneer Park Field 1', color: C['Football Camp'] }, fallStart, fallEnd, 4);
+  repeatWeekly(events, 'mf3p', { title: '3rd Grade Football - Practice', time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['Football Camp'] }, fallStart, fallEnd, 2);
+  repeatWeekly(events, 'mf3p', { title: '3rd Grade Football - Practice', time: '5:30 PM', endTime: '6:30 PM', sport: '3rd Football', type: 'practice', location: 'Pioneer Park Field 3', color: C['Football Camp'] }, fallStart, fallEnd, 4);
+  repeatWeekly(events, 'mchp', { title: 'All Cheer - Practice', time: '5:00 PM', endTime: '6:30 PM', sport: 'Cheer Camp', type: 'practice', location: 'Community Center Gym', color: C['Cheer Camp'] }, fallStart, fallEnd, 3);
+
+  // Saturday games - 8 game season, each grade plays
+  const gameSats: Date[] = [];
+  const gs = new Date(2026, 8, 5); // first game Sat Sep 5
+  for (let g = 0; g < 8; g++) { gameSats.push(new Date(gs)); gs.setDate(gs.getDate() + 7); }
+  gameSats.forEach((d, i) => {
+    const opp = mariaOpponents[i % mariaOpponents.length];
+    const home = i % 2 === 0;
+    const loc = home ? 'Pioneer Park' : `${opp} Field`;
+    // 6th grade A & B
+    events.push({ id: `mf6ga-${i}`, title: `6th A vs. ${opp}`, date: d, time: '9:00 AM', endTime: '10:30 AM', sport: '6th Football', type: 'game', location: `${loc} Field 1`, color: C['Football Camp'] });
+    events.push({ id: `mf6gb-${i}`, title: `6th B vs. ${opp}`, date: d, time: '10:45 AM', endTime: '12:15 PM', sport: '6th Football', type: 'game', location: `${loc} Field 1`, color: C['Football Camp'] });
+    // 5th grade A & B
+    events.push({ id: `mf5ga-${i}`, title: `5th A vs. ${opp}`, date: d, time: '9:00 AM', endTime: '10:30 AM', sport: '5th Football', type: 'game', location: `${loc} Field 2`, color: C['Football Camp'] });
+    events.push({ id: `mf5gb-${i}`, title: `5th B vs. ${opp}`, date: d, time: '10:45 AM', endTime: '12:15 PM', sport: '5th Football', type: 'game', location: `${loc} Field 2`, color: C['Football Camp'] });
+    // 4th grade A & B
+    events.push({ id: `mf4ga-${i}`, title: `4th A vs. ${opp}`, date: d, time: '11:00 AM', endTime: '12:15 PM', sport: '4th Football', type: 'game', location: `${loc} Field 3`, color: C['Football Camp'] });
+    events.push({ id: `mf4gb-${i}`, title: `4th B vs. ${opp}`, date: d, time: '12:30 PM', endTime: '1:45 PM', sport: '4th Football', type: 'game', location: `${loc} Field 3`, color: C['Football Camp'] });
+    // 3rd grade A & B
+    events.push({ id: `mf3ga-${i}`, title: `3rd A vs. ${opp}`, date: d, time: '9:00 AM', endTime: '10:00 AM', sport: '3rd Football', type: 'game', location: `${loc} Field 4`, color: C['Football Camp'] });
+    events.push({ id: `mf3gb-${i}`, title: `3rd B vs. ${opp}`, date: d, time: '10:15 AM', endTime: '11:15 AM', sport: '3rd Football', type: 'game', location: `${loc} Field 4`, color: C['Football Camp'] });
+    // Cheer performance
+    events.push({ id: `mchg-${i}`, title: 'All Cheer - Game Day', date: d, time: '8:30 AM', endTime: '1:00 PM', sport: 'Cheer Camp', type: 'event', location: loc, color: C['Cheer Camp'] });
+  });
+
+  // Board meetings monthly
+  events.push(
+    { id: 'mbdf1', title: 'Board Meeting', date: new Date(2026, 8, 3), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mbdf2', title: 'Board Meeting', date: new Date(2026, 9, 1), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+    { id: 'mbdf3', title: 'Board Meeting', date: new Date(2026, 10, 5), time: '7:30 PM', endTime: '9:00 PM', sport: 'Club Admin', type: 'meeting', location: 'Community Center', color: C['Club Admin'] },
+  );
+
+  // Special events
+  events.push(
+    { id: 'mhomecoming', title: 'Homecoming Tailgate (All Teams)', date: new Date(2026, 9, 3), time: '10:00 AM', endTime: '2:00 PM', sport: 'Club Admin', type: 'event', location: 'Pioneer Park', color: C['Club Admin'] },
+    { id: 'mcheercomp', title: 'Cheer Competition - Metro Showcase', date: new Date(2026, 9, 17), time: '1:00 PM', endTime: '5:00 PM', sport: 'Cheer Camp', type: 'game', location: 'Civic Center', color: C['Cheer Camp'] },
+    { id: 'mequipret', title: 'Equipment Return Day', date: new Date(2026, 10, 21), time: '9:00 AM', endTime: '1:00 PM', sport: 'Club Admin', type: 'event', location: 'Storage Building', color: C['Club Admin'] },
+    { id: 'mbanquet', title: 'End-of-Season Awards Banquet', date: new Date(2026, 10, 22), time: '5:00 PM', endTime: '7:30 PM', sport: 'Club Admin', type: 'event', location: 'Community Center', color: C['Club Admin'] },
   );
 
   return events;
