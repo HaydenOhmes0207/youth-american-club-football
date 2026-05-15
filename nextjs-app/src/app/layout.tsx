@@ -17,16 +17,13 @@ export const metadata: Metadata = {
   description: 'Youth football club management platform',
 };
 
-// Force dynamic rendering to ensure fresh data for workspace switcher
-export const dynamic = 'force-dynamic';
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch organization, teams, and nav items from database
-  const orgData = await getOrganizationWithNavItems();
+  // Fetch organization, teams, and nav items from mock data
+  const orgData = getOrganizationWithNavItems();
   
   // Transform to the format expected by LegacyNavigation
   const organization = orgData ? {
@@ -62,7 +59,7 @@ export default async function RootLayout({
   })) || [];
 
   // Get current logged-in user (school administrator for prototype)
-  const userData = await getCurrentUser();
+  const userData = getCurrentUser();
   const currentUser = userData ? {
     id: userData.id,
     email: userData.email,

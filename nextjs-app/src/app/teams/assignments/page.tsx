@@ -2,27 +2,16 @@ import { getAllTeams, getOrganizationId, getSeasons } from '@/lib/actions/teams'
 import { getPrograms, getAllRegistrations, getAllAthleteSubmissions } from '@/lib/actions/programs';
 import AssignmentsPageClient from './AssignmentsPageClient';
 
-// Disable caching for this page to ensure fresh data
-export const dynamic = 'force-dynamic';
+export default function AssignmentsPage() {
+  const organizationId = getOrganizationId();
 
-interface AssignmentsPageProps {
-  searchParams: Promise<{ season?: string }>;
-}
-
-export default async function AssignmentsPage({ searchParams }: AssignmentsPageProps) {
-  const params = await searchParams;
-  const organizationId = await getOrganizationId();
-
-  // Sequential data fetching to avoid connection pool exhaustion
-  const teams = organizationId ? await getAllTeams(organizationId) : [];
-  const seasons = organizationId ? await getSeasons(organizationId) : [];
-  const programs = organizationId ? await getPrograms(organizationId) : [];
-  const registrations = organizationId ? await getAllRegistrations(organizationId) : [];
-  const athletes = organizationId ? await getAllAthleteSubmissions(organizationId) : [];
+  const teams = organizationId ? getAllTeams(organizationId) : [];
+  const seasons = organizationId ? getSeasons(organizationId) : [];
+  const programs = organizationId ? getPrograms(organizationId) : [];
+  const registrations = organizationId ? getAllRegistrations(organizationId) : [];
+  const athletes = organizationId ? getAllAthleteSubmissions(organizationId) : [];
   
-  // Use season from URL params, fall back to active season, then first season
-  const seasonFromUrl = params.season ? seasons.find(s => s.id === params.season) : null;
-  const activeSeason = seasonFromUrl || seasons.find(s => s.isActive) || seasons[0];
+  const activeSeason = seasons.find(s => s.isActive) || seasons[0];
 
   return (
     <AssignmentsPageClient 

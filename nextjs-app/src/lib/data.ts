@@ -6,7 +6,7 @@ import {
   mockTeamMembers,
 } from './mock-data';
 
-export async function getOrganizationWithTeams() {
+export function getOrganizationWithTeams() {
   return {
     ...mockOrganization,
     teams: mockTeams.sort((a, b) => {
@@ -16,14 +16,14 @@ export async function getOrganizationWithTeams() {
   };
 }
 
-export async function getTeams() {
+export function getTeams() {
   return mockTeams.sort((a, b) => {
     if (a.sport !== b.sport) return a.sport.localeCompare(b.sport);
     return a.title.localeCompare(b.title);
   });
 }
 
-export async function getNavItems(organizationId: string) {
+export function getNavItems(organizationId: string) {
   return mockNavItems
     .filter(item => item.organization_id === organizationId && item.parent_id === null && item.is_active)
     .sort((a, b) => a.order - b.order)
@@ -43,7 +43,7 @@ export async function getNavItems(organizationId: string) {
     }));
 }
 
-export async function getOrganizationWithNavItems() {
+export function getOrganizationWithNavItems() {
   const navItems = mockNavItems
     .filter(item => item.organization_id === mockOrganization.id && item.parent_id === null && item.is_active)
     .sort((a, b) => a.order - b.order)
@@ -77,7 +77,7 @@ export async function getOrganizationWithNavItems() {
 }
 
 // For prototype: Get the school administrator as the "logged in" user
-export async function getCurrentUser() {
+export function getCurrentUser() {
   const user = mockUsers.find(u => u.role === 'school-administrator');
   if (!user) return null;
 
@@ -94,8 +94,8 @@ export async function getCurrentUser() {
   };
 }
 
-export type OrganizationWithTeams = Awaited<ReturnType<typeof getOrganizationWithTeams>>;
-export type OrganizationWithNavItems = Awaited<ReturnType<typeof getOrganizationWithNavItems>>;
-export type Team = Awaited<ReturnType<typeof getTeams>>[number];
-export type NavItem = Awaited<ReturnType<typeof getNavItems>>[number];
-export type CurrentUser = Awaited<ReturnType<typeof getCurrentUser>>;
+export type OrganizationWithTeams = ReturnType<typeof getOrganizationWithTeams>;
+export type OrganizationWithNavItems = ReturnType<typeof getOrganizationWithNavItems>;
+export type Team = ReturnType<typeof getTeams>[number];
+export type NavItem = ReturnType<typeof getNavItems>[number];
+export type CurrentUser = ReturnType<typeof getCurrentUser>;

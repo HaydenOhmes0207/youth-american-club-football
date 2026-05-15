@@ -1,6 +1,3 @@
-'use server';
-
-import { revalidatePath } from 'next/cache';
 import {
   mockOrganization,
   mockTeams,
@@ -10,7 +7,6 @@ import {
   mockTeamAssignments,
   mockRegistrationSubmissions,
   mockAthletes,
-  getTeamAssignmentCount,
 } from '@/lib/mock-data';
 
 // In-memory state for prototype mutations
@@ -65,9 +61,8 @@ export interface UpdateTeamResult {
   error?: string;
 }
 
-export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResult> {
+export function updateTeam(input: UpdateTeamInput): UpdateTeamResult {
   try {
-    // Validate required fields if provided
     if (input.title !== undefined && !input.title.trim()) {
       return { success: false, error: 'Team title is required' };
     }
@@ -80,14 +75,12 @@ export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResu
       return { success: false, error: 'Gender is required' };
     }
 
-    // Validate age range if both are provided
     if (input.ageMin !== undefined && input.ageMax !== undefined && input.ageMin !== null && input.ageMax !== null) {
       if (input.ageMin > input.ageMax) {
         return { success: false, error: 'Minimum age cannot be greater than maximum age' };
       }
     }
 
-    // Validate color format if provided
     if (input.primaryColor !== undefined && input.primaryColor !== null && !/^#[0-9A-F]{6}$/i.test(input.primaryColor)) {
       return { success: false, error: 'Primary color must be a valid hex color (e.g., #FF0000)' };
     }
@@ -96,7 +89,6 @@ export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResu
       return { success: false, error: 'Secondary color must be a valid hex color (e.g., #FF0000)' };
     }
 
-    // Find and update team
     const teamIndex = teams.findIndex(t => t.id === input.id);
     if (teamIndex === -1) {
       return { success: false, error: 'Team not found' };
@@ -125,7 +117,7 @@ export async function updateTeam(input: UpdateTeamInput): Promise<UpdateTeamResu
   }
 }
 
-export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResult> {
+export function createTeam(input: CreateTeamInput): CreateTeamResult {
   try {
     const currentUser = mockUsers.find(u => u.role === 'school-administrator');
     const teamId = `team-${Date.now()}`;
@@ -149,7 +141,6 @@ export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResu
 
     teams.push(newTeam);
 
-    // Add current user as team admin
     if (currentUser) {
       teamMembers.push({
         team_id: teamId,
@@ -157,9 +148,6 @@ export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResu
         role: 'admin',
       });
     }
-
-    revalidatePath('/teams');
-    revalidatePath('/', 'layout');
 
     return {
       success: true,
@@ -172,7 +160,7 @@ export async function createTeam(input: CreateTeamInput): Promise<CreateTeamResu
   }
 }
 
-export async function getAllTeams(organizationId: string): Promise<TeamWithStats[]> {
+export function getAllTeams(organizationId: string): TeamWithStats[] {
   return teams
     .filter(team => team.organization_id === organizationId)
     .map(team => ({
@@ -197,19 +185,18 @@ export async function getAllTeams(organizationId: string): Promise<TeamWithStats
     });
 }
 
-export async function getTeamsBySeason(organizationId: string, seasonId: string): Promise<TeamWithStats[]> {
-  const allTeams = await getAllTeams(organizationId);
+export function getTeamsBySeason(organizationId: string, seasonId: string): TeamWithStats[] {
+  const allTeams = getAllTeams(organizationId);
   return allTeams.filter(team => team.seasonId === seasonId);
 }
 
-// Keep for backwards compatibility
-export async function getProvisionedTeams(organizationId: string): Promise<TeamWithStats[]> {
+export function getProvisionedTeams(organizationId: string): TeamWithStats[] {
   const activeSeason = mockSeasons.find(s => s.organization_id === organizationId && s.is_active);
   if (!activeSeason) return [];
   return getTeamsBySeason(organizationId, activeSeason.id);
 }
 
-export async function getOrganizationId(): Promise<string | null> {
+export function getOrganizationId(): string | null {
   return mockOrganization.id;
 }
 
@@ -223,7 +210,7 @@ export interface StaffUser {
   teamRoles: string[];
 }
 
-export async function getStaffUsers(organizationId: string): Promise<StaffUser[]> {
+export function getStaffUsers(organizationId: string): StaffUser[] {
   const adminUsers = mockUsers.filter(u => 
     u.role === 'school-administrator' || 
     u.role === 'school administrator' ||
@@ -286,7 +273,7 @@ export interface Season {
   isActive: boolean;
 }
 
-export async function getSeasons(organizationId: string): Promise<Season[]> {
+export function getSeasons(organizationId: string): Season[] {
   return mockSeasons
     .filter(s => s.organization_id === organizationId)
     .map(s => ({
@@ -319,7 +306,7 @@ export interface CopyTeamsResult {
   error?: string;
 }
 
-export async function copyTeams(input: CopyTeamsInput): Promise<CopyTeamsResult> {
+export function copyTeams(input: CopyTeamsInput): CopyTeamsResult {
   try {
     const currentUser = mockUsers.find(u => u.role === 'school-administrator');
     const targetSeason = mockSeasons.find(s => s.id === input.targetSeasonId);
@@ -384,9 +371,6 @@ export async function copyTeams(input: CopyTeamsInput): Promise<CopyTeamsResult>
       });
     }
 
-    revalidatePath('/teams');
-    revalidatePath('/', 'layout');
-
     return {
       success: true,
       copiedCount: copiedTeams.length,
@@ -405,7 +389,7 @@ export interface DeleteTeamsResult {
   error?: string;
 }
 
-export async function deleteTeams(teamIds: string[]): Promise<DeleteTeamsResult> {
+export function deleteTeams(teamIds: string[]): DeleteTeamsResult {
   try {
     if (teamIds.length === 0) {
       return { success: false, error: 'No teams to delete' };
@@ -416,16 +400,9 @@ export async function deleteTeams(teamIds: string[]): Promise<DeleteTeamsResult>
       return { success: false, error: 'No teams found to delete' };
     }
 
-    // Remove teams
     teams = teams.filter(t => !teamIds.includes(t.id));
-
-    // Remove related team assignments
     teamAssignments = teamAssignments.filter(ta => !teamIds.includes(ta.team_id));
-
-    // Remove related team members
     teamMembers = teamMembers.filter(tm => !teamIds.includes(tm.team_id));
-
-    revalidatePath('/teams');
 
     return {
       success: true,
@@ -438,9 +415,8 @@ export async function deleteTeams(teamIds: string[]): Promise<DeleteTeamsResult>
   }
 }
 
-export async function revalidateTeamsData() {
-  revalidatePath('/teams');
-  revalidatePath('/teams/manage');
+export function revalidateTeamsData() {
+  // No-op for mock data
 }
 
 export interface AssignAthletesInput {
@@ -454,7 +430,7 @@ export interface AssignAthletesResult {
   error?: string;
 }
 
-export async function assignAthletesToTeam(input: AssignAthletesInput): Promise<AssignAthletesResult> {
+export function assignAthletesToTeam(input: AssignAthletesInput): AssignAthletesResult {
   try {
     const { teamId, submissionIds } = input;
 
@@ -483,9 +459,6 @@ export async function assignAthletesToTeam(input: AssignAthletesInput): Promise<
       assignedCount++;
     }
 
-    revalidatePath('/teams');
-    revalidatePath('/teams/assignments');
-
     return {
       success: true,
       assignedCount,
@@ -497,7 +470,7 @@ export async function assignAthletesToTeam(input: AssignAthletesInput): Promise<
   }
 }
 
-export async function unassignAthleteFromTeam(teamId: string, submissionId: string): Promise<{ success: boolean; error?: string }> {
+export function unassignAthleteFromTeam(teamId: string, submissionId: string): { success: boolean; error?: string } {
   try {
     const index = teamAssignments.findIndex(
       ta => ta.team_id === teamId && ta.submission_id === submissionId
@@ -506,9 +479,6 @@ export async function unassignAthleteFromTeam(teamId: string, submissionId: stri
     if (index !== -1) {
       teamAssignments.splice(index, 1);
     }
-
-    revalidatePath('/teams');
-    revalidatePath('/teams/assignments');
 
     return { success: true };
   } catch (error) {
@@ -537,7 +507,7 @@ export interface RosterAthlete {
   } | null;
 }
 
-export async function getAthletesOnProvisionedTeams(organizationId: string): Promise<RosterAthlete[]> {
+export function getAthletesOnProvisionedTeams(organizationId: string): RosterAthlete[] {
   const provisionedTeams = teams.filter(
     t => t.organization_id === organizationId && t.status === 'provisioned'
   );

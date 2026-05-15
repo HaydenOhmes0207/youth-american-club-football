@@ -1,6 +1,3 @@
-'use server';
-
-import { revalidatePath } from 'next/cache';
 import {
   mockOrganization,
   mockPrograms,
@@ -38,7 +35,7 @@ export interface ProgramWithStats {
   registrationStatus: 'open' | 'closed';
   status: ProgramStatus;
   registrantCount: number;
-  programValue: number; // In cents, $0.00 if no payments
+  programValue: number;
   createdBy: ProgramCreator | null;
 }
 
@@ -53,9 +50,8 @@ export interface CreateProgramResult {
   error?: string;
 }
 
-export async function createProgram(input: CreateProgramInput): Promise<CreateProgramResult> {
+export function createProgram(input: CreateProgramInput): CreateProgramResult {
   try {
-    // Get David Mitchell as creator (for prototype - would use auth in production)
     const user = mockUsers.find(u => u.first_name === 'David' && u.last_name === 'Mitchell');
 
     const newProgram = {
@@ -76,8 +72,6 @@ export async function createProgram(input: CreateProgramInput): Promise<CreatePr
 
     programs.push(newProgram);
 
-    revalidatePath('/programs');
-
     return {
       success: true,
       program: { id: newProgram.id, title: newProgram.title },
@@ -89,7 +83,7 @@ export async function createProgram(input: CreateProgramInput): Promise<CreatePr
   }
 }
 
-export async function getPrograms(organizationId: string): Promise<ProgramWithStats[]> {
+export function getPrograms(organizationId: string): ProgramWithStats[] {
   const orgPrograms = programs.filter(p => p.organization_id === organizationId);
   
   return orgPrograms.map(program => {
@@ -121,7 +115,7 @@ export async function getPrograms(organizationId: string): Promise<ProgramWithSt
   }).sort((a, b) => b.registrantCount - a.registrantCount);
 }
 
-export async function getOrganizationId(): Promise<string | null> {
+export function getOrganizationId(): string | null {
   return mockOrganization.id;
 }
 
@@ -133,7 +127,7 @@ export interface Registration {
   submissionCount: number;
 }
 
-export async function getRegistrationsByProgram(programId: string): Promise<Registration[]> {
+export function getRegistrationsByProgram(programId: string): Registration[] {
   return mockRegistrations
     .filter(reg => reg.program_id === programId)
     .map(reg => ({
@@ -145,7 +139,7 @@ export async function getRegistrationsByProgram(programId: string): Promise<Regi
     }));
 }
 
-export async function getAllRegistrations(organizationId: string): Promise<Registration[]> {
+export function getAllRegistrations(organizationId: string): Registration[] {
   const orgProgramIds = programs
     .filter(p => p.organization_id === organizationId)
     .map(p => p.id);
@@ -179,7 +173,7 @@ export interface RegisteredAthlete {
   teamAssignments: TeamAssignment[];
 }
 
-export async function getAthletesByRegistration(registrationId: string): Promise<RegisteredAthlete[]> {
+export function getAthletesByRegistration(registrationId: string): RegisteredAthlete[] {
   const submissions = mockRegistrationSubmissions.filter(sub => sub.registration_id === registrationId);
 
   return submissions.map(sub => {
@@ -214,7 +208,7 @@ export async function getAthletesByRegistration(registrationId: string): Promise
   });
 }
 
-export async function getAllAthleteSubmissions(organizationId: string): Promise<RegisteredAthlete[]> {
+export function getAllAthleteSubmissions(organizationId: string): RegisteredAthlete[] {
   const orgProgramIds = programs
     .filter(p => p.organization_id === organizationId)
     .map(p => p.id);
