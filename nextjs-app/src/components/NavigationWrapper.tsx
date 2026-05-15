@@ -17,6 +17,7 @@ import type { Registrant } from './ProgramDetailView';
 import MessageComposePanel from './MessageComposePanel';
 import type { MessagePayload } from './MessageComposePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
+import { useToast } from './Toast';
 
 export interface SentNotification {
   id: string;
@@ -230,7 +231,7 @@ export default function NavigationWrapper() {
   const [showComposePanel, setShowComposePanel] = useState(false);
   const [composeRecipients, setComposeRecipients] = useState<Registrant[]>([]);
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
-  const [toast, setToast] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   // Chapter switching: reset state and set initial context for each chapter
   React.useEffect(() => {
@@ -243,7 +244,6 @@ export default function NavigationWrapper() {
     setShowComposePanel(false);
     setComposeRecipients([]);
     setComposeOverduePrograms([]);
-    setToast(null);
 
     switch (activeChapter) {
       case 'home':
@@ -330,8 +330,7 @@ export default function NavigationWrapper() {
     setShowComposePanel(false);
     setComposeRecipients([]);
     setComposeOverduePrograms([]);
-    setToast(`Message sent to ${payload.recipientCount} families`);
-    setTimeout(() => setToast(null), 4000);
+    showToast(`Message sent to ${payload.recipientCount} families`, 'success');
   };
 
   const organization = {
@@ -522,12 +521,6 @@ export default function NavigationWrapper() {
       overlay={overlay}
     >
       {pageContent}
-      {toast && (
-        <div className="compose-toast">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
-          {toast}
-        </div>
-      )}
     </LegacyNavigation>
   );
 }

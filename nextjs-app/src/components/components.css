@@ -1399,12 +1399,3 @@
 }
 .compose-send-btn:hover:not(:disabled) { background: #0260c0; }
 .compose-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.compose-toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 8px; padding: 10px 20px;
-  background: #065f46; color: #fff; border-radius: 8px;
-  font-family: var(--u-font-body); font-size: 14px; font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;
-  animation: toast-in 0.3s ease;
-}
-@keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
