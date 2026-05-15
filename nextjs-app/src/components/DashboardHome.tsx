@@ -8,6 +8,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { LineChart, Line, XAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import type { CalendarEvent } from './CalendarView'
 
 // --- Types ---
 export interface TaskItem {
@@ -26,6 +27,7 @@ interface DashboardHomeProps {
   tasks?: TaskItem[]
   simulatedToday?: Date
   onNavigateToCalendar?: () => void
+  events?: CalendarEvent[]
 }
 
 // --- Data ---
@@ -162,7 +164,7 @@ function TaskCard({ task }: { task: TaskItem }) {
 }
 
 // Week calendar strip
-function WeekStrip({ simulatedToday, onDayClick }: { simulatedToday: Date; onDayClick?: () => void }) {
+function WeekStrip({ simulatedToday, onDayClick, events = [] }: { simulatedToday: Date; onDayClick?: () => void; events?: CalendarEvent[] }) {
   const startOfWeek = new Date(simulatedToday)
   startOfWeek.setDate(simulatedToday.getDate() - simulatedToday.getDay() + 1)
 
@@ -177,12 +179,21 @@ function WeekStrip({ simulatedToday, onDayClick }: { simulatedToday: Date; onDay
   const monthName = startOfWeek.toLocaleDateString('en-US', { month: 'long' })
   const startDay = startOfWeek.getDate()
 
+  // Get events for a specific date
+  const getEventsForDate = (date: Date) => {
+    return events.filter(e => {
+      const eventDate = new Date(e.date)
+      return eventDate.toDateString() === date.toDateString()
+    }).slice(0, 3) // Max 3 events displayed per day
+  }
+
   return (
     <section className="db-week-section">
       <h3 className="db-section-title">Week of {monthName} {startDay}</h3>
       <div className="db-week-grid">
         {weekDates.map((date, i) => {
           const isToday = date.toDateString() === simulatedToday.toDateString()
+          const dayEvents = getEventsForDate(date)
           return (
             <button
               key={i}
@@ -191,6 +202,20 @@ function WeekStrip({ simulatedToday, onDayClick }: { simulatedToday: Date; onDay
             >
               <span className="db-week-day-name">{days[i]}</span>
               <span className="db-week-day-num">{date.getDate()}</span>
+              {dayEvents.length > 0 && (
+                <div className="db-week-events">
+                  {dayEvents.map((event, idx) => (
+                    <div 
+                      key={event.id || idx} 
+                      className="db-week-event"
+                      style={{ backgroundColor: event.color || '#607081' }}
+                      title={`${event.title} - ${event.time}`}
+                    >
+                      <span className="db-week-event-title">{event.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </button>
           )
         })}
@@ -204,6 +229,7 @@ export default function DashboardHome({
   tasks = [],
   simulatedToday = new Date(),
   onNavigateToCalendar,
+  events = [],
 }: DashboardHomeProps) {
   const metrics = personaId === 'alex' ? ALEX_METRICS : MARIA_METRICS
   const weeklyData = personaId === 'alex' ? ALEX_WEEKLY_DATA : MARIA_WEEKLY_DATA
@@ -375,7 +401,7 @@ export default function DashboardHome({
       </div>
 
       {/* Week Strip */}
-      <WeekStrip simulatedToday={simulatedToday} onDayClick={onNavigateToCalendar} />
+      <WeekStrip simulatedToday={simulatedToday} onDayClick={onNavigateToCalendar} events={events} />
     </div>
   )
 }

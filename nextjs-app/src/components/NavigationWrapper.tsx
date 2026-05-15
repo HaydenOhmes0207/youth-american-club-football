@@ -735,6 +735,7 @@ export default function NavigationWrapper() {
         tasks={dashboardTasks}
         simulatedToday={simulatedToday}
         onNavigateToCalendar={() => setActiveRoute('/calendar')}
+        events={allEvents}
       />
     );
   }

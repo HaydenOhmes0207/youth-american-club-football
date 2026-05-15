@@ -2024,7 +2024,7 @@
 }
 .db-week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 12px;
 }
 .db-week-day {
@@ -2034,11 +2034,13 @@
   gap: 4px;
   padding: 14px;
   min-height: 100px;
+  width: 100%;
   background: var(--u-color-background-surface, #fff);
   border: 1px solid var(--u-color-line-subtle, #e0e1e3);
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
+  overflow: hidden;
 }
 .db-week-day:hover {
   background: var(--u-color-background-subtle, #f5f6f7);
@@ -2057,6 +2059,28 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--u-color-base-foreground, #36485c);
+}
+.db-week-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 8px;
+}
+.db-week-event {
+  padding: 4px 6px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.db-week-event-title {
+  font-family: var(--u-font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 /* === Manual Event Form === */
