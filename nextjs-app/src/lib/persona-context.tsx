@@ -31,7 +31,7 @@ const personas: Record<PersonaId, Persona> = {
     orgId: 'org-hs',
     primaryColor: '#1e40af',
     secondaryColor: '#fbbf24',
-    barColor: '#2d4a3e',
+    barColor: '#1b3a2a',
     orgAvatar: '/images/alex-avatar.png',
   },
   maria: {
@@ -45,7 +45,7 @@ const personas: Record<PersonaId, Persona> = {
     orgId: 'org-club',
     primaryColor: '#16a34a',
     secondaryColor: '#ffffff',
-    barColor: '#1e293b',
+    barColor: '#1a2744',
     orgAvatar: '/images/maria-avatar.png',
   },
 };
