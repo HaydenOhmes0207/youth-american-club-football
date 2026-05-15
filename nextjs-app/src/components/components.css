@@ -2,6 +2,69 @@
    Shared Component Styles (replaces all <style jsx>)
    ============================================ */
 
+/* === DemoShell === */
+.demo-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.demo-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 16px;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  font-family: var(--u-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+  z-index: 1000;
+}
+
+.demo-bar-label {
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.demo-bar-personas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-bar-persona {
+  height: 28px;
+  padding: 0 16px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-family: var(--u-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-bar-persona:hover {
+  color: #e2e8f0;
+}
+
+.demo-bar-persona--active {
+  border-color: #e2e8f0;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.demo-shell-content {
+  flex: 1;
+  overflow: hidden;
+}
+
 /* === Button === */
 .u-button {
   font-family: var(--u-font-body);

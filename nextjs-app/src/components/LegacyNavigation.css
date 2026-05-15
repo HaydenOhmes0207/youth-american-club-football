@@ -2,7 +2,7 @@
 
 .navigation-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
   background-color: var(--u-color-background-canvas, #eff0f0);
   font-family: var(--u-font-body);
 }
@@ -17,7 +17,7 @@
   position: relative;
   transition: width 0.3s ease;
   z-index: 2;
-  height: 100vh;
+  height: 100%;
   overflow: visible;
   flex-shrink: 0;
 }
