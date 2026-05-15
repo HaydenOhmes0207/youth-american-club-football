@@ -188,9 +188,9 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
   const [editingEvent, setEditingEvent] = useState<ImportEvent | null>(null);
-  const [optTickets, setOptTickets] = useState(true);
-  const [optStreaming, setOptStreaming] = useState(true);
-  const [optFocus, setOptFocus] = useState(true);
+  const [optTickets, setOptTickets] = useState(false);
+  const [optStreaming, setOptStreaming] = useState(false);
+  const [optFocus, setOptFocus] = useState(false);
   const [pastedUrl, setPastedUrl] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -202,9 +202,9 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setLogEntries(0);
       setSections([]);
       setEditingEvent(null);
-      setOptTickets(true);
-      setOptStreaming(true);
-      setOptFocus(true);
+      setOptTickets(false);
+      setOptStreaming(false);
+      setOptFocus(false);
       setPastedUrl('');
     }
   }, [isOpen]);
