@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import type { CalendarEvent } from './CalendarView';
 
 // Surface definitions with venue grouping
-interface Surface {
+export interface Surface {
   id: string;
   name: string;
   venue: string;
   matchLocations: string[]; // event.location values that map to this surface
 }
 
-const SURFACES: Surface[] = [
+export const ALEX_SURFACES: Surface[] = [
   { id: 'spartan-field', name: 'Spartan Field', venue: 'Memorial Stadium', matchLocations: ['Memorial Stadium'] },
   { id: 'field-1', name: 'Field 1', venue: 'Soccer Complex', matchLocations: ['Soccer Complex'] },
   { id: 'field-2', name: 'Field 2', venue: 'Soccer Complex', matchLocations: [] },
@@ -21,6 +21,14 @@ const SURFACES: Surface[] = [
   { id: 'course', name: 'Course', venue: 'Trails / City Park', matchLocations: ['Trails / City Park'] },
   { id: 'floor', name: 'Floor', venue: 'Weight Room', matchLocations: ['Weight Room'] },
   { id: 'stage', name: 'Stage', venue: 'Auditorium', matchLocations: ['Auditorium'] },
+];
+
+export const MARIA_SURFACES: Surface[] = [
+  { id: 'pp-field-1', name: 'Field 1', venue: 'Pioneer Park', matchLocations: ['Pioneer Park Field 1'] },
+  { id: 'pp-field-2', name: 'Field 2', venue: 'Pioneer Park', matchLocations: ['Pioneer Park Field 2'] },
+  { id: 'pp-field-3', name: 'Field 3', venue: 'Pioneer Park', matchLocations: ['Pioneer Park Field 3'] },
+  { id: 'pp-field-4', name: 'Field 4', venue: 'Pioneer Park', matchLocations: ['Pioneer Park Field 4'] },
+  { id: 'cc-gym', name: 'Gym', venue: 'Community Center', matchLocations: ['Community Center Gym'] },
 ];
 
 const HOURS_START = 6;
@@ -49,9 +57,11 @@ interface FacilityResourceViewProps {
   events: CalendarEvent[];
   cancelledEventIds: Set<string>;
   simulatedToday?: Date;
+  surfaces?: Surface[];
 }
 
-export default function FacilityResourceView({ events, cancelledEventIds, simulatedToday }: FacilityResourceViewProps) {
+export default function FacilityResourceView({ events, cancelledEventIds, simulatedToday, surfaces }: FacilityResourceViewProps) {
+  const activeSurfaces = surfaces || ALEX_SURFACES;
   const today = simulatedToday || new Date(2026, 4, 15);
   const [currentDate, setCurrentDate] = useState(today);
 
@@ -105,11 +115,11 @@ export default function FacilityResourceView({ events, cancelledEventIds, simula
 
       {/* Day resource grid -- uses cal-body as the scroll container */}
       <div className="cal-body" style={{ overflow: 'auto' }}>
-        <div style={{ minWidth: `${SURFACES.length * 140 + 64}px` }}>
+        <div style={{ minWidth: `${activeSurfaces.length * 140 + 64}px` }}>
           {/* Header row: surface columns */}
           <div className="resource-header">
             <div className="resource-time-gutter resource-header-cell" />
-            {SURFACES.map(surface => (
+            {activeSurfaces.map(surface => (
               <div key={surface.id} className="resource-header-cell">
                 <span className="resource-surface-name">{surface.name}</span>
                 <span className="resource-venue-name">{surface.venue}</span>
@@ -133,7 +143,7 @@ export default function FacilityResourceView({ events, cancelledEventIds, simula
             </div>
 
             {/* Surface columns */}
-            {SURFACES.map(surface => {
+            {activeSurfaces.map(surface => {
               const surfaceEvents = getEventsForSurface(surface);
               return (
                 <div key={surface.id} className="resource-column">

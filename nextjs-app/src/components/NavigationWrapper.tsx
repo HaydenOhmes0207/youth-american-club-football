@@ -10,8 +10,8 @@ import CommunityTable from './CommunityTable';
 import CalendarView, { EVENTS_BY_PERSONA } from './CalendarView';
 import type { CalendarEvent } from './CalendarView';
 import ScheduleImportPanel, { getFallScheduleEvents } from './ScheduleImportPanel';
-import FacilityResourceView from './FacilityResourceView';
-import FacilityClosurePanel from './FacilityClosurePanel';
+import FacilityResourceView, { ALEX_SURFACES, MARIA_SURFACES } from './FacilityResourceView';
+import FacilityClosurePanel, { ALEX_FACILITIES, MARIA_FACILITIES } from './FacilityClosurePanel';
 import ProgramDetailView from './ProgramDetailView';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
@@ -342,6 +342,7 @@ export default function NavigationWrapper() {
         allEvents={allEvents}
         cancelledEventIds={cancelledEventIds}
         onConfirm={handleClosure}
+        facilities={activePersona.id === 'maria' ? MARIA_FACILITIES : ALEX_FACILITIES}
       />
     );
   }
@@ -359,7 +360,7 @@ export default function NavigationWrapper() {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
         <FacilitiesPageContent onOpenClosure={() => setShowClosurePanel(true)} />
-        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
+        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} surfaces={activePersona.id === 'maria' ? MARIA_SURFACES : ALEX_SURFACES} />
       </div>
     );
   } else if (activeRoute === '/community') {

@@ -5,8 +5,11 @@ import { useToast } from './Toast';
 import type { CalendarEvent } from './CalendarView';
 import type { SentNotification } from './NavigationWrapper';
 
-// Alex's facilities grouped by type
-const FACILITIES = {
+// Facility type for closure panel
+export interface FacilityItem { id: string; name: string; venue: string; }
+export interface FacilityGroups { outdoor: FacilityItem[]; indoor: FacilityItem[]; }
+
+export const ALEX_FACILITIES: FacilityGroups = {
   outdoor: [
     { id: 'memorial-stadium', name: 'Memorial Stadium', venue: 'Memorial Stadium' },
     { id: 'soccer-complex', name: 'Soccer Complex', venue: 'Soccer Complex' },
@@ -22,7 +25,18 @@ const FACILITIES = {
   ],
 };
 
-const ALL_FACILITIES = [...FACILITIES.outdoor, ...FACILITIES.indoor];
+export const MARIA_FACILITIES: FacilityGroups = {
+  outdoor: [
+    { id: 'pp-field-1', name: 'Pioneer Park - Field 1', venue: 'Pioneer Park Field 1' },
+    { id: 'pp-field-2', name: 'Pioneer Park - Field 2', venue: 'Pioneer Park Field 2' },
+    { id: 'pp-field-3', name: 'Pioneer Park - Field 3', venue: 'Pioneer Park Field 3' },
+    { id: 'pp-field-4', name: 'Pioneer Park - Field 4', venue: 'Pioneer Park Field 4' },
+  ],
+  indoor: [
+    { id: 'cc-gym', name: 'Community Center Gym', venue: 'Community Center Gym' },
+    { id: 'cc-main', name: 'Community Center', venue: 'Community Center' },
+  ],
+};
 
 interface FacilityClosurePanelProps {
   isOpen: boolean;
@@ -30,11 +44,14 @@ interface FacilityClosurePanelProps {
   allEvents: CalendarEvent[];
   cancelledEventIds: Set<string>;
   onConfirm: (eventIds: string[], notification: Omit<SentNotification, 'id' | 'sentAt' | 'sentBy'>) => void;
+  facilities?: FacilityGroups;
 }
 
 type Phase = 'configure' | 'review';
 
-export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cancelledEventIds, onConfirm }: FacilityClosurePanelProps) {
+export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cancelledEventIds, onConfirm, facilities }: FacilityClosurePanelProps) {
+  const FACILITIES = facilities || ALEX_FACILITIES;
+  const ALL_FACILITIES = [...FACILITIES.outdoor, ...FACILITIES.indoor];
   const [phase, setPhase] = useState<Phase>('configure');
   const [selectedFacilities, setSelectedFacilities] = useState<Set<string>>(new Set());
   // Notification recipients
@@ -63,7 +80,8 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       setChannelEmail(true);
       setChannelSms(false);
       setChannelPush(false);
-      setMessage(`Due to a severe thunderstorm warning, the following facilities at Lincoln East will be closed on ${closureDateLabel}. All affected events have been canceled. We apologize for the inconvenience.`);
+      const orgName = facilities === MARIA_FACILITIES ? 'Westside Youth Football Club' : 'Lincoln East';
+      setMessage(`Due to a severe thunderstorm warning, the following facilities at ${orgName} will be closed on ${closureDateLabel}. All affected events have been canceled. We apologize for the inconvenience.`);
       setIsCancelling(false);
     }
   }, [isOpen]);
