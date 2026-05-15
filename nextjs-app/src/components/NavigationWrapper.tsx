@@ -616,7 +616,7 @@ export default function NavigationWrapper() {
   } else if (activeRoute === '/facilities') {
     // Build bookings list -- Alex sees Maria's request when it's been submitted
     const bookingRequests: BookingRequest[] = [];
-    if (isAlex && activeChapter === 'external-bookings') {
+    if (activePersona.id === 'alex' && activeChapter === 'external-bookings') {
       bookingRequests.push({ ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' });
     }
 
