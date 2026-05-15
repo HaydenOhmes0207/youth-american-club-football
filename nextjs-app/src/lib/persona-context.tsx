@@ -16,16 +16,16 @@ export interface Chapter {
 
 export const CHAPTERS_BY_PERSONA: Record<PersonaId, Chapter[]> = {
   alex: [
-    { id: 'home', label: 'Home' },
-    { id: 'schedule-ingest', label: 'Schedule Ingest' },
-    { id: 'communication', label: 'Communication' },
-    { id: 'external-bookings', label: 'External Bookings' },
+    { id: 'home', label: 'Chapter 1: Home' },
+    { id: 'schedule-ingest', label: 'Chapter 2: Schedule' },
+    { id: 'communication', label: 'Chapter 3: Communication' },
+    { id: 'external-bookings', label: 'Chapter 4: Bookings' },
   ],
   maria: [
-    { id: 'home', label: 'Home' },
-    { id: 'operations', label: 'Operations' },
-    { id: 'communication', label: 'Communication' },
-    { id: 'booking-request', label: 'Booking Request' },
+    { id: 'home', label: 'Chapter 1: Home' },
+    { id: 'operations', label: 'Chapter 2: Operations' },
+    { id: 'communication', label: 'Chapter 3: Communication' },
+    { id: 'booking-request', label: 'Chapter 4: Booking Request' },
   ],
 };
 
