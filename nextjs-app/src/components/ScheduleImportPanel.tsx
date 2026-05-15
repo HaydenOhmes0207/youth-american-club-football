@@ -730,17 +730,55 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                           ))}
                         </div>
                       ) : selectedVenue ? (
-                        <div className="event-venue-selected">
-                          <div className="event-venue-selected-info">
-                            <span className="event-venue-selected-name">{selectedVenue.name}</span>
-                            {selectedVenue.isExternal && (
-                              <span className="event-venue-external-tag">
-                                <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M12 2h4v4M6 10l6-6M14 9v5a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                External &middot; {selectedVenue.org}
-                              </span>
-                            )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div className="event-venue-selected">
+                            <div className="event-venue-selected-info">
+                              <span className="event-venue-selected-name">{selectedVenue.name}</span>
+                              {selectedVenue.isExternal ? (
+                                <span className="event-venue-external-tag">
+                                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M12 2h4v4M6 10l6-6M14 9v5a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                  External &middot; {selectedVenue.org} &middot; Requires approval
+                                </span>
+                              ) : null}
+                            </div>
+                            <button className="event-venue-change" onClick={() => { setSelectedVenue(null); setShowVenueDropdown(true); }}>Change</button>
                           </div>
-                          <button className="event-venue-change" onClick={() => { setSelectedVenue(null); setShowVenueDropdown(true); }}>Change</button>
+
+                          {/* Unavailability warning -- only shown when venue is NOT available */}
+                          {selectedVenue.isExternal && !selectedVenue.availableOnDate && (
+                            <div className="event-approval-notice">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                              <span>This venue appears <strong>unavailable</strong> on the selected date</span>
+                            </div>
+                          )}
+
+                          {/* Amenity requests -- inline with venue selection */}
+                          {selectedVenue.isExternal && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <span style={{ fontFamily: 'var(--u-font-body)', fontSize: '12px', fontWeight: 500, color: 'var(--u-color-base-foreground-subtle, #607081)' }}>Request Amenities</span>
+                              <div className="booking-amenities">
+                                {AMENITY_OPTIONS.map(a => (
+                                  <label key={a.id} className={`event-amenity-toggle ${selectedAmenities.has(a.id) ? 'event-amenity-toggle--active' : ''}`}>
+                                    <input type="checkbox" checked={selectedAmenities.has(a.id)} onChange={() => {
+                                      setSelectedAmenities(prev => {
+                                        const next = new Set(prev);
+                                        if (next.has(a.id)) next.delete(a.id); else next.add(a.id);
+                                        return next;
+                                      });
+                                    }} style={{ display: 'none' }} />
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                      {selectedAmenities.has(a.id) ? (
+                                        <path d="M10 3L4.5 8.5 2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      ) : (
+                                        <path d="M6 3v6M3 6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                      )}
+                                    </svg>
+                                    {a.label}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div style={{ position: 'relative' }}>
@@ -775,8 +813,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                           {v.org}
                                         </span>
                                       </div>
-                                      {v.availableOnDate ? (
-                                        <span className="event-venue-avail event-venue-avail--open">Available Nov 7</span>
+                                      {v.availableOnDate !== false ? (
+                                        <span className="event-venue-avail event-venue-avail--open">Available</span>
                                       ) : (
                                         <span className="event-venue-avail event-venue-avail--busy">Unavailable</span>
                                       )}
@@ -789,48 +827,6 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                         </div>
                       )}
                     </div>
-
-                    {/* External venue notice + amenities */}
-                    {selectedVenue?.isExternal && (
-                      <>
-                        <div className="event-approval-notice">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                          <span>This facility requires approval from <strong>{selectedVenue.org}</strong></span>
-                        </div>
-
-                        {selectedVenue.availableOnDate && (
-                          <div className="booking-availability">
-                            <span className="booking-availability-dot" />
-                            <span className="booking-availability-text"><strong>Nov 7 is available</strong> &mdash; no conflicts on {selectedVenue.org}&apos;s calendar</span>
-                          </div>
-                        )}
-
-                        <div className="closure-review-section">
-                          <div className="closure-section-label">Request Amenities</div>
-                          <div className="booking-amenities">
-                            {AMENITY_OPTIONS.map(a => (
-                              <label key={a.id} className={`event-amenity-toggle ${selectedAmenities.has(a.id) ? 'event-amenity-toggle--active' : ''}`}>
-                                <input type="checkbox" checked={selectedAmenities.has(a.id)} onChange={() => {
-                                  setSelectedAmenities(prev => {
-                                    const next = new Set(prev);
-                                    if (next.has(a.id)) next.delete(a.id); else next.add(a.id);
-                                    return next;
-                                  });
-                                }} style={{ display: 'none' }} />
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                  {selectedAmenities.has(a.id) ? (
-                                    <path d="M10 3L4.5 8.5 2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                  ) : (
-                                    <path d="M6 3v6M3 6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                                  )}
-                                </svg>
-                                {a.label}
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
 
                     {/* Description */}
                     <div className="closure-review-section">
