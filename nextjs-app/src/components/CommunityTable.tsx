@@ -103,7 +103,7 @@ function SentNotificationsView({ notifications }: { notifications: SentNotificat
 
   return (
     <div className="community-sent-list">
-      {notifications.map(notif => {
+      {[...notifications].reverse().map(notif => {
         const channelLabels: string[] = [];
         if (notif.channels.email) channelLabels.push('Email');
         if (notif.channels.sms) channelLabels.push('SMS');
