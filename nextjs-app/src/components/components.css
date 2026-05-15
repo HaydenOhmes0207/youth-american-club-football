@@ -398,10 +398,10 @@
   color: var(--u-color-base-foreground-subtle, #607081); text-align: right;
 }
 .cal-week-time-label { padding: 4px 8px 0 0; }
-.cal-week-cell { flex: 1; border-left: 1px solid var(--u-color-background-canvas, #eff0f0); padding: 2px; display: flex; flex-direction: column; gap: 2px; }
+.cal-week-cell { flex: 1; min-width: 0; border-left: 1px solid var(--u-color-background-canvas, #eff0f0); padding: 2px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
 .cal-week-event {
   padding: 3px 6px; border-radius: 3px; border-left: 3px solid transparent; cursor: pointer;
-  transition: opacity 0.1s ease; display: flex; flex-direction: column; gap: 1px;
+  transition: opacity 0.1s ease; display: flex; flex-direction: column; gap: 1px; overflow: hidden;
 }
 .cal-week-event:hover { opacity: 0.85; }
 .cal-week-event-title { font-family: var(--u-font-body); font-size: 11px; font-weight: 600; color: var(--u-color-base-foreground-contrast, #071c31); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1053,8 +1053,8 @@
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 .resource-column {
-  flex: 1; min-width: 140px; position: relative;
-  border-right: 1px solid var(--u-color-background-canvas, #eff0f0);
+  flex: 1; min-width: 0; position: relative;
+  border-right: 1px solid var(--u-color-background-canvas, #eff0f0); overflow: hidden;
 }
 .resource-column:last-child { border-right: none; }
 .resource-hour-line {
