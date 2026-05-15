@@ -642,10 +642,15 @@ export default function NavigationWrapper() {
   // Render page content
   let pageContent: React.ReactNode;
   if (activeRoute === '/calendar') {
+    // For Maria's chapter 4, include the confirmed Championship Saturday event
+    const calendarExtraEvents = isMariaChapter4
+      ? [...importedEvents.map(e => ({ ...e, isPending: false })), ...(chapter4Event ? [chapter4Event] : [])]
+      : importedEvents;
+
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
         <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
-        <CalendarView extraEvents={importedEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
+        <CalendarView extraEvents={calendarExtraEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );
   } else if (activeRoute === '/facilities') {
