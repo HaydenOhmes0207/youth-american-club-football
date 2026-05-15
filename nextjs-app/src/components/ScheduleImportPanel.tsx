@@ -34,7 +34,7 @@ const FACILITY_OPTIONS: Record<string, string[]> = {
 };
 
 // ---- Generate demo events ----
-function generateImportEvents(): SportSection[] {
+function generateImportEvents(tickets: boolean, streaming: boolean, focus: boolean): SportSection[] {
   const C = SPORT_COLORS;
   const fallStart = new Date(2026, 7, 28);
   const fallEnd = new Date(2026, 10, 28);
@@ -52,7 +52,7 @@ function generateImportEvents(): SportSection[] {
       sport: 'Football', type: 'game',
       location: home ? 'Memorial Stadium' : `${opp} HS`, color: C['Football'],
       opponent: opp, isHome: home, facility: home ? 'Memorial Stadium' : `${opp} HS`,
-      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
+      hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
     });
     fd.setDate(fd.getDate() + 7);
   }
@@ -72,7 +72,7 @@ function generateImportEvents(): SportSection[] {
       sport: 'Girls Volleyball', type: 'game',
       location: home ? 'Main Gym' : `${opp} HS`, color: C['Girls Volleyball'],
       opponent: opp, isHome: home, facility: home ? 'Main Gym' : `${opp} HS`,
-      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
+      hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
     });
     vt.setDate(vt.getDate() + 7);
     vbI++;
@@ -83,7 +83,7 @@ function generateImportEvents(): SportSection[] {
     sport: 'Girls Volleyball', type: 'game',
     location: 'Main Gym', color: C['Girls Volleyball'],
     opponent: 'Multiple', isHome: true, facility: 'Main Gym',
-    hasStream: true, hasTickets: true, hasCameras: true, status: 'pending',
+    hasStream: streaming, hasTickets: tickets, hasCameras: focus, status: 'pending',
   });
 
   // Soccer: biweekly Tuesday
@@ -101,7 +101,7 @@ function generateImportEvents(): SportSection[] {
       sport: 'Boys Soccer', type: 'game',
       location: home ? 'Soccer Complex' : `${opp} HS`, color: C['Boys Soccer'],
       opponent: opp, isHome: home, facility: home ? 'Soccer Complex' : `${opp} HS`,
-      hasStream: home, hasTickets: home, hasCameras: home, status: 'pending',
+      hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
     });
     st2.setDate(st2.getDate() + 14);
     socI++;
@@ -114,23 +114,26 @@ function generateImportEvents(): SportSection[] {
   ];
 }
 
-// ---- Agent log entries ----
-const AGENT_LOG: { text: string; type: 'working' | 'found' | 'done' }[] = [
-  { text: 'Connecting to nsaa-schedule.org...', type: 'working' },
-  { text: 'Parsing district schedule page...', type: 'working' },
-  { text: 'Found 28 games across 3 sports for Lincoln East', type: 'found' },
-  { text: 'Identifying Varsity Football schedule... found 9 games', type: 'found' },
-  { text: 'Identifying Varsity Girls Volleyball schedule... found 11 matches', type: 'found' },
-  { text: 'Identifying Varsity Boys Soccer schedule... found 8 matches', type: 'found' },
-  { text: 'Mapping home games to facilities...', type: 'working' },
-  { text: 'Memorial Stadium assigned to Varsity Football (5 home games)', type: 'found' },
-  { text: 'Main Gym assigned to Varsity Girls Volleyball (6 home matches)', type: 'found' },
-  { text: 'Soccer Complex assigned to Varsity Boys Soccer (4 home matches)', type: 'found' },
-  { text: 'Setting up live streams for home events...', type: 'working' },
-  { text: 'Configuring ticketed events for home games...', type: 'working' },
-  { text: 'Linking cameras for 15 home events...', type: 'working' },
-  { text: 'Schedule ready for review', type: 'done' },
-];
+// ---- Agent log entries (built dynamically based on options) ----
+function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { text: string; type: 'working' | 'found' | 'done' }[] {
+  const log: { text: string; type: 'working' | 'found' | 'done' }[] = [
+    { text: 'Connecting to nsaa-schedule.org...', type: 'working' },
+    { text: 'Parsing district schedule page...', type: 'working' },
+    { text: 'Identified organization: Lincoln East High School', type: 'found' },
+    { text: 'Found 9 Varsity Football games (Aug 28 - Oct 30)', type: 'found' },
+    { text: 'Found 11 Varsity Girls Volleyball matches + 1 tournament', type: 'found' },
+    { text: 'Found 8 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },
+    { text: 'Mapping home games to facilities...', type: 'working' },
+    { text: 'Memorial Stadium assigned to 5 football home games', type: 'done' },
+    { text: 'Main Gym assigned to 6 volleyball home matches', type: 'done' },
+    { text: 'Soccer Complex assigned to 4 soccer home matches', type: 'done' },
+  ];
+  if (streaming) log.push({ text: 'Configuring live streams for 15 home events...', type: 'working' });
+  if (tickets) log.push({ text: 'Creating ticketed events for 15 home games...', type: 'working' });
+  if (focus) log.push({ text: 'Linking Focus cameras for 15 home events...', type: 'working' });
+  log.push({ text: 'Schedule import complete — 28 events ready for review', type: 'done' });
+  return log;
+}
 
 // ---- Format helpers ----
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -157,6 +160,9 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
   const [editingEvent, setEditingEvent] = useState<ImportEvent | null>(null);
+  const [optTickets, setOptTickets] = useState(true);
+  const [optStreaming, setOptStreaming] = useState(true);
+  const [optFocus, setOptFocus] = useState(true);
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -167,15 +173,21 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setLogEntries(0);
       setSections([]);
       setEditingEvent(null);
+      setOptTickets(true);
+      setOptStreaming(true);
+      setOptFocus(true);
     }
   }, [isOpen]);
+
+  // Build log based on options
+  const agentLog = React.useMemo(() => buildAgentLog(optTickets, optStreaming, optFocus), [optTickets, optStreaming, optFocus]);
 
   // Agent log streaming
   useEffect(() => {
     if (phase !== 'agent') return;
-    if (logEntries >= AGENT_LOG.length) {
+    if (logEntries >= agentLog.length) {
       const timer = setTimeout(() => {
-        const generatedSections = generateImportEvents();
+        const generatedSections = generateImportEvents(optTickets, optStreaming, optFocus);
         setSections(generatedSections);
         setPhase('review');
       }, 600);
@@ -184,7 +196,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
     const delay = logEntries === 0 ? 500 : (600 + Math.random() * 500);
     const timer = setTimeout(() => setLogEntries(prev => prev + 1), delay);
     return () => clearTimeout(timer);
-  }, [phase, logEntries]);
+  }, [phase, logEntries, agentLog, optTickets, optStreaming, optFocus]);
 
   // Auto-scroll log
   useEffect(() => {
@@ -305,6 +317,24 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                       <div className="import-paste-label">Paste your district schedule URL</div>
                       <div className="import-paste-sublabel">Hudl AI will parse the page, find games for your teams, map facilities, and configure streaming.</div>
                       <input className="import-paste-input" type="url" defaultValue="https://www.nsaa-schedule.org/district/lincoln-east/fall-2026" readOnly />
+                      <div className="import-paste-options">
+                        <div className="import-paste-options-label">For home games, automatically set up:</div>
+                        <label className="import-paste-option">
+                          <input type="checkbox" checked={optTickets} onChange={() => setOptTickets(v => !v)} />
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 7.333A1.333 1.333 0 013.333 6h1.334c.17 0 .333.07.471.195L6.667 8l4-4.667A.667.667 0 0111.333 3H12a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V7.333z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          <span>Ticketed events</span>
+                        </label>
+                        <label className="import-paste-option">
+                          <input type="checkbox" checked={optStreaming} onChange={() => setOptStreaming(v => !v)} />
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.25"/><path d="M5.17 5.17a4 4 0 000 5.66M10.83 5.17a4 4 0 010 5.66" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/><path d="M3.05 3.05a7 7 0 000 9.9M12.95 3.05a7 7 0 010 9.9" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
+                          <span>Live streaming</span>
+                        </label>
+                        <label className="import-paste-option">
+                          <input type="checkbox" checked={optFocus} onChange={() => setOptFocus(v => !v)} />
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 5V3a1 1 0 011-1h2M11 2h2a1 1 0 011 1v2M14 11v2a1 1 0 01-1 1h-2M5 14H3a1 1 0 01-1-1v-2" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.25"/></svg>
+                          <span>Focus recordings</span>
+                        </label>
+                      </div>
                       <button className="import-paste-submit" onClick={handleStartImport}>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.625 10.333A1.333 1.333 0 015.667 9.375l-4.09-1.054a.333.333 0 010-.642L5.667 6.625A1.333 1.333 0 016.625 5.667l1.054-4.09a.333.333 0 01.642 0l1.054 4.09a1.333 1.333 0 00.958.958l4.09 1.054a.333.333 0 010 .642l-4.09 1.054a1.333 1.333 0 00-.958.958l-1.054 4.09a.333.333 0 01-.642 0z" fill="currentColor"/><path d="M13.333 2v2.667M14.667 3.333h-2.667" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>
                         Import Schedule
@@ -323,13 +353,13 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                       <span className="import-agent-title">Hudl AI is importing your schedule</span>
                     </div>
                     <div className="import-agent-log" ref={logRef}>
-                      {AGENT_LOG.slice(0, logEntries).map((entry, i) => (
+                      {agentLog.slice(0, logEntries).map((entry, i) => (
                         <div key={i} className={`import-log-entry import-log-entry--${entry.type} ${i === logEntries - 1 ? 'import-log-entry--latest' : ''}`}>
                           <span className={`import-log-dot import-log-dot--${entry.type}`} />
                           <span className="import-log-text">{entry.text}</span>
                         </div>
                       ))}
-                      {logEntries < AGENT_LOG.length && (
+                      {logEntries < agentLog.length && (
                         <div className="import-log-entry import-log-entry--thinking">
                           <span className="import-log-spinner" />
                           <span className="import-log-text import-log-text--dim">Processing...</span>
