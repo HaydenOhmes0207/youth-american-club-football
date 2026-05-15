@@ -1358,7 +1358,6 @@
 .bulk-action-clear:hover { color: #fff; }
 
 /* === Message Compose Panel === */
-.compose-form { display: flex; flex-direction: column; gap: var(--u-space-one-half, 24px); }
 .compose-field-value {
   font-family: var(--u-font-body); font-size: var(--u-font-size-200, 14px);
   color: var(--u-color-base-foreground-contrast, #071c31); font-weight: 500;
@@ -1391,15 +1390,6 @@
   box-sizing: border-box;
 }
 .compose-subject-input:focus { outline: none; border-color: var(--u-color-emphasis-background-contrast, #0273e3); }
-.compose-send-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 10px 20px; border: none; border-radius: var(--u-border-radius-medium, 4px);
-  background: var(--u-color-emphasis-background-contrast, #0273e3); color: #fff;
-  font-family: var(--u-font-body); font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s ease;
-}
-.compose-send-btn:hover:not(:disabled) { background: #0260c0; }
-.compose-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .compose-toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: 8px; padding: 10px 20px;

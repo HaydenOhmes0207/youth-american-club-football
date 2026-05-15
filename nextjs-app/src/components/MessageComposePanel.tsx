@@ -40,10 +40,8 @@ export default function MessageComposePanel({
 }: MessageComposePanelProps) {
   const isBulkMode = !!overduePrograms && overduePrograms.length > 0;
 
-  // Compute context-dependent defaults
   const bulkFamilyCount = isBulkMode
     ? overduePrograms.reduce((sum, p) => {
-        // Estimate overdue families: registrants * (1 - paidPercent/100)
         const unpaidRate = 1 - (p.paidPercent ?? 100) / 100;
         return sum + Math.round(p.registrantCount * unpaidRate);
       }, 0)
@@ -102,9 +100,9 @@ export default function MessageComposePanel({
         </div>
 
         <div className="import-panel-body-wrapper">
-          <div className="import-panel-pane">
+          <div className="import-panel-pane" style={{ width: '100%' }}>
             <div className="import-panel-body">
-              <div className="compose-form">
+              <div className="closure-phase-review">
 
                 {/* From */}
                 <div className="closure-review-section">
@@ -181,24 +179,23 @@ export default function MessageComposePanel({
 
               </div>
             </div>
+            <div className="import-panel-footer">
+              <button
+                className="closure-confirm-btn"
+                disabled={!anyChannel || !subject.trim() || !message.trim() || isSending}
+                onClick={handleSend}
+              >
+                {isSending ? (
+                  <><span className="import-btn-spinner import-btn-spinner--light" />Sending...</>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Send to {recipientCount} families
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="import-panel-footer">
-          <button
-            className="compose-send-btn"
-            disabled={!anyChannel || !subject.trim() || !message.trim() || isSending}
-            onClick={handleSend}
-          >
-            {isSending ? (
-              <><span className="import-btn-spinner import-btn-spinner--light" />Sending...</>
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Send to {recipientCount} families
-              </>
-            )}
-          </button>
         </div>
       </div>
     </>
