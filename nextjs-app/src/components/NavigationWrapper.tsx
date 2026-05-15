@@ -212,16 +212,54 @@ function CalendarPageContent({ onOpenImport }: { onOpenImport: () => void }) {
   );
 }
 
-function FacilitiesPageContent({ onOpenClosure }: { onOpenClosure: () => void }) {
+function FacilitiesPageContent({ onOpenClosure, activeTab, onTabChange }: {
+  onOpenClosure: () => void;
+  activeTab: 'schedule' | 'bookings';
+  onTabChange: (tab: 'schedule' | 'bookings') => void;
+}) {
   return (
-    <PageHeader
-      title="Facilities"
-      description="Manage fields, gyms, and other facilities available for your organization."
-      actions={[
-        { label: 'Close Facilities', buttonStyle: 'minimal', onClick: onOpenClosure },
-        { label: 'Add Facility', buttonStyle: 'standard' },
-      ]}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+      <PageHeader
+        title="Facilities"
+        description="Manage fields, gyms, and other facilities available for your organization."
+        actions={[
+          { label: 'Close Facilities', buttonStyle: 'minimal', onClick: onOpenClosure },
+          { label: 'Add Facility', buttonStyle: 'standard' },
+        ]}
+      />
+      <div className="facility-tabs">
+        <button
+          className={`facility-tab ${activeTab === 'schedule' ? 'facility-tab--active' : ''}`}
+          onClick={() => onTabChange('schedule')}
+        >Schedule</button>
+        <button
+          className={`facility-tab ${activeTab === 'bookings' ? 'facility-tab--active' : ''}`}
+          onClick={() => onTabChange('bookings')}
+        >Bookings</button>
+      </div>
+    </div>
+  );
+}
+
+function BookingListItem({ request, onReview }: { request: BookingRequest; onReview: () => void }) {
+  return (
+    <button className="booking-list-item" onClick={onReview}>
+      <div className="booking-list-item-left">
+        <div className="booking-list-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.5"/></svg>
+        </div>
+        <div className="booking-list-info">
+          <span className="booking-list-org">{request.fromOrg}</span>
+          <span className="booking-list-detail">{request.eventTitle} &middot; {request.facility} &middot; {request.dateLabel}</span>
+        </div>
+      </div>
+      <div className="booking-list-item-right">
+        <span className={`booking-list-status booking-list-status--${request.status}`}>
+          {request.status === 'pending' ? 'Pending Review' : request.status === 'approved' ? 'Approved' : 'Declined'}
+        </span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+    </button>
   );
 }
 
@@ -250,6 +288,7 @@ export default function NavigationWrapper() {
   const [composeOverduePrograms, setComposeOverduePrograms] = useState<ProgramWithStats[]>([]);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
   const [bookingApproved, setBookingApproved] = useState(false);
+  const [facilitiesTab, setFacilitiesTab] = useState<'schedule' | 'bookings'>('schedule');
   const [bookingRequestSubmitted, setBookingRequestSubmitted] = useState(false);
   const [submittedEventResult, setSubmittedEventResult] = useState<ManualEventResult | null>(null);
   const { showToast } = useToast();
@@ -300,6 +339,7 @@ export default function NavigationWrapper() {
     setBookingApproved(false);
     setBookingRequestSubmitted(false);
     setSubmittedEventResult(null);
+    setFacilitiesTab('schedule');
 
     switch (activeChapter) {
       case 'home':
@@ -574,10 +614,35 @@ export default function NavigationWrapper() {
       </div>
     );
   } else if (activeRoute === '/facilities') {
+    // Build bookings list -- Alex sees Maria's request when it's been submitted
+    const bookingRequests: BookingRequest[] = [];
+    if (isAlex && activeChapter === 'external-bookings') {
+      bookingRequests.push({ ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' });
+    }
+
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
-        <FacilitiesPageContent onOpenClosure={() => setShowClosurePanel(true)} />
-        <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} surfaces={activePersona.id === 'maria' ? MARIA_SURFACES : ALEX_SURFACES} />
+        <FacilitiesPageContent
+          onOpenClosure={() => setShowClosurePanel(true)}
+          activeTab={facilitiesTab}
+          onTabChange={setFacilitiesTab}
+        />
+        {facilitiesTab === 'schedule' ? (
+          <FacilityResourceView events={allEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} surfaces={activePersona.id === 'maria' ? MARIA_SURFACES : ALEX_SURFACES} />
+        ) : (
+          <div className="booking-list">
+            {bookingRequests.length === 0 ? (
+              <div className="booking-list-empty">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5"/></svg>
+                <span>No booking requests</span>
+              </div>
+            ) : (
+              bookingRequests.map(req => (
+                <BookingListItem key={req.id} request={req} onReview={() => setShowBookingPanel(true)} />
+              ))
+            )}
+          </div>
+        )}
       </div>
     );
   } else if (activeRoute === '/community') {
@@ -629,6 +694,7 @@ export default function NavigationWrapper() {
         }}
         onReviewBooking={() => {
           setActiveRoute('/facilities');
+          setFacilitiesTab('bookings');
           setShowBookingPanel(true);
         }}
       />

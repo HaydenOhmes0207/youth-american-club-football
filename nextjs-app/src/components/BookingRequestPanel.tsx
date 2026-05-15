@@ -144,8 +144,8 @@ export default function BookingRequestPanel({ isOpen, onClose, request, onApprov
                   </div>
                 </div>
               </div>
-              </div>
         </div>
+
         <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
           <button className="booking-decline-btn" onClick={handleDecline} disabled={isApproving}>
             Decline
