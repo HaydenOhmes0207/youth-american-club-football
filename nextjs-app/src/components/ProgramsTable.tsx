@@ -30,7 +30,10 @@ function formatCurrency(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
-function formatVisibility(visibility: string): string { return visibility === 'public' ? 'Public' : 'Private'; }
+function formatDollars(dollars: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(dollars);
+}
+
 function formatRegistrationStatus(status: string): string { return status === 'open' ? 'Open' : 'Closed'; }
 
 function MoreOptionsIcon() {
@@ -44,61 +47,92 @@ function MoreOptionsIcon() {
 }
 
 function StatusBadge({ status, type }: { status: string; type: 'visibility' | 'registration' }) {
-  const isPositive = type === 'visibility' ? status === 'public' : status === 'open';
-  const label = type === 'visibility' ? formatVisibility(status) : formatRegistrationStatus(status);
+  const isPositive = type === 'registration' ? status === 'open' : status === 'public';
+  const label = type === 'registration' ? formatRegistrationStatus(status) : (status === 'public' ? 'Public' : 'Private');
   return <span className={`status-badge ${isPositive ? 'positive' : 'neutral'}`}>{label}</span>;
 }
 
-function CreatorAvatar({ creator }: { creator: ProgramWithStats['createdBy'] }) {
-  if (!creator) return <span className="no-creator">{'\u2014'}</span>;
-  const initials = `${creator.firstName.charAt(0)}${creator.lastName.charAt(0)}`;
-  const fullName = `${creator.firstName} ${creator.lastName}`;
+function PaidBar({ percent }: { percent: number }) {
+  const isLow = percent < 70;
   return (
-    <div className="creator-info">
-      {creator.avatar ? (
-        <img src={creator.avatar} alt={fullName} className="creator-avatar" crossOrigin="anonymous" />
-      ) : (
-        <div className="creator-avatar-placeholder">{initials}</div>
-      )}
-      <span className="creator-name">{fullName}</span>
+    <div className="paid-bar-container">
+      <div className="paid-bar-track">
+        <div className="paid-bar-fill" style={{ width: `${percent}%`, background: isLow ? '#dc2626' : '#16a34a' }} />
+      </div>
+      <span className={`paid-bar-label ${isLow ? 'paid-bar-label--low' : ''}`}>{percent}%</span>
     </div>
   );
 }
 
-function TableContent({ programs }: { programs: ProgramWithStats[] }) {
+interface ProgramsTableProps {
+  programs: ProgramWithStats[];
+  onProgramClick?: (program: ProgramWithStats) => void;
+}
+
+function TableContent({ programs, showFinancials, onProgramClick }: { programs: ProgramWithStats[]; showFinancials: boolean; onProgramClick?: (program: ProgramWithStats) => void }) {
   return (
-    <div className="programs-table">
+    <div className="programs-table" style={{ minWidth: showFinancials ? '1200px' : '1100px' }}>
       <div className="table-row table-header">
-        <div className="table-cell cell-title"><span className="header-label">Title</span></div>
+        <div className="table-cell cell-title"><span className="header-label">Program</span></div>
         <div className="table-cell cell-registration"><span className="header-label">Registration</span></div>
-        <div className="table-cell cell-visibility"><span className="header-label">Visibility</span></div>
         <div className="table-cell cell-type"><span className="header-label">Type</span></div>
-        <div className="table-cell cell-dates"><span className="header-label">Event Dates</span></div>
-        <div className="table-cell cell-created-by"><span className="header-label">Created By</span></div>
+        <div className="table-cell cell-dates"><span className="header-label">Key Dates</span></div>
         <div className="table-cell cell-registrants align-right"><span className="header-label">Registrants</span></div>
-        <div className="table-cell cell-value align-right"><span className="header-label">Program Value</span></div>
+        {showFinancials && (
+          <>
+            <div className="table-cell cell-teams align-right" style={{ width: '80px' }}><span className="header-label">Teams</span></div>
+            <div className="table-cell cell-paid"><span className="header-label">Paid</span></div>
+            <div className="table-cell cell-outstanding align-right"><span className="header-label">Outstanding</span></div>
+            <div className="table-cell cell-revenue align-right"><span className="header-label">Revenue</span></div>
+          </>
+        )}
+        {!showFinancials && (
+          <div className="table-cell cell-value align-right"><span className="header-label">Program Value</span></div>
+        )}
         <div className="table-cell cell-actions" />
       </div>
       {programs.map((program) => (
-        <div key={program.id} className="table-row table-data">
+        <div
+          key={program.id}
+          className="table-row table-data"
+          onClick={() => onProgramClick?.(program)}
+          role={onProgramClick ? 'button' : undefined}
+          tabIndex={onProgramClick ? 0 : undefined}
+          onKeyDown={(e) => { if (onProgramClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onProgramClick(program); } }}
+        >
           <div className="table-cell cell-title emphasized">{program.title}</div>
           <div className="table-cell cell-registration"><StatusBadge status={program.registrationStatus} type="registration" /></div>
-          <div className="table-cell cell-visibility"><StatusBadge status={program.visibility} type="visibility" /></div>
           <div className="table-cell cell-type">{formatProgramType(program.type)}</div>
-          <div className="table-cell cell-dates">{formatDateRange(program.eventDates)}</div>
-          <div className="table-cell cell-created-by"><CreatorAvatar creator={program.createdBy} /></div>
+          <div className="table-cell cell-dates">{program.keyDates || formatDateRange(program.eventDates)}</div>
           <div className="table-cell cell-registrants align-right">{program.registrantCount}</div>
-          <div className="table-cell cell-value align-right">{formatCurrency(program.programValue)}</div>
-          <div className="table-cell cell-actions"><button className="more-options-btn" aria-label="More options"><MoreOptionsIcon /></button></div>
+          {showFinancials && (
+            <>
+              <div className="table-cell cell-teams align-right" style={{ width: '80px' }}>{program.teamCount ?? '\u2014'}</div>
+              <div className="table-cell cell-paid">{program.paidPercent != null ? <PaidBar percent={program.paidPercent} /> : '\u2014'}</div>
+              <div className="table-cell cell-outstanding align-right">
+                {program.outstandingAmount != null ? (
+                  <span className={program.outstandingAmount > 0 ? 'outstanding-amount' : ''}>{formatDollars(program.outstandingAmount)}</span>
+                ) : '\u2014'}
+              </div>
+              <div className="table-cell cell-revenue align-right">{program.totalRevenue != null ? formatDollars(program.totalRevenue) : '\u2014'}</div>
+            </>
+          )}
+          {!showFinancials && (
+            <div className="table-cell cell-value align-right">{formatCurrency(program.programValue)}</div>
+          )}
+          <div className="table-cell cell-actions"><button className="more-options-btn" aria-label="More options" onClick={(e) => e.stopPropagation()}><MoreOptionsIcon /></button></div>
         </div>
       ))}
     </div>
   );
 }
 
-export default function ProgramsTable({ programs }: { programs: ProgramWithStats[] }) {
+export default function ProgramsTable({ programs, onProgramClick }: ProgramsTableProps) {
   const [statusFilter, setStatusFilter] = useState('published');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Detect whether to show financial columns based on data presence
+  const showFinancials = programs.some(p => p.paidPercent != null || p.totalRevenue != null);
 
   const segments = [
     {
@@ -123,7 +157,7 @@ export default function ProgramsTable({ programs }: { programs: ProgramWithStats
   const filteredPrograms = searchQuery.trim()
     ? statusFilteredPrograms.filter(program => {
         const query = searchQuery.toLowerCase().trim();
-        return program.title.toLowerCase().includes(query) || program.type.toLowerCase().includes(query) || program.visibility.toLowerCase().includes(query);
+        return program.title.toLowerCase().includes(query) || program.type.toLowerCase().includes(query);
       })
     : statusFilteredPrograms;
 
@@ -139,7 +173,7 @@ export default function ProgramsTable({ programs }: { programs: ProgramWithStats
     <div className="programs-content">
       <Toolbar segments={segments} searchPlaceholder="Search programs..." onSearch={(query) => setSearchQuery(query)} onFilter={() => {}} onExport={() => {}} />
       {filteredPrograms.length > 0 ? (
-        <div className="table-scroll-container"><TableContent programs={filteredPrograms} /></div>
+        <div className="table-scroll-container"><TableContent programs={filteredPrograms} showFinancials={showFinancials} onProgramClick={onProgramClick} /></div>
       ) : (
         <EmptyState variant={getEmptyStateVariant()} searchQuery={searchQuery} />
       )}

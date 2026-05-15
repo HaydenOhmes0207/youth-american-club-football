@@ -12,6 +12,7 @@ import type { CalendarEvent } from './CalendarView';
 import ScheduleImportPanel, { getFallScheduleEvents } from './ScheduleImportPanel';
 import FacilityResourceView from './FacilityResourceView';
 import FacilityClosurePanel from './FacilityClosurePanel';
+import ProgramDetailView from './ProgramDetailView';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 export interface SentNotification {
@@ -27,22 +28,98 @@ export interface SentNotification {
   sentBy: string;
 }
 
-const mockPrograms: ProgramWithStats[] = [
+const alexPrograms: ProgramWithStats[] = [
   {
     id: 'program-1',
-    title: 'Fall 2025 Football Season',
+    title: 'Fall 2026 Football Season',
     type: 'season',
-    eventDates: { start: '2025-08-15', end: '2025-11-30' },
+    eventDates: { start: '2026-08-15', end: '2026-11-30' },
     visibility: 'public',
     registrationStatus: 'open',
     status: 'published',
-    registrantCount: 45,
-    programValue: 1125000,
-    createdBy: { id: 'user-david-mitchell', firstName: 'David', lastName: 'Mitchell', avatar: null },
+    registrantCount: 145,
+    programValue: 0,
+    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
   },
 ];
 
-function HomePage({ onTakeAction, showStormAlert }: { onTakeAction?: () => void; showStormAlert?: boolean }) {
+const mariaPrograms: ProgramWithStats[] = [
+  {
+    id: 'mp-tackle', title: 'Fall Tackle Football', type: 'season',
+    eventDates: { start: '2026-08-10', end: '2026-11-14' },
+    keyDates: 'Aug 10 – Nov 14, 2026',
+    visibility: 'public', registrationStatus: 'open', status: 'published',
+    registrantCount: 186, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 12, feePerPlayer: 285, paidPercent: 74, outstandingAmount: 13_680, totalRevenue: 39_330,
+  },
+  {
+    id: 'mp-flag', title: 'Fall Flag Football', type: 'season',
+    eventDates: { start: '2026-09-06', end: '2026-10-25' },
+    keyDates: 'Sep 6 – Oct 25, 2026',
+    visibility: 'public', registrationStatus: 'open', status: 'published',
+    registrantCount: 112, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 8, feePerPlayer: 125, outstandingAmount: 2_500, totalRevenue: 11_500, paidPercent: 82,
+  },
+  {
+    id: 'mp-cheer', title: 'Fall Cheer', type: 'season',
+    eventDates: { start: '2026-08-10', end: '2026-11-14' },
+    keyDates: 'Aug 10 – Nov 14, 2026',
+    visibility: 'public', registrationStatus: 'open', status: 'published',
+    registrantCount: 64, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 4, feePerPlayer: 195, outstandingAmount: 1_365, totalRevenue: 11_115, paidPercent: 89,
+  },
+  {
+    id: 'mp-camp', title: 'Summer Skills Camp', type: 'camp',
+    eventDates: { start: '2026-06-15', end: '2026-06-19' },
+    keyDates: 'Jun 15 – 19, 2026',
+    visibility: 'public', registrationStatus: 'closed', status: 'published',
+    registrantCount: 78, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 0, feePerPlayer: 85, outstandingAmount: 0, totalRevenue: 6_630, paidPercent: 100,
+  },
+  {
+    id: 'mp-combine', title: 'Spring Combine & Evaluation', type: 'clinic',
+    eventDates: { start: '2026-04-18', end: '2026-04-18' },
+    keyDates: 'Apr 18, 2026',
+    visibility: 'public', registrationStatus: 'closed', status: 'published',
+    registrantCount: 134, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 0, feePerPlayer: 35, outstandingAmount: 0, totalRevenue: 4_690, paidPercent: 100,
+  },
+  {
+    id: 'mp-equip', title: 'Equipment Fitting Day', type: 'clinic',
+    eventDates: { start: '2026-07-25', end: '2026-07-25' },
+    keyDates: 'Jul 25, 2026',
+    visibility: 'public', registrationStatus: 'open', status: 'published',
+    registrantCount: 210, programValue: 0,
+    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    teamCount: 0, feePerPlayer: 0, outstandingAmount: 0, totalRevenue: 0, paidPercent: 100,
+  },
+];
+
+interface DeskItem {
+  id: string;
+  icon: 'payment' | 'registration' | 'assignment';
+  label: string;
+  detail: string;
+}
+
+function DeskIcon({ type }: { type: DeskItem['icon'] }) {
+  if (type === 'payment') return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M1 7h14" stroke="currentColor" strokeWidth="1.5"/></svg>
+  );
+  if (type === 'registration') return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+  );
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+  );
+}
+
+function HomePage({ onTakeAction, showStormAlert, deskItems }: { onTakeAction?: () => void; showStormAlert?: boolean; deskItems?: DeskItem[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
       <PageHeader title="Home" description="Welcome to your organization overview and quick actions." />
@@ -56,6 +133,22 @@ function HomePage({ onTakeAction, showStormAlert }: { onTakeAction?: () => void;
             <div className="storm-alert-desc">A severe thunderstorm warning has been issued for <strong>Friday, September 4</strong>. Consider closing outdoor facilities and notifying affected coaches, parents, and fans.</div>
           </div>
           <button className="storm-alert-action" onClick={onTakeAction}>Take Action</button>
+        </div>
+      )}
+      {deskItems && deskItems.length > 0 && (
+        <div className="desk-section">
+          <h3 className="desk-section-title">On Your Desk</h3>
+          <div className="desk-items">
+            {deskItems.map(item => (
+              <div key={item.id} className="desk-item">
+                <div className="desk-item-icon"><DeskIcon type={item.icon} /></div>
+                <div className="desk-item-content">
+                  <span className="desk-item-label">{item.label}</span>
+                  <span className="desk-item-detail">{item.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -96,18 +189,7 @@ function CommunityPageContent({ sentNotifications }: { sentNotifications: SentNo
   );
 }
 
-function ProgramsPage() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <PageHeader title="Programs" description="Manage your registration programs, seasons, and events." />
-      <ProgramsTable programs={mockPrograms} />
-    </div>
-  );
-}
-
-const STATIC_PAGE_MAP: Record<string, React.FC> = {
-  '/programs': ProgramsPage,
-};
+/* ProgramsPage is now rendered inline with persona-specific data */
 
 export default function NavigationWrapper() {
   const { activePersona, activeChapter, chapterVersion } = usePersona();
@@ -117,6 +199,7 @@ export default function NavigationWrapper() {
   const [cancelledEventIds, setCancelledEventIds] = useState<Set<string>>(new Set());
   const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
   const [showClosurePanel, setShowClosurePanel] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState<ProgramWithStats | null>(null);
 
   // Chapter switching: reset state and set initial context for each chapter
   React.useEffect(() => {
@@ -125,6 +208,7 @@ export default function NavigationWrapper() {
     setShowClosurePanel(false);
     setCancelledEventIds(new Set());
     setSentNotifications([]);
+    setSelectedProgram(null);
 
     switch (activeChapter) {
       case 'home':
@@ -139,9 +223,17 @@ export default function NavigationWrapper() {
         setActiveRoute('/');
         setImportedEvents(getFallScheduleEvents());
         break;
+      case 'operations':
+        setActiveRoute('/programs');
+        setImportedEvents([]);
+        break;
       case 'external-bookings':
         setActiveRoute('/');
         setImportedEvents(getFallScheduleEvents());
+        break;
+      case 'booking-request':
+        setActiveRoute('/');
+        setImportedEvents([]);
         break;
       default:
         setActiveRoute('/');
@@ -217,7 +309,8 @@ export default function NavigationWrapper() {
     role: activePersona.role,
   };
 
-  const StaticPage = STATIC_PAGE_MAP[activeRoute];
+  // Persona-specific programs
+  const currentPrograms = activePersona.id === 'maria' ? mariaPrograms : alexPrograms;
 
   // Simulated "today" per chapter
   const simulatedToday = React.useMemo(() => {
@@ -271,18 +364,38 @@ export default function NavigationWrapper() {
     );
   } else if (activeRoute === '/community') {
     pageContent = <CommunityPageContent sentNotifications={sentNotifications} />;
+  } else if (activeRoute === '/programs') {
+    if (selectedProgram) {
+      pageContent = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', flex: 1, minHeight: 0 }}>
+          <ProgramDetailView program={selectedProgram} onBack={() => setSelectedProgram(null)} />
+        </div>
+      );
+    } else {
+      pageContent = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+          <PageHeader title="Programs" description="Manage your registration programs, seasons, and events." />
+          <ProgramsTable programs={currentPrograms} onProgramClick={(p) => setSelectedProgram(p)} />
+        </div>
+      );
+    }
   } else if (activeRoute === '/') {
+    const mariaDeskItems: DeskItem[] = activePersona.id === 'maria' && activeChapter !== 'home' ? [
+      { id: 'desk-1', icon: 'payment', label: '$13,680 outstanding across Fall Tackle Football', detail: '48 families have unpaid balances' },
+      { id: 'desk-2', icon: 'assignment', label: '14 athletes unassigned to teams', detail: 'Fall Tackle Football registration' },
+      { id: 'desk-3', icon: 'registration', label: '12 new registrations this week', detail: 'Flag Football is filling up fast' },
+    ] : [];
+
     pageContent = (
       <HomePage
         showStormAlert={activeChapter === 'communication'}
+        deskItems={mariaDeskItems}
         onTakeAction={() => {
           setActiveRoute('/facilities');
           setShowClosurePanel(true);
         }}
       />
     );
-  } else if (StaticPage) {
-    pageContent = <StaticPage />;
   } else {
     pageContent = (
       <HomePage
@@ -303,7 +416,7 @@ export default function NavigationWrapper() {
       navItems={navItems}
       currentUser={currentUser}
       activeRoute={activeRoute}
-      onNavigate={(route) => setActiveRoute(route)}
+      onNavigate={(route) => { setActiveRoute(route); setSelectedProgram(null); }}
       overlay={overlay}
     >
       {pageContent}

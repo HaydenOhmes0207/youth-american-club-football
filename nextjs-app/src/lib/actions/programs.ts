@@ -37,6 +37,13 @@ export interface ProgramWithStats {
   registrantCount: number;
   programValue: number;
   createdBy: ProgramCreator | null;
+  // Optional financial fields (Maria's operations view)
+  paidPercent?: number;
+  outstandingAmount?: number;
+  totalRevenue?: number;
+  teamCount?: number;
+  feePerPlayer?: number;
+  keyDates?: string;
 }
 
 export interface CreateProgramInput {
