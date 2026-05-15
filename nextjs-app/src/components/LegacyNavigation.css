@@ -585,7 +585,7 @@
   gap: var(--u-space-two, 32px);
   align-items: center;
   justify-content: flex-start;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .page-body {
