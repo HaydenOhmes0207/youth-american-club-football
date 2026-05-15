@@ -995,6 +995,12 @@
 .closure-notify-option input[type="checkbox"] {
   width: 16px; height: 16px; accent-color: var(--u-color-emphasis-background-contrast, #0273e3); cursor: pointer;
 }
+.closure-notify-count {
+  margin-left: auto; font-size: 12px; font-weight: 600;
+  color: var(--u-color-base-foreground-subtle, #607081);
+  background: var(--u-color-background-canvas, #eff0f0);
+  padding: 1px 8px; border-radius: 10px;
+}
 /* Message */
 .closure-message {
   width: 100%; padding: var(--u-space-three-quarter, 12px);

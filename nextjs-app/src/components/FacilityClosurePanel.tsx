@@ -280,14 +280,17 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
                       <label className="closure-notify-option">
                         <input type="checkbox" checked={notifyCoaches} onChange={() => setNotifyCoaches(v => !v)} />
                         <span>Coaches</span>
+                        <span className="closure-notify-count">{affectedEvents.length * 3}</span>
                       </label>
                       <label className="closure-notify-option">
                         <input type="checkbox" checked={notifyParents} onChange={() => setNotifyParents(v => !v)} />
                         <span>Parents &amp; guardians</span>
+                        <span className="closure-notify-count">{affectedEvents.length * 42}</span>
                       </label>
                       <label className="closure-notify-option">
                         <input type="checkbox" checked={notifyFans} onChange={() => setNotifyFans(v => !v)} />
                         <span>Ticket holders / fans</span>
+                        <span className="closure-notify-count">{affectedEvents.length * 85}</span>
                       </label>
                     </div>
                   </div>
