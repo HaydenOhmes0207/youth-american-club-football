@@ -10,6 +10,7 @@ import CommunityTable from './CommunityTable';
 import CalendarView, { EVENTS_BY_PERSONA } from './CalendarView';
 import type { CalendarEvent } from './CalendarView';
 import ScheduleImportPanel, { getFallScheduleEvents } from './ScheduleImportPanel';
+import type { ManualEventResult } from './ScheduleImportPanel';
 import FacilityResourceView, { ALEX_SURFACES, MARIA_SURFACES } from './FacilityResourceView';
 import FacilityClosurePanel, { ALEX_FACILITIES, MARIA_FACILITIES } from './FacilityClosurePanel';
 import ProgramDetailView from './ProgramDetailView';
@@ -19,8 +20,6 @@ import type { MessagePayload } from './MessageComposePanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
-import EventCreatePanel from './EventCreatePanel';
-import type { EventCreateResult } from './EventCreatePanel';
 import { useToast } from './Toast';
 
 export interface SentNotification {
@@ -203,7 +202,7 @@ function HomePage({ onTakeAction, showStormAlert, showPaymentAlert, showBookingA
 
 function CalendarPageContent({ onOpenImport, onNewEvent, showNewEvent }: { onOpenImport: () => void; onNewEvent?: () => void; showNewEvent?: boolean }) {
   const actions = showNewEvent
-    ? [{ label: 'New Event', buttonStyle: 'standard' as const, onClick: onNewEvent }]
+    ? [{ label: 'Create Event', buttonStyle: 'standard' as const, onClick: onNewEvent }]
     : [{ label: 'Add Event', buttonStyle: 'standard' as const, onClick: onOpenImport }];
   return (
     <>
@@ -373,7 +372,7 @@ export default function NavigationWrapper() {
     setImportedEvents(prev => [...prev, champEvent]);
   };
 
-  const handleEventCreate = (result: EventCreateResult) => {
+  const handleEventCreate = (result: ManualEventResult) => {
     const pendingEvent: CalendarEvent = {
       id: 'pending-champ-saturday',
       title: result.title,
@@ -484,7 +483,7 @@ export default function NavigationWrapper() {
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
       case 'external-bookings': return new Date(2026, 10, 7); // Nov 7
-      case 'booking-request': return new Date(2026, 9, 28);  // Oct 28
+      case 'booking-request': return new Date(2026, 6, 16);  // Jul 16 (planning ahead)
       default: return undefined;
     }
   }, [activeChapter]);
@@ -517,21 +516,15 @@ export default function NavigationWrapper() {
         onSend={handleMessageSend}
       />
     );
-  } else if (activeRoute === '/calendar' && showEventCreatePanel) {
-    overlay = (
-      <EventCreatePanel
-        isOpen={showEventCreatePanel}
-        onClose={() => setShowEventCreatePanel(false)}
-        onSubmit={handleEventCreate}
-        defaultDate="2026-11-07"
-      />
-    );
   } else if (activeRoute === '/calendar') {
+    const isMariaBookingChapter = activePersona.id === 'maria' && activeChapter === 'booking-request';
     overlay = (
       <ScheduleImportPanel
-        isOpen={showImportPanel}
-        onClose={() => setShowImportPanel(false)}
+        isOpen={isMariaBookingChapter ? showEventCreatePanel : showImportPanel}
+        onClose={() => { setShowImportPanel(false); setShowEventCreatePanel(false); }}
         onImport={handleImport}
+        onManualSubmit={handleEventCreate}
+        defaultManualPhase={isMariaBookingChapter}
       />
     );
   } else if (activeRoute === '/facilities' && showBookingPanel) {

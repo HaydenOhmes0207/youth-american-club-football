@@ -24,7 +24,48 @@ interface SportSection {
   events: ImportEvent[];
 }
 
-type Phase = 'choose' | 'paste' | 'agent' | 'review';
+type Phase = 'choose' | 'paste' | 'agent' | 'review' | 'manual';
+
+// ---- Manual event venue data ----
+interface VenueOption {
+  id: string;
+  name: string;
+  org?: string;
+  isExternal: boolean;
+  availableOnDate?: boolean;
+}
+
+const MY_VENUES: VenueOption[] = [
+  { id: 'v-pp1', name: 'Pioneer Park Field 1', isExternal: false },
+  { id: 'v-pp2', name: 'Pioneer Park Field 2', isExternal: false },
+  { id: 'v-pp3', name: 'Pioneer Park Field 3', isExternal: false },
+  { id: 'v-pp4', name: 'Pioneer Park Field 4', isExternal: false },
+  { id: 'v-cc', name: 'Community Center Gym', isExternal: false },
+];
+
+const NETWORK_VENUES: VenueOption[] = [
+  { id: 'v-spartan', name: 'Spartan Field - Memorial Stadium', org: 'Lincoln East HS', isExternal: true, availableOnDate: true },
+  { id: 'v-hawks', name: 'Hawks Field', org: 'Papillion-La Vista HS', isExternal: true, availableOnDate: false },
+  { id: 'v-mustang', name: 'Mustang Stadium', org: 'Millard North HS', isExternal: true, availableOnDate: true },
+];
+
+const AMENITY_OPTIONS = [
+  { id: 'camera', label: 'Camera / Streaming' },
+  { id: 'scoreboard', label: 'Scoreboard' },
+  { id: 'pa', label: 'PA System' },
+  { id: 'pressbox', label: 'Press Box' },
+];
+
+export interface ManualEventResult {
+  title: string;
+  date: string;
+  timeBlock: string;
+  location: string;
+  isExternal: boolean;
+  externalOrg?: string;
+  amenities: string[];
+  description: string;
+}
 
 /** Pre-built fall schedule events for chapters that assume import already happened */
 export function getFallScheduleEvents(): CalendarEvent[] {
@@ -202,9 +243,11 @@ interface ScheduleImportPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (events: CalendarEvent[]) => void;
+  onManualSubmit?: (result: ManualEventResult) => void;
+  defaultManualPhase?: boolean;
 }
 
-export default function ScheduleImportPanel({ isOpen, onClose, onImport }: ScheduleImportPanelProps) {
+export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManualSubmit, defaultManualPhase }: ScheduleImportPanelProps) {
   const [phase, setPhase] = useState<Phase>('choose');
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
@@ -216,10 +259,25 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
   const logRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
+  // Manual form state
+  const [manualEventType, setManualEventType] = useState<'game' | 'practice' | 'other'>('other');
+  const [manualTitle, setManualTitle] = useState('Championship Saturday');
+  const [manualDate, setManualDate] = useState('2026-11-07');
+  const [manualStartTime, setManualStartTime] = useState('8:00 AM');
+  const [manualEndTime, setManualEndTime] = useState('6:00 PM');
+  const [manualDescription, setManualDescription] = useState(
+    'End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.'
+  );
+  const [venueSearch, setVenueSearch] = useState('');
+  const [selectedVenue, setSelectedVenue] = useState<VenueOption | null>(null);
+  const [showVenueDropdown, setShowVenueDropdown] = useState(false);
+  const [selectedAmenities, setSelectedAmenities] = useState<Set<string>>(new Set(['camera', 'scoreboard', 'pa']));
+  const [isManualSubmitting, setIsManualSubmitting] = useState(false);
+
   // Reset state when panel opens
   useEffect(() => {
     if (isOpen) {
-      setPhase('choose');
+      setPhase(defaultManualPhase ? 'manual' : 'choose');
       setLogEntries(0);
       setSections([]);
       setEditingEvent(null);
@@ -228,8 +286,20 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       setOptFocus(false);
       setPastedUrl('');
       setIsPublishing(false);
+      // Reset manual form
+      setManualEventType('other');
+      setManualTitle('Championship Saturday');
+      setManualDate('2026-11-07');
+      setManualStartTime('8:00 AM');
+      setManualEndTime('6:00 PM');
+      setManualDescription('End-of-season championship games for our youth tackle football program. Four title games across age divisions (3rd-6th grade). Expected attendance: ~400 families.');
+      setVenueSearch('');
+      setSelectedVenue(null);
+      setShowVenueDropdown(false);
+      setSelectedAmenities(new Set(['camera', 'scoreboard', 'pa']));
+      setIsManualSubmitting(false);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultManualPhase]);
 
   // Fake paste: click the input to instantly fill the URL
   const FAKE_URL = 'https://www.nsaa-schedule.org/district/lincoln-east/fall-2026';
@@ -331,7 +401,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
       <div className="import-panel">
         {/* Header */}
         <div className="import-panel-header">
-          <h2 className="import-panel-title">Add Event</h2>
+          <h2 className="import-panel-title">{defaultManualPhase ? 'Create Event' : 'Add Event'}</h2>
           <button className="import-panel-close" onClick={onClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
@@ -356,7 +426,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                       </div>
                       <svg className="import-method-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </button>
-                    <button className="import-method-card import-method-card--manual" disabled>
+                    <button className="import-method-card import-method-card--manual" onClick={() => setPhase('manual')}>
                       <div className="import-method-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </div>
@@ -557,6 +627,216 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                     })}
                   </div>
                 )}
+
+                {/* Phase: Manual Event */}
+                {phase === 'manual' && (
+                  <div className="closure-phase-review">
+                    {!defaultManualPhase && (
+                      <div className="import-paste-header">
+                        <button className="import-back-btn" onClick={() => setPhase('choose')}>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          Back
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Event Type */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Event Type <span style={{ color: '#dc2626' }}>*</span></div>
+                      <div className="manual-radio-group">
+                        {(['game', 'practice', 'other'] as const).map(t => (
+                          <label key={t} className="manual-radio-option">
+                            <input type="radio" name="eventType" checked={manualEventType === t} onChange={() => setManualEventType(t)} />
+                            <span className="manual-radio-dot" />
+                            <span>{t === 'game' ? 'Game' : t === 'practice' ? 'Practice' : 'Other'}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Game Type (only for games) */}
+                    {manualEventType === 'game' && (
+                      <div className="closure-review-section">
+                        <div className="closure-section-label">Game Type <span style={{ color: '#dc2626' }}>*</span></div>
+                        <div className="manual-radio-group">
+                          {['Regular Season', 'Scrimmage', 'Tournament', 'Postseason'].map(t => (
+                            <label key={t} className="manual-radio-option">
+                              <input type="radio" name="gameType" />
+                              <span className="manual-radio-dot" />
+                              <span>{t}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Title (for Other type) */}
+                    {manualEventType === 'other' && (
+                      <div className="closure-review-section">
+                        <div className="closure-section-label">Event Name <span style={{ color: '#dc2626' }}>*</span></div>
+                        <input className="compose-subject-input" value={manualTitle} onChange={e => setManualTitle(e.target.value)} placeholder="e.g. Championship Saturday" />
+                      </div>
+                    )}
+
+                    {/* Location / Venue */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Location <span style={{ color: '#dc2626' }}>*</span></div>
+                      {manualEventType !== 'other' ? (
+                        <div className="manual-radio-group">
+                          {['Home', 'Neutral', 'Away'].map(t => (
+                            <label key={t} className="manual-radio-option">
+                              <input type="radio" name="location" defaultChecked={t === 'Home'} />
+                              <span className="manual-radio-dot" />
+                              <span>{t}</span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : selectedVenue ? (
+                        <div className="event-venue-selected">
+                          <div className="event-venue-selected-info">
+                            <span className="event-venue-selected-name">{selectedVenue.name}</span>
+                            {selectedVenue.isExternal && (
+                              <span className="event-venue-external-tag">
+                                <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M12 2h4v4M6 10l6-6M14 9v5a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                External &middot; {selectedVenue.org}
+                              </span>
+                            )}
+                          </div>
+                          <button className="event-venue-change" onClick={() => { setSelectedVenue(null); setShowVenueDropdown(true); }}>Change</button>
+                        </div>
+                      ) : (
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            className="compose-subject-input"
+                            value={venueSearch}
+                            onChange={e => { setVenueSearch(e.target.value); setShowVenueDropdown(true); }}
+                            onFocus={() => setShowVenueDropdown(true)}
+                            placeholder="Search venues..."
+                          />
+                          {showVenueDropdown && (
+                            <div className="event-venue-dropdown">
+                              {MY_VENUES.filter(v => !venueSearch || v.name.toLowerCase().includes(venueSearch.toLowerCase())).length > 0 && (
+                                <>
+                                  <div className="event-venue-group-label">Your Venues</div>
+                                  {MY_VENUES.filter(v => !venueSearch || v.name.toLowerCase().includes(venueSearch.toLowerCase())).map(v => (
+                                    <button key={v.id} className="event-venue-option" onClick={() => { setSelectedVenue(v); setShowVenueDropdown(false); setVenueSearch(''); }}>
+                                      <span className="event-venue-option-name">{v.name}</span>
+                                    </button>
+                                  ))}
+                                </>
+                              )}
+                              {NETWORK_VENUES.filter(v => !venueSearch || v.name.toLowerCase().includes(venueSearch.toLowerCase()) || (v.org && v.org.toLowerCase().includes(venueSearch.toLowerCase()))).length > 0 && (
+                                <>
+                                  <div className="event-venue-group-label">Nearby / Network Venues</div>
+                                  {NETWORK_VENUES.filter(v => !venueSearch || v.name.toLowerCase().includes(venueSearch.toLowerCase()) || (v.org && v.org.toLowerCase().includes(venueSearch.toLowerCase()))).map(v => (
+                                    <button key={v.id} className="event-venue-option" onClick={() => { setSelectedVenue(v); setShowVenueDropdown(false); setVenueSearch(''); }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                        <span className="event-venue-option-name">{v.name}</span>
+                                        <span className="event-venue-option-org">
+                                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M12 2h4v4M6 10l6-6M14 9v5a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                          {v.org}
+                                        </span>
+                                      </div>
+                                      {v.availableOnDate ? (
+                                        <span className="event-venue-avail event-venue-avail--open">Available Nov 7</span>
+                                      ) : (
+                                        <span className="event-venue-avail event-venue-avail--busy">Unavailable</span>
+                                      )}
+                                    </button>
+                                  ))}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Opponent (only for games) */}
+                    {manualEventType === 'game' && (
+                      <div className="closure-review-section">
+                        <div className="closure-section-label">Opponent <span style={{ color: '#dc2626' }}>*</span></div>
+                        <select className="compose-subject-input">
+                          <option value="">Select an opponent</option>
+                          {alexOpponents.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Date */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Date <span style={{ color: '#dc2626' }}>*</span></div>
+                      <input className="compose-subject-input" type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} />
+                    </div>
+
+                    {/* Time */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Start Time <span style={{ color: '#dc2626' }}>*</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualStartTime} onChange={e => setManualStartTime(e.target.value)}>
+                          {['6:00 AM','7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                        <span className="compose-field-value" style={{ flexShrink: 0 }}>to</span>
+                        <select className="compose-subject-input" style={{ flex: 1 }} value={manualEndTime} onChange={e => setManualEndTime(e.target.value)}>
+                          {['2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM'].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* External venue notice + amenities */}
+                    {selectedVenue?.isExternal && (
+                      <>
+                        <div className="event-approval-notice">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          <span>This facility requires approval from <strong>{selectedVenue.org}</strong></span>
+                        </div>
+
+                        {selectedVenue.availableOnDate && (
+                          <div className="booking-availability">
+                            <span className="booking-availability-dot" />
+                            <span className="booking-availability-text"><strong>Nov 7 is available</strong> &mdash; no conflicts on {selectedVenue.org}&apos;s calendar</span>
+                          </div>
+                        )}
+
+                        <div className="closure-review-section">
+                          <div className="closure-section-label">Request Amenities</div>
+                          <div className="booking-amenities">
+                            {AMENITY_OPTIONS.map(a => (
+                              <label key={a.id} className={`event-amenity-toggle ${selectedAmenities.has(a.id) ? 'event-amenity-toggle--active' : ''}`}>
+                                <input type="checkbox" checked={selectedAmenities.has(a.id)} onChange={() => {
+                                  setSelectedAmenities(prev => {
+                                    const next = new Set(prev);
+                                    if (next.has(a.id)) next.delete(a.id); else next.add(a.id);
+                                    return next;
+                                  });
+                                }} style={{ display: 'none' }} />
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                  {selectedAmenities.has(a.id) ? (
+                                    <path d="M10 3L4.5 8.5 2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  ) : (
+                                    <path d="M6 3v6M3 6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                  )}
+                                </svg>
+                                {a.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Description */}
+                    <div className="closure-review-section">
+                      <div className="closure-section-label">Description</div>
+                      <textarea className="closure-message" value={manualDescription} onChange={e => setManualDescription(e.target.value)} rows={4} />
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
 
@@ -588,6 +868,70 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport }: Sched
                 ? `Review All Events (${reviewedCount}/${totalEvents})`
                 : `Add ${acceptedCount} ${acceptedCount === 1 ? 'Event' : 'Events'} to Calendar`}
             </button>
+          </div>
+        )}
+
+        {/* Footer (manual phase) */}
+        {phase === 'manual' && (
+          <div className="import-panel-footer" style={{ display: 'flex', gap: '8px' }}>
+            <button className="booking-decline-btn" onClick={onClose}>Cancel</button>
+            {selectedVenue?.isExternal ? (
+              <button
+                className="compose-send-btn"
+                style={{ flex: 1 }}
+                disabled={!selectedVenue || !manualTitle.trim() || isManualSubmitting}
+                onClick={() => {
+                  if (!selectedVenue || !onManualSubmit) return;
+                  setIsManualSubmitting(true);
+                  setTimeout(() => {
+                    onManualSubmit({
+                      title: manualTitle,
+                      date: manualDate,
+                      timeBlock: `${manualStartTime} - ${manualEndTime}`,
+                      location: selectedVenue.name,
+                      isExternal: true,
+                      externalOrg: selectedVenue.org,
+                      amenities: Array.from(selectedAmenities),
+                      description: manualDescription,
+                    });
+                    setIsManualSubmitting(false);
+                  }, 1200);
+                }}
+              >
+                {isManualSubmitting ? (
+                  <><svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ animation: 'spin 1s linear infinite' }}><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" strokeLinecap="round" /></svg>Submitting...</>
+                ) : (
+                  <><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2.667L7.333 9.333" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/><path d="M14 2.667l-4.667 13.333-2.666-6-6-2.667L14 2.667z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/></svg>Submit Booking Request</>
+                )}
+              </button>
+            ) : (
+              <>
+                <button
+                  className="import-approve-btn"
+                  style={{ flex: 1, background: '#6b7280' }}
+                  disabled={isManualSubmitting}
+                  onClick={() => {
+                    if (!onManualSubmit) return;
+                    onManualSubmit({
+                      title: manualTitle, date: manualDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
+                      location: selectedVenue?.name || '', isExternal: false, amenities: [], description: manualDescription,
+                    });
+                  }}
+                >Save &amp; Add Another</button>
+                <button
+                  className="compose-send-btn"
+                  style={{ flex: 1 }}
+                  disabled={isManualSubmitting}
+                  onClick={() => {
+                    if (!onManualSubmit) return;
+                    onManualSubmit({
+                      title: manualTitle, date: manualDate, timeBlock: `${manualStartTime} - ${manualEndTime}`,
+                      location: selectedVenue?.name || '', isExternal: false, amenities: [], description: manualDescription,
+                    });
+                  }}
+                >Save &amp; Close</button>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -1602,3 +1602,27 @@
   font-family: var(--u-font-body); font-size: 9px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
 }
+
+/* === Manual Event Form === */
+.manual-radio-group {
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.manual-radio-option {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  font-family: var(--u-font-body); font-size: 14px;
+  color: var(--u-color-base-foreground, #36485c);
+}
+.manual-radio-option input[type="radio"] { display: none; }
+.manual-radio-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--u-color-line-subtle, #c4c6c8);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s ease; flex-shrink: 0;
+}
+.manual-radio-option input[type="radio"]:checked + .manual-radio-dot {
+  border-color: var(--u-color-emphasis-background-contrast, #0273e3);
+}
+.manual-radio-option input[type="radio"]:checked + .manual-radio-dot::after {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--u-color-emphasis-background-contrast, #0273e3);
+}
