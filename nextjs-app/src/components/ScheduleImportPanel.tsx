@@ -45,13 +45,15 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
   const fallStart = new Date(2026, 7, 28);
   const fallEnd = new Date(2026, 10, 28);
 
-  // Football: 9 Friday night games
+  // Football: 9 Friday night games (home pattern: away, HOME, away, home, away, home, away, home, away)
+  // Sep 4 is week 2 (g=1), must be home
+  const fbHomePattern = [false, true, false, true, false, true, false, true, false];
   const fbEvents: ImportEvent[] = [];
   const fd = new Date(fallStart);
   while (fd.getDay() !== 5) fd.setDate(fd.getDate() + 1);
   for (let g = 0; g < 9 && fd <= fallEnd; g++) {
     const opp = alexOpponents[g % alexOpponents.length];
-    const home = g % 2 === 0;
+    const home = fbHomePattern[g];
     fbEvents.push({
       id: `import-fb-${g}`, title: `Varsity Football vs. ${opp}`,
       date: new Date(fd), time: '7:00 PM', endTime: '9:30 PM',
@@ -112,6 +114,15 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     st2.setDate(st2.getDate() + 7);
     socI++;
   }
+  // Friday Sep 4 home match (rescheduled from rain-out)
+  socEvents.push({
+    id: 'import-soc-fri', title: 'Varsity Boys Soccer vs. Papillion Hawks',
+    date: new Date(2026, 8, 4), time: '4:30 PM', endTime: '6:30 PM',
+    sport: 'Boys Soccer', type: 'game',
+    location: 'Soccer Complex', color: C['Boys Soccer'],
+    opponent: 'Papillion Hawks', isHome: true, facility: 'Soccer Complex',
+    hasStream: streaming, hasTickets: tickets, hasCameras: focus, status: 'pending',
+  });
 
   // Cross Country: Saturday meets — unique names, one home meet
   const xcMeets: { name: string; location: string; isHome: boolean }[] = [
@@ -155,7 +166,7 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
     { text: 'Identified organization: Lincoln East High School', type: 'found' },
     { text: 'Found 9 Varsity Football games (Aug 28 - Oct 30)', type: 'found' },
     { text: 'Found 11 Varsity Girls Volleyball matches + 1 tournament', type: 'found' },
-    { text: 'Found 8 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },
+    { text: 'Found 9 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },
     { text: 'Found 7 Varsity Cross Country meets (Aug 29 - Oct 31)', type: 'found' },
     { text: 'Mapping home games to facilities...', type: 'working' },
     { text: 'Memorial Stadium assigned to 5 football home games', type: 'done' },
@@ -165,7 +176,7 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
   if (streaming) log.push({ text: 'Configuring live streams for 15 home events...', type: 'working' });
   if (tickets) log.push({ text: 'Creating ticketed events for 15 home games...', type: 'working' });
   if (focus) log.push({ text: 'Linking Focus cameras for 15 home events...', type: 'working' });
-  log.push({ text: 'Schedule import complete — 35 events ready for review', type: 'done' });
+  log.push({ text: 'Schedule import complete — 36 events ready for review', type: 'done' });
   return log;
 }
 
