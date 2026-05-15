@@ -1762,6 +1762,9 @@
   height: 220px;
   aspect-ratio: unset !important;
 }
+.db-chart-container .recharts-tooltip-wrapper {
+  z-index: 100 !important;
+}
 
 /* Sidebar: Payout + Metrics */
 .db-sidebar {
