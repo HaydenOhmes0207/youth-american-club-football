@@ -947,6 +947,16 @@
 }
 .import-event-detail svg { color: #6b7280; flex-shrink: 0; }
 
+.import-event-tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 6px; border-radius: 3px;
+  font-family: var(--u-font-body); font-size: 11px;
+  font-weight: 500; white-space: nowrap;
+}
+.import-event-tag--stream { background: #e0e7ff; color: #4338ca; }
+.import-event-tag--tickets { background: #fef3c7; color: #92400e; }
+.import-event-tag--cameras { background: #ede9fe; color: #6d28d9; }
+
 .import-event-footer {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   margin-top: 2px;
