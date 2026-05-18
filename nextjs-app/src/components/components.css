@@ -891,21 +891,26 @@
   font-family: var(--u-font-body); font-size: var(--u-font-size-100, 12px);
   color: var(--u-color-base-foreground-subtle, #607081);
 }
-.import-event-list { display: flex; flex-direction: column; gap: 12px; padding: 12px 0; }
+.import-event-list { display: flex; flex-direction: column; gap: 0; padding: 8px 0; }
 
 /* New Event Card Design */
 .import-event-card {
-  display: flex; flex-direction: column; gap: 12px;
-  padding: 16px 16px 16px 20px;
-  background: #f8fdf8;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid var(--event-color, #16a34a);
-  border-radius: 8px;
-  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px 14px 16px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--event-color, #16a34a);
+  border-radius: 0;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
-.import-event-card--pending { background: #f8fdf8; }
-.import-event-card--accepted { background: #f0fdf4; border-color: #bbf7d0; }
-.import-event-card--rejected { background: #fef2f2; border-color: #fecaca; opacity: 0.6; }
+.import-event-card:not(:last-child) {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 14px;
+}
+.import-event-card--pending { background: transparent; }
+.import-event-card--accepted { background: #f8fdf8; }
+.import-event-card--rejected { background: #fefafa; opacity: 0.6; }
+.import-event-card:hover { background: #fafafa; }
 
 .import-event-header {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;

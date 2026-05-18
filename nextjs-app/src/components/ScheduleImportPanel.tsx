@@ -586,7 +586,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                     </span>
                                   </div>
                                   <span className="import-event-confidence">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v1m0 10v1m6-6h-1M2 7H1m10.07 4.07l-.707-.707M3.637 3.637l-.707-.707m8.14 0l-.707.707M3.637 10.363l-.707.707M10 7a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                     {evt.confidence}%
                                   </span>
                                 </div>
@@ -609,7 +609,7 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
 
                                 {/* AI Status */}
                                 <div className="import-event-ai-status">
-                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9l-3 1.5.5-3.5L2 4.5l3.5-.5L7 1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l.8 2.4L10.2 4l-2.4.8L7 7.2l-.8-2.4L3.8 4l2.4-.8L7 1zM3 8l.5 1.5L5 10l-1.5.5L3 12l-.5-1.5L1 10l1.5-.5L3 8zM10.5 9l.4 1.1 1.1.4-1.1.4-.4 1.1-.4-1.1-1.1-.4 1.1-.4.4-1.1z" fill="currentColor"/></svg>
                                   <span>All details verified. Ready to add.</span>
                                 </div>
 
