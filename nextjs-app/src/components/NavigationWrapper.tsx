@@ -828,6 +828,15 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         <CalendarView extraEvents={calendarExtraEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
       </div>
     );
+  } else if (activeRoute === '/schedule') {
+    // Schedule route - same as calendar but used for Jeff's event scheduling flow
+    const calendarExtraEvents = importedEvents;
+    pageContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+        <CalendarPageContent onOpenImport={() => setShowImportPanel(true)} />
+        <CalendarView extraEvents={calendarExtraEvents} cancelledEventIds={cancelledEventIds} simulatedToday={simulatedToday} />
+      </div>
+    );
   } else if (activeRoute === '/facilities') {
     // Build bookings list
     const bookingRequests: BookingRequest[] = [];
