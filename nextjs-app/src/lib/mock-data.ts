@@ -144,6 +144,17 @@ export const mockNavItems = [
     children: [],
   },
   {
+    id: 'nav-3b',
+    organization_id: 'org-1',
+    parent_id: null,
+    label: 'Cameras',
+    route: '/cameras',
+    icon: 'camera',
+    order: 3.5,
+    is_active: true,
+    children: [],
+  },
+  {
     id: 'nav-4',
     organization_id: 'org-1',
     parent_id: null,

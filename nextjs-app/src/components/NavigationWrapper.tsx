@@ -22,6 +22,7 @@ import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
 import { useToast } from './Toast';
 import DashboardHome, { type TaskItem } from './DashboardHome';
+import CamerasView from './CamerasView';
 
 export interface SentNotification {
   id: string;
@@ -853,6 +854,10 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         </div>
       );
     }
+  } else if (activeRoute === '/cameras') {
+    pageContent = (
+      <CamerasView venueName={activePersona.id === 'maria' ? 'Westside Fields' : 'Lincoln Stadium'} />
+    );
   } else if (activeRoute === '/tickets') {
     pageContent = (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>

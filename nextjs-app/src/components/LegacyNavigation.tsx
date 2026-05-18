@@ -21,6 +21,7 @@ const HudlLogoIcon = '/icons/hudl-logo.svg';
 const PersonalWorkspaceAvatar = '/icons/personal-workspace-avatar.png';
 const PlaceholderIcon = '/icons/placeholder.svg';
 const FacilitiesIcon = '/icons/facilities.svg';
+const CameraIcon = '/icons/camera.svg';
 
 interface NavChild {
   id: string;
@@ -136,6 +137,7 @@ const iconMap: Record<string, string> = {
   notifications: NotificationsIcon,
   placeholder: PlaceholderIcon,
   facilities: FacilitiesIcon,
+  camera: CameraIcon,
 };
 
 const LegacyNavigation: React.FC<LegacyNavigationProps> = ({ 
