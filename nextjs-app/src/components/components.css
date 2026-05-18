@@ -954,7 +954,7 @@
 
 .import-event-ai-status {
   display: flex; align-items: center; gap: 6px;
-  font-family: var(--u-font-body); font-size: 13px; color: #6b7280;
+  font-family: var(--u-font-body); font-size: 13px; color: #4b5563;
 }
 .import-event-ai-status svg { color: #a78bfa; }
 
