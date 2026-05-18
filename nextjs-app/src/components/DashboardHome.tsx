@@ -32,13 +32,13 @@ interface DashboardHomeProps {
 
 // --- Data ---
 const ALEX_WEEKLY_DATA = [
-  { day: 'Mon', programs: 1800, tickets: 400, sponsorships: 180, streaming: 120 },
-  { day: 'Tue', programs: 1750, tickets: 380, sponsorships: 200, streaming: 100 },
-  { day: 'Wed', programs: 1900, tickets: 420, sponsorships: 190, streaming: 140 },
-  { day: 'Thu', programs: 1650, tickets: 350, sponsorships: 210, streaming: 110 },
-  { day: 'Fri', programs: 1700, tickets: 390, sponsorships: 185, streaming: 130 },
-  { day: 'Sat', programs: 1950, tickets: 450, sponsorships: 220, streaming: 160 },
-  { day: 'Sun', programs: 1850, tickets: 410, sponsorships: 195, streaming: 140 },
+  { day: 'Mon', tickets: 2400, streaming: 1800, sponsorships: 950, programs: 320 },
+  { day: 'Tue', tickets: 2200, streaming: 1650, sponsorships: 880, programs: 290 },
+  { day: 'Wed', tickets: 2550, streaming: 1900, sponsorships: 920, programs: 340 },
+  { day: 'Thu', tickets: 2100, streaming: 1550, sponsorships: 860, programs: 280 },
+  { day: 'Fri', tickets: 2350, streaming: 1750, sponsorships: 900, programs: 310 },
+  { day: 'Sat', tickets: 3200, streaming: 2400, sponsorships: 1100, programs: 380 },
+  { day: 'Sun', tickets: 2800, streaming: 2100, sponsorships: 980, programs: 350 },
 ]
 
 const MARIA_WEEKLY_DATA = [
@@ -59,14 +59,14 @@ const CHART_CONFIG: ChartConfig = {
 }
 
 const ALEX_METRICS = {
-  thisWeek: 11622,
-  vsLastWeek: 15.2,
-  nextPayout: 6234.10,
+  thisWeek: 17870,
+  vsLastWeek: 12.8,
+  nextPayout: 8945.20,
   payoutDate: 'May 14',
-  programs: { amount: 7190, change: 22.1 },
-  tickets: { amount: 2190, change: 14.8 },
-  sponsorships: { amount: 1330, change: 9.6 },
-  streaming: { amount: 820, change: 3.5 },
+  tickets: { amount: 9200, change: 18.4 },
+  streaming: { amount: 5850, change: 14.2 },
+  sponsorships: { amount: 2120, change: 8.6 },
+  programs: { amount: 700, change: 3.2 },
   videoUploaded: { value: '124h', change: '9hr' },
   videoWatched: { value: '287h', change: '9hr' },
 }
@@ -302,21 +302,11 @@ export default function DashboardHome({
                 <span className="db-metric-change">{metrics.tickets.change}% vs prior</span>
               </div>
               <div className="db-metric">
-                <span className="db-metric-label">Programs</span>
-                <div className="db-metric-row">
-                  <span className="db-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
-                  <span className="db-metric-sparkline">
-                    <Sparkline data={programsSparkline} color="#1e40af" />
-                  </span>
-                </div>
-                <span className="db-metric-change">{metrics.programs.change}% vs prior</span>
-              </div>
-              <div className="db-metric">
                 <span className="db-metric-label">Streaming</span>
                 <div className="db-metric-row">
                   <span className="db-metric-amount">${metrics.streaming.amount.toLocaleString()}</span>
                   <span className="db-metric-sparkline">
-                    <Sparkline data={streamingSparkline} color="#ea580c" />
+                    <Sparkline data={streamingSparkline} color="#7c3aed" />
                   </span>
                 </div>
                 <span className="db-metric-change">{metrics.streaming.change}% vs prior</span>
@@ -326,10 +316,20 @@ export default function DashboardHome({
                 <div className="db-metric-row">
                   <span className="db-metric-amount">${metrics.sponsorships.amount.toLocaleString()}</span>
                   <span className="db-metric-sparkline">
-                    <Sparkline data={sponsorshipsSparkline} color="#7c3aed" />
+                    <Sparkline data={sponsorshipsSparkline} color="#ea580c" />
                   </span>
                 </div>
                 <span className="db-metric-change">{metrics.sponsorships.change}% vs prior</span>
+              </div>
+              <div className="db-metric">
+                <span className="db-metric-label">Programs</span>
+                <div className="db-metric-row">
+                  <span className="db-metric-amount">${metrics.programs.amount.toLocaleString()}</span>
+                  <span className="db-metric-sparkline">
+                    <Sparkline data={programsSparkline} color="#1e40af" />
+                  </span>
+                </div>
+                <span className="db-metric-change">{metrics.programs.change}% vs prior</span>
               </div>
             </div>
           </div>
