@@ -849,6 +849,17 @@ export default function NavigationWrapper() {
         </div>
       );
     }
+  } else if (activeRoute === '/tickets') {
+    pageContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', flex: 1, minHeight: 0 }}>
+        <PageHeader title="Tickets" description="Manage event tickets, sales, and admissions." />
+        <ProgramsTable
+          programs={[]}
+          onProgramClick={() => {}}
+          selectable={false}
+        />
+      </div>
+    );
   } else if (activeRoute === '/') {
     const isAlex = activePersona.id === 'alex';
     const isMaria = activePersona.id === 'maria';
