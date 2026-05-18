@@ -138,7 +138,7 @@ export const mockNavItems = [
     parent_id: null,
     label: 'Facilities',
     route: '/facilities',
-    icon: 'facilities',
+    icon: 'placeholder',
     order: 3,
     is_active: true,
     children: [],
