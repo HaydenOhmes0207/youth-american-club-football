@@ -543,12 +543,15 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
         </div>
 
         {onLogout && (
-          <button className="switch-persona-btn" onClick={onLogout}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 12L2 8M2 8L6 4M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="switch-persona-label">Switch Persona</span>
-          </button>
+          <div className="nav-item" onClick={onLogout} style={{ cursor: 'pointer' }}>
+            <div className="nav-item-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18L3 12M3 12L9 6M3 12H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="nav-item-label">Switch Persona</div>
+            {!isExpanded && <div className="nav-item-tooltip">Switch Persona</div>}
+          </div>
         )}
 
         <button className="expand-collapse-button" onClick={() => setIsExpanded(!isExpanded)} aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}>
