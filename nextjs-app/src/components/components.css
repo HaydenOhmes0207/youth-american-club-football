@@ -304,7 +304,20 @@
 .u-button--status-success { border-color: var(--u-color-success-foreground, #2e7d32); }
 
 /* === PageHeader === */
-.page-header { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; width: 100%; }
+.page-header { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; }
+.page-header-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--u-font-body); font-size: 13px;
+  color: var(--u-color-base-foreground-subtle, #607081);
+}
+.page-header-breadcrumb-link {
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; color: var(--u-color-emphasis-background-contrast, #0273e3);
+  cursor: pointer; text-decoration: none;
+}
+.page-header-breadcrumb-link:hover { text-decoration: underline; }
+.page-header-breadcrumb-sep { color: var(--u-color-base-foreground-subtle, #9ca3af); }
+.page-header-breadcrumb-text { color: var(--u-color-base-foreground-default, #36485c); }
 .page-header-top { display: flex; gap: 24px; align-items: flex-start; width: 100%; }
 .page-header-content { display: flex; flex: 1; flex-direction: column; gap: 6px; justify-content: center; min-width: 0; }
 .page-header-title {

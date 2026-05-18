@@ -15,21 +15,44 @@ interface ActionButton {
   onClick?: () => void;
 }
 
+interface BreadcrumbItem {
+  label: string;
+  onClick?: () => void;
+}
+
 interface PageHeaderProps {
   title: string;
   description?: string;
   tabs?: Tab[];
   actions?: ActionButton[];
+  breadcrumb?: BreadcrumbItem[];
 }
 
 export default function PageHeader({ 
   title, 
   description, 
   tabs, 
-  actions 
+  actions,
+  breadcrumb
 }: PageHeaderProps) {
   return (
     <div className="page-header">
+      {breadcrumb && breadcrumb.length > 0 && (
+        <nav className="page-header-breadcrumb" aria-label="Breadcrumb">
+          {breadcrumb.map((item, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && <span className="page-header-breadcrumb-sep">/</span>}
+              {item.onClick ? (
+                <button className="page-header-breadcrumb-link" onClick={item.onClick}>
+                  {item.label}
+                </button>
+              ) : (
+                <span className="page-header-breadcrumb-text">{item.label}</span>
+              )}
+            </React.Fragment>
+          ))}
+        </nav>
+      )}
       <div className="page-header-top">
         <div className="page-header-content">
           <h1 className="page-header-title">{title}</h1>
