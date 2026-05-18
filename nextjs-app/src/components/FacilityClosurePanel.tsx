@@ -58,6 +58,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
   const [notifyCoaches, setNotifyCoaches] = useState(true);
   const [notifyParents, setNotifyParents] = useState(true);
   const [notifyFans, setNotifyFans] = useState(false);
+  const [notifyOfficials, setNotifyOfficials] = useState(true);
   // Notification channels
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelSms, setChannelSms] = useState(false);
@@ -77,6 +78,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       setNotifyCoaches(true);
       setNotifyParents(true);
       setNotifyFans(false);
+      setNotifyOfficials(true);
       setChannelEmail(true);
       setChannelSms(false);
       setChannelPush(false);
@@ -137,6 +139,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       if (notifyCoaches) recipientLabels.push('coaches');
       if (notifyParents) recipientLabels.push('parents');
       if (notifyFans) recipientLabels.push('fans');
+      if (notifyOfficials) recipientLabels.push('officials');
       const channelLabels: string[] = [];
       if (channelEmail) channelLabels.push('email');
       if (channelSms) channelLabels.push('SMS');
@@ -146,7 +149,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
         date: closureDate,
         facilities: facilityNames,
         events: affectedEvents.map(e => e.title),
-        recipients: { coaches: notifyCoaches, parents: notifyParents, fans: notifyFans },
+        recipients: { coaches: notifyCoaches, parents: notifyParents, fans: notifyFans, officials: notifyOfficials },
         channels: { email: channelEmail, sms: channelSms, push: channelPush },
         message,
         recipientCount: Math.floor(80 + Math.random() * 200),
@@ -165,7 +168,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
 
   const outdoorAllSelected = FACILITIES.outdoor.every(f => selectedFacilities.has(f.id));
   const indoorAllSelected = FACILITIES.indoor.every(f => selectedFacilities.has(f.id));
-  const anyRecipient = notifyCoaches || notifyParents || notifyFans;
+  const anyRecipient = notifyCoaches || notifyParents || notifyFans || notifyOfficials;
   const anyChannel = channelEmail || channelSms || channelPush;
 
   return (
@@ -309,6 +312,11 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
                         <input type="checkbox" checked={notifyFans} onChange={() => setNotifyFans(v => !v)} />
                         <span>Ticket holders / fans</span>
                         <span className="closure-notify-count">{affectedEvents.length * 85}</span>
+                      </label>
+                      <label className="closure-notify-option">
+                        <input type="checkbox" checked={notifyOfficials} onChange={() => setNotifyOfficials(v => !v)} />
+                        <span>Officials</span>
+                        <span className="closure-notify-count">{affectedEvents.length * 4}</span>
                       </label>
                     </div>
                   </div>
