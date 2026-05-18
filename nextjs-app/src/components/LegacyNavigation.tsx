@@ -510,7 +510,10 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
 
         <div className="user-settings" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
           <div className="user-avatar">{userInitials}</div>
-          <div className="user-info"><div className="user-name">{userName}</div></div>
+          <div className="user-info">
+            <div className="user-name">{userName}</div>
+            <div className="user-role">{currentUser?.role || 'Director'}</div>
+          </div>
           <div className="user-arrow">
             <img src={ExpandDownIcon} alt="" width="16" height="16" style={{ transform: isUserMenuOpen ? 'rotate(90deg)' : 'rotate(-90deg)' }} />
           </div>
@@ -538,6 +541,15 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
             </div>
           )}
         </div>
+
+        {onLogout && (
+          <button className="switch-persona-btn" onClick={onLogout}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 12L2 8M2 8L6 4M2 8H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="switch-persona-label">Switch Persona</span>
+          </button>
+        )}
 
         <button className="expand-collapse-button" onClick={() => setIsExpanded(!isExpanded)} aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}>
           <div className="expand-collapse-icon">

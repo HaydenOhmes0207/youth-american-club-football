@@ -356,6 +356,44 @@
 [data-expanded="true"] .user-arrow { opacity: 1; }
 [data-expanded="false"] .user-arrow { opacity: 0; }
 
+.user-role {
+  font-size: var(--u-font-size-150, 12px);
+  color: var(--u-color-base-foreground-subtle, #607081);
+  font-weight: var(--u-font-weight-regular, 400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Switch Persona Button */
+.switch-persona-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--u-space-half, 8px);
+  padding: var(--u-space-half, 8px) var(--u-space-three-quarter, 12px);
+  background: transparent;
+  border: none;
+  border-radius: var(--u-border-radius-medium, 4px);
+  cursor: pointer;
+  color: var(--u-color-base-foreground-subtle, #607081);
+  font-family: var(--u-font-body);
+  font-size: var(--u-font-size-200, 14px);
+  font-weight: var(--u-font-weight-regular, 400);
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+}
+.switch-persona-btn:hover {
+  background-color: var(--u-color-base-background, #e0e1e1);
+  color: var(--u-color-base-foreground-contrast, #071c31);
+}
+[data-expanded="false"] .switch-persona-btn {
+  justify-content: center;
+  padding: var(--u-space-half, 8px);
+}
+[data-expanded="false"] .switch-persona-label {
+  display: none;
+}
+
 /* Org Popover */
 .org-popover {
   position: absolute;
