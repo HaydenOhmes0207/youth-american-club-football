@@ -605,16 +605,22 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
                                     {evt.facility}
                                   </span>
-                                  {evt.hasStream && (
-                                    <span className="import-event-tag import-event-tag--stream">Streaming</span>
-                                  )}
-                                  {evt.hasTickets && (
-                                    <span className="import-event-tag import-event-tag--tickets">Tickets</span>
-                                  )}
-                                  {evt.hasCameras && (
-                                    <span className="import-event-tag import-event-tag--cameras">Recording</span>
-                                  )}
                                 </div>
+
+                                {/* Tags row: Streaming, Tickets, Recording */}
+                                {(evt.hasStream || evt.hasTickets || evt.hasCameras) && (
+                                  <div className="import-event-tags">
+                                    {evt.hasTickets && (
+                                      <span className="import-event-tag import-event-tag--tickets">Tickets</span>
+                                    )}
+                                    {evt.hasStream && (
+                                      <span className="import-event-tag import-event-tag--stream">Streaming</span>
+                                    )}
+                                    {evt.hasCameras && (
+                                      <span className="import-event-tag import-event-tag--cameras">Recording</span>
+                                    )}
+                                  </div>
+                                )}
 
                                 {/* Footer: AI Status left, Actions right */}
                                 <div className="import-event-footer">

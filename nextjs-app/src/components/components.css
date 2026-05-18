@@ -947,6 +947,10 @@
 }
 .import-event-detail svg { color: #6b7280; flex-shrink: 0; }
 
+.import-event-tags {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+}
+
 .import-event-tag {
   display: inline-flex; align-items: center;
   padding: 2px 6px; border-radius: 3px;
