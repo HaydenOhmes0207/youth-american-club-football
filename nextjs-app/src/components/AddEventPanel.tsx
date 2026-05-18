@@ -24,14 +24,14 @@ export interface AddedEvent {
 }
 
 const OPPONENTS = [
-  'Papillion-La Vista South',
-  'Millard North',
-  'Westside Warriors',
-  'Lincoln East',
-  'Omaha Central',
-  'Bellevue West',
-  'Elkhorn South',
-  'Creighton Prep',
+  'Papillion Junior Football',
+  'Millard Junior Football',
+  'Westside Junior Football',
+  'Lincoln Junior Football',
+  'Omaha Central Junior Football',
+  'Bellevue Junior Football',
+  'Elkhorn Junior Football',
+  'Ralston Junior Football',
 ];
 
 const TIME_OPTIONS = [
