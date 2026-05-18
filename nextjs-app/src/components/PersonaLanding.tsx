@@ -28,7 +28,6 @@ export default function PersonaLanding({ onSelectPersona }: PersonaLandingProps)
             <Image src="/images/hudl-logo.png" alt="Hudl" width={120} height={40} style={{ objectFit: 'contain' }} />
           </div>
           <h1 className="persona-landing-title">Director Spotlight Demo</h1>
-          <p className="persona-landing-subtitle">Select a persona to continue</p>
         </div>
 
         {/* Persona Cards */}
@@ -59,9 +58,6 @@ export default function PersonaLanding({ onSelectPersona }: PersonaLandingProps)
             </button>
           ))}
         </div>
-
-        {/* Footer */}
-        <p className="persona-landing-footer">No password required — this is a demo environment</p>
       </div>
     </div>
   );
