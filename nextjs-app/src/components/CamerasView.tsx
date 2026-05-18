@@ -55,7 +55,7 @@ const MOCK_CAMERAS: Camera[] = [
     facility: 'Main Gym',
     venue: 'Main Gym',
     status: 'online',
-    image: '/images/focus-indoor.jpg',
+    image: '/images/focus-indoor.png',
     accessGrants: [],
   },
   {
@@ -78,17 +78,16 @@ const MOCK_CAMERAS: Camera[] = [
     image: '/images/focus-outdoor.png',
     accessGrants: [],
   },
-  {
-    id: 'camera-5',
-    name: 'Focus Indoor',
-    type: 'indoor',
-    facility: 'Weight Room',
-    venue: 'Weight Room',
-    status: 'online',
-    image: '/images/focus-indoor.jpg',
-    accessGrants: [],
-  },
 ];
+
+// Group cameras by facility
+const FACILITIES = ['Memorial Stadium', 'Main Gym', 'Soccer Complex', 'Tennis Courts'];
+const getCamerasByFacility = () => {
+  return FACILITIES.map(facility => ({
+    facility,
+    cameras: MOCK_CAMERAS.filter(c => c.facility === facility),
+  })).filter(g => g.cameras.length > 0);
+};
 
 const MOCK_ORGANIZATIONS: Organization[] = [
   {
@@ -211,6 +210,8 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
 
   // Camera List View
   if (viewState === 'list') {
+    const camerasByFacility = getCamerasByFacility();
+    
     return (
       <div className="cameras-container">
         <div className="cameras-header">
@@ -220,30 +221,31 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
           </p>
         </div>
 
-        <div className="cameras-list">
-          {cameras.map(camera => (
-            <div key={camera.id} className="camera-card">
-              <div className="camera-card-image">
-                <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain' }} />
-              </div>
-              <div className="camera-card-info">
-                <h3 className="camera-card-name">{camera.name}</h3>
-                <div className="camera-card-location">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
-                  {camera.venue}
+        {camerasByFacility.map(group => (
+          <div key={group.facility} className="cameras-facility-group">
+            <h2 className="cameras-facility-title">{group.facility}</h2>
+            <div className="cameras-list">
+              {group.cameras.map(camera => (
+                <div key={camera.id} className="camera-card">
+                  <div className="camera-card-image">
+                    <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain' }} />
+                  </div>
+                  <div className="camera-card-info">
+                    <h3 className="camera-card-name">{camera.name}</h3>
+                    <div className="camera-card-access">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                      <span className="camera-card-access-count">{camera.accessGrants.length}</span> orgs with access
+                    </div>
+                  </div>
+                  <button className="camera-card-manage" onClick={() => handleManageCamera(camera)}>
+                    Manage
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
                 </div>
-                <div className="camera-card-access">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                  <span className="camera-card-access-count">{camera.accessGrants.length}</span> orgs with access
-                </div>
-              </div>
-              <button className="camera-card-manage" onClick={() => handleManageCamera(camera)}>
-                Manage
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         <div className="cameras-tip">
           Need to share a camera with a visiting team or club? Open a camera and grant access from there.

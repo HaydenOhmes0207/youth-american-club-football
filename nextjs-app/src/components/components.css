@@ -2420,6 +2420,13 @@
 .cameras-breadcrumb-sep { color: var(--u-color-base-foreground-subtle, #607081); }
 .cameras-breadcrumb-active { color: var(--u-color-base-foreground-contrast, #071c31); }
 
+.cameras-facility-group { display: flex; flex-direction: column; gap: 0; }
+.cameras-facility-title {
+  font-family: var(--u-font-heading); font-size: 14px; font-weight: 600;
+  color: var(--u-color-base-foreground-contrast, #071c31);
+  margin: 0 0 8px 0; padding-top: 8px;
+}
+
 .cameras-list { display: flex; flex-direction: column; gap: 0; }
 .camera-card {
   display: flex; align-items: center; gap: 16px;
