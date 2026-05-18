@@ -473,10 +473,9 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         setImportedEvents([]);
         setFacilitiesTab('schedule');
         break;
-      case 'external-bookings':
-        setActiveRoute('/');
+      case 'cameras':
+        setActiveRoute('/cameras');
         setImportedEvents(getFallScheduleEvents());
-        setBookingApproved(false);
         setFacilitiesTab('schedule');
         break;
       case 'booking-request':
@@ -668,7 +667,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
     switch (activeChapter) {
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
-      case 'external-bookings': return new Date(2026, 10, 7); // Nov 7
+      case 'cameras': return new Date(2026, 10, 7); // Nov 7
       case 'booking-request': return new Date(2026, 6, 16);  // Jul 16 (planning ahead)
       default: return undefined;
     }
@@ -798,7 +797,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
   } else if (activeRoute === '/facilities') {
     // Build bookings list
     const bookingRequests: BookingRequest[] = [];
-    if (activePersona.id === 'alex' && activeChapter === 'external-bookings') {
+    if (activePersona.id === 'alex' && activeChapter === 'cameras') {
       // Alex sees Maria's incoming request
       bookingRequests.push({ ...mariaBookingRequest, status: bookingApproved ? 'approved' : 'pending' });
     } else if (activePersona.id === 'maria' && (bookingRequestSubmitted || activeChapter === 'booking-request')) {
@@ -900,22 +899,9 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
       });
     }
 
-    // Alex: Booking request (external-bookings chapter)
-    if (isAlex && activeChapter === 'external-bookings' && !bookingApproved) {
-      dashboardTasks.push({
-        id: 'booking-request',
-        category: 'facility',
-        categoryLabel: 'Facility',
-        timestamp: '3m ago',
-        title: 'Ext. Booking',
-        description: 'Northwest Junior Football Club requesting Spartan Field for Nov 7.',
-        variant: 'info',
-        onClick: () => {
-          setActiveRoute('/facilities');
-          setFacilitiesTab('bookings');
-          setShowBookingPanel(true);
-        },
-      });
+    // Alex: Cameras chapter - navigate to cameras
+    if (isAlex && activeChapter === 'cameras') {
+      setActiveRoute('/cameras');
     }
 
     // Maria: Payment alert (communication chapter)
