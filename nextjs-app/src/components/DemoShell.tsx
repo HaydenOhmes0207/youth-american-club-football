@@ -6,22 +6,13 @@ import NavigationWrapper from './NavigationWrapper';
 import PersonaLanding from './PersonaLanding';
 
 function DemoBar() {
-  const { activePersona, setActivePersonaId, personas, activeChapter, setActiveChapter } = usePersona();
+  const { activePersona, activeChapter, setActiveChapter } = usePersona();
   const chapters = CHAPTERS_BY_PERSONA[activePersona.id] || [];
 
   return (
     <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
       <div className="demo-bar-label">{activePersona.label}</div>
       <div className="demo-bar-selects">
-        <select
-          className="demo-bar-select"
-          value={activePersona.id}
-          onChange={(e) => setActivePersonaId(e.target.value as PersonaId)}
-        >
-          {(Object.keys(personas) as PersonaId[]).map((id) => (
-            <option key={id} value={id}>{personas[id].firstName}</option>
-          ))}
-        </select>
         <select
           className="demo-bar-select"
           value={activeChapter}
