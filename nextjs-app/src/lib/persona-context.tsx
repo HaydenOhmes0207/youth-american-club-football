@@ -19,7 +19,7 @@ export const CHAPTERS_BY_PERSONA: Record<PersonaId, Chapter[]> = {
     { id: 'home', label: 'Chapter 1: Home' },
     { id: 'schedule-ingest', label: 'Chapter 2: Schedule' },
     { id: 'communication', label: 'Chapter 3: Communication' },
-    { id: 'external-bookings', label: 'Chapter 4: Bookings' },
+    { id: 'cameras', label: 'Chapter 4: Cameras' },
   ],
   maria: [
     { id: 'home', label: 'Chapter 1: Home' },

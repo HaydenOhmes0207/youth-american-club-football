@@ -344,7 +344,7 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
                       {grant.organization.type} · {grant.organization.sport} · {grant.teams.length} teams
                     </div>
                     <div className="camera-access-dates">
-                      Access: {new Date(grant.fromDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(grant.toDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      Access: {new Date(grant.fromDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(grant.toDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
                   </div>
                   <button className="camera-access-edit">Edit</button>
