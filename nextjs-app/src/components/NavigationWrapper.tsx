@@ -669,7 +669,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
       case 'cameras': return new Date(2026, 10, 7); // Nov 7
-      case 'booking-request': return new Date(2026, 6, 16);  // Jul 16 (planning ahead)
+      case 'booking-request': return new Date(2026, 10, 7);  // Nov 7 (camera access granted)
       default: return undefined;
     }
   }, [activeChapter]);
@@ -753,10 +753,13 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         onClose={() => setShowAddEventPanel(false)}
         onSubmit={(event) => {
           // Add the event to the calendar
+          // Parse date string as local time by adding T00:00:00
+          const [year, month, day] = event.date.split('-').map(Number);
+          const eventDate = new Date(year, month - 1, day);
           const newEvent: CalendarEvent = {
             id: `manual-${Date.now()}`,
             title: event.eventType === 'game' ? `vs ${event.opponent}` : event.title,
-            date: event.date,
+            date: eventDate,
             time: event.startTime,
             endTime: event.endTime,
             sport: 'Football',
