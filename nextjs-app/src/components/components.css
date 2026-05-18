@@ -911,6 +911,15 @@
 .import-event-card--rejected { background: #fefafa; opacity: 0.6; }
 .import-event-card:hover { background: #fafafa; }
 
+.import-event-content {
+  display: flex; flex-direction: column; gap: 6px;
+  background: none; border: none; padding: 0;
+  cursor: pointer; text-align: left; width: 100%;
+}
+.import-event-content:hover .import-event-opponent {
+  color: #0273e3;
+}
+
 .import-event-header {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }

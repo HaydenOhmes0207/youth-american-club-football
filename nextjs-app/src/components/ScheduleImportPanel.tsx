@@ -577,50 +577,57 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                 className={`import-event-card import-event-card--${evt.status}`}
                                 style={{ '--event-color': section.color } as React.CSSProperties}
                               >
-                                {/* Header: Opponent, Home/Away badge, Confidence */}
-                                <div className="import-event-header">
-                                  <div className="import-event-header-left">
-                                    <span className="import-event-opponent">{evt.opponent}</span>
-                                    <span className={`import-event-home-badge ${evt.isHome ? 'import-event-home-badge--home' : 'import-event-home-badge--away'}`}>
-                                      {evt.isHome ? 'Home' : 'Away'}
+                                {/* Clickable area for editing */}
+                                <button
+                                  className="import-event-content"
+                                  onClick={() => setEditingEvent(evt)}
+                                  aria-label={`Edit ${evt.title}`}
+                                >
+                                  {/* Header: Opponent, Home/Away badge, Confidence */}
+                                  <div className="import-event-header">
+                                    <div className="import-event-header-left">
+                                      <span className="import-event-opponent">{evt.opponent}</span>
+                                      <span className={`import-event-home-badge ${evt.isHome ? 'import-event-home-badge--home' : 'import-event-home-badge--away'}`}>
+                                        {evt.isHome ? 'Home' : 'Away'}
+                                      </span>
+                                    </div>
+                                    <span className="import-event-confidence">
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                      {evt.confidence}%
                                     </span>
                                   </div>
-                                  <span className="import-event-confidence">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    {evt.confidence}%
-                                  </span>
-                                </div>
 
-                                {/* Details row: Date, Time, Location */}
-                                <div className="import-event-details">
-                                  <span className="import-event-detail">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                                    {formatEventDate(evt.date)}
-                                  </span>
-                                  <span className="import-event-detail">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/><path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    {evt.time}
-                                  </span>
-                                  <span className="import-event-detail">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
-                                    {evt.facility}
-                                  </span>
-                                </div>
-
-                                {/* Tags row: Streaming, Tickets, Recording */}
-                                {(evt.hasStream || evt.hasTickets || evt.hasCameras) && (
-                                  <div className="import-event-tags">
-                                    {evt.hasTickets && (
-                                      <span className="import-event-tag import-event-tag--tickets">Tickets</span>
-                                    )}
-                                    {evt.hasStream && (
-                                      <span className="import-event-tag import-event-tag--stream">Streaming</span>
-                                    )}
-                                    {evt.hasCameras && (
-                                      <span className="import-event-tag import-event-tag--cameras">Recording</span>
-                                    )}
+                                  {/* Details row: Date, Time, Location */}
+                                  <div className="import-event-details">
+                                    <span className="import-event-detail">
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                      {formatEventDate(evt.date)}
+                                    </span>
+                                    <span className="import-event-detail">
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/><path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                      {evt.time}
+                                    </span>
+                                    <span className="import-event-detail">
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
+                                      {evt.facility}
+                                    </span>
                                   </div>
-                                )}
+
+                                  {/* Tags row: Streaming, Tickets, Recording */}
+                                  {(evt.hasStream || evt.hasTickets || evt.hasCameras) && (
+                                    <div className="import-event-tags">
+                                      {evt.hasTickets && (
+                                        <span className="import-event-tag import-event-tag--tickets">Tickets</span>
+                                      )}
+                                      {evt.hasStream && (
+                                        <span className="import-event-tag import-event-tag--stream">Streaming</span>
+                                      )}
+                                      {evt.hasCameras && (
+                                        <span className="import-event-tag import-event-tag--cameras">Recording</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </button>
 
                                 {/* Footer: AI Status left, Actions right */}
                                 <div className="import-event-footer">
