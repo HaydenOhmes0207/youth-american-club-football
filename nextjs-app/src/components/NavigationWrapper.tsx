@@ -756,6 +756,12 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
           // Parse date string as local time by adding T00:00:00
           const [year, month, day] = event.date.split('-').map(Number);
           const eventDate = new Date(year, month - 1, day);
+          // Map 'other' to 'event' for CalendarEvent type compatibility
+          const eventTypeMap: Record<string, 'game' | 'practice' | 'event'> = {
+            game: 'game',
+            practice: 'practice',
+            other: 'event',
+          };
           const newEvent: CalendarEvent = {
             id: `manual-${Date.now()}`,
             title: event.eventType === 'game' ? `vs ${event.opponent}` : event.title,
@@ -763,11 +769,12 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
             time: event.startTime,
             endTime: event.endTime,
             sport: 'Football',
-            type: event.eventType,
+            type: eventTypeMap[event.eventType] || 'event',
             location: event.location,
             color: '#16a34a',
           };
           setImportedEvents(prev => [...prev, newEvent]);
+          setShowAddEventPanel(false);
           showToast({ message: 'Event added to schedule', type: 'success' });
         }}
       />
