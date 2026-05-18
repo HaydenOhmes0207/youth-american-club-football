@@ -17,6 +17,7 @@ import ProgramDetailView from './ProgramDetailView';
 import type { Registrant } from './ProgramDetailView';
 import MessageComposePanel from './MessageComposePanel';
 import type { MessagePayload } from './MessageComposePanel';
+import AddEventPanel from './AddEventPanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
@@ -399,6 +400,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
   const [facilitiesTab, setFacilitiesTab] = useState<'schedule' | 'bookings'>('schedule');
   const [bookingRequestSubmitted, setBookingRequestSubmitted] = useState(false);
   const [submittedEventResult, setSubmittedEventResult] = useState<ManualEventResult | null>(null);
+  const [showAddEventPanel, setShowAddEventPanel] = useState(false);
   const { showToast } = useToast();
 
   const AMENITY_ID_TO_BOOKING: Record<string, { label: string; icon: 'camera' | 'scoreboard' | 'pa' | 'pressbox' }> = {
@@ -745,6 +747,29 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         onManualSubmit={handleEventCreate}
       />
     );
+  } else if (activeRoute === '/schedule' && showAddEventPanel) {
+    overlay = (
+      <AddEventPanel
+        isOpen={showAddEventPanel}
+        onClose={() => setShowAddEventPanel(false)}
+        onSubmit={(event) => {
+          // Add the event to the calendar
+          const newEvent: CalendarEvent = {
+            id: `manual-${Date.now()}`,
+            title: event.eventType === 'game' ? `vs ${event.opponent}` : event.title,
+            date: event.date,
+            time: event.startTime,
+            endTime: event.endTime,
+            sport: 'Football',
+            type: event.eventType,
+            location: event.location,
+            color: '#16a34a',
+          };
+          setImportedEvents(prev => [...prev, newEvent]);
+          showToast({ message: 'Event added to schedule', type: 'success' });
+        }}
+      />
+    );
   } else if (activeRoute === '/facilities' && showBookingPanel) {
     // Build the correct request object based on persona and chapter
     const panelRequest: BookingRequest = activePersona.id === 'maria'
@@ -948,6 +973,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         variant: 'success',
         onClick: () => {
           setActiveRoute('/schedule');
+          setShowAddEventPanel(true);
         },
       });
     }
