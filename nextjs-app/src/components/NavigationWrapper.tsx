@@ -642,7 +642,14 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
       label: item.label,
       icon: item.icon,
       route: item.route,
-      children: [] as { id: string; label: string; route: string | null }[],
+      children: item.children
+        .filter(child => child.is_active)
+        .sort((a, b) => a.order - b.order)
+        .map(child => ({
+          id: child.id,
+          label: child.label,
+          route: child.route,
+        })),
     }));
 
   const currentUser = {
