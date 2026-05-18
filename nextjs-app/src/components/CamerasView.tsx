@@ -100,10 +100,16 @@ const MOCK_ORGANIZATIONS: Organization[] = [
     abbrev: 'NJF',
     type: 'Youth',
     sport: 'American football',
-    teamCount: 6,
+    teamCount: 22,
     color: '#16a34a',
     avatar: '/images/maria-avatar.png',
-    teams: ['U14 Football', 'U12 Football', 'U10 Football', 'U14 Flag (Girls)', 'U12 Flag (Girls)', 'U8 Flag'],
+    teams: [
+      'Varsity Football', 'JV Football', 'Freshman Football',
+      'U14 Tackle', 'U13 Tackle', 'U12 Tackle', 'U11 Tackle', 'U10 Tackle', 'U9 Tackle', 'U8 Tackle',
+      'U14 Flag', 'U12 Flag', 'U10 Flag', 'U8 Flag', 'U6 Flag',
+      'U14 Flag (Girls)', 'U12 Flag (Girls)', 'U10 Flag (Girls)', 'U8 Flag (Girls)',
+      '7v7 Elite', '7v7 Select', '7v7 Development'
+    ],
   },
   {
     id: 'org-wyfc',
