@@ -44,7 +44,7 @@ const MY_VENUES: VenueOption[] = [
 ];
 
 const NETWORK_VENUES: VenueOption[] = [
-  { id: 'v-spartan', name: 'Spartan Field - Memorial Stadium', org: 'Lincoln East HS', isExternal: true, availableOnDate: true },
+  { id: 'v-spartan', name: 'Spartan Field - Memorial Stadium', org: 'Northwest HS', isExternal: true, availableOnDate: true },
   { id: 'v-hawks', name: 'Hawks Field', org: 'Papillion-La Vista HS', isExternal: true, availableOnDate: false },
   { id: 'v-mustang', name: 'Mustang Stadium', org: 'Millard North HS', isExternal: true, availableOnDate: true },
 ];
@@ -172,7 +172,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
   // Cross Country: Saturday meets — unique names, one home meet
   const xcMeets: { name: string; location: string; isHome: boolean }[] = [
     { name: 'Pioneers Park Twilight', location: 'Pioneers Park', isHome: false },
-    { name: 'Lincoln East Home Meet', location: 'Holmes Lake Park', isHome: true },
+    { name: 'Northwest Home Meet', location: 'Holmes Lake Park', isHome: true },
     { name: 'Heartland Conference Championships', location: 'Mahoney State Park', isHome: false },
     { name: 'Branched Oak Classic', location: 'Branched Oak Lake', isHome: false },
     { name: 'Walton Stampede Invitational', location: 'Walton Community Course', isHome: false },
@@ -208,7 +208,7 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
   const log: { text: string; type: 'working' | 'found' | 'done' }[] = [
     { text: 'Connecting to nsaa-schedule.org...', type: 'working' },
     { text: 'Parsing district schedule page...', type: 'working' },
-    { text: 'Identified organization: Lincoln East High School', type: 'found' },
+    { text: 'Identified organization: Northwest High School', type: 'found' },
     { text: 'Found 9 Varsity Football games (Aug 28 - Oct 30)', type: 'found' },
     { text: 'Found 11 Varsity Girls Volleyball matches + 1 tournament', type: 'found' },
     { text: 'Found 9 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },

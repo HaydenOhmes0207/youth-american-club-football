@@ -47,23 +47,23 @@ function generateMembers(count: number, teams: string[], emailDomain: string): C
 }
 
 // Generate 520 members for Alex (High School) and 540 for Maria (Youth)
-const alexCommunityData = generateMembers(520, alexTeams, 'lincolnhs.edu');
-const mariaCommunityData = generateMembers(540, mariaTeams, 'lincolnyouthfootball.org');
+const alexCommunityData = generateMembers(520, alexTeams, 'northwesths.edu');
+const mariaCommunityData = generateMembers(540, mariaTeams, 'northwestyouthfootball.org');
 
 // Add some specific notable members at the top
 alexCommunityData.unshift(
-  { id: 'alex-admin-1', name: 'David Mitchell', email: 'david.mitchell@lincolnhs.edu', role: 'Administrator', teams: ['Varsity Football', 'JV Football', 'Freshman Football'], status: 'active' },
-  { id: 'alex-coach-1', name: 'Marcus Thompson', email: 'marcus.thompson@lincolnhs.edu', role: 'Head Coach', teams: ['Varsity Football'], status: 'active' },
-  { id: 'alex-coach-2', name: 'Derek Williams', email: 'derek.williams@lincolnhs.edu', role: 'Coach', teams: ['JV Football'], status: 'active' },
-  { id: 'alex-coach-3', name: 'Tony Rodriguez', email: 'tony.rodriguez@lincolnhs.edu', role: 'Coach', teams: ['Freshman Football'], status: 'active' },
+  { id: 'alex-admin-1', name: 'David Mitchell', email: 'david.mitchell@northwesths.edu', role: 'Administrator', teams: ['Varsity Football', 'JV Football', 'Freshman Football'], status: 'active' },
+  { id: 'alex-coach-1', name: 'Marcus Thompson', email: 'marcus.thompson@northwesths.edu', role: 'Head Coach', teams: ['Varsity Football'], status: 'active' },
+  { id: 'alex-coach-2', name: 'Derek Williams', email: 'derek.williams@northwesths.edu', role: 'Coach', teams: ['JV Football'], status: 'active' },
+  { id: 'alex-coach-3', name: 'Tony Rodriguez', email: 'tony.rodriguez@northwesths.edu', role: 'Coach', teams: ['Freshman Football'], status: 'active' },
 );
 
 mariaCommunityData.unshift(
-  { id: 'maria-admin-1', name: 'Jeff Rodriguez', email: 'jeff.rodriguez@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U'], status: 'active' },
-  { id: 'maria-admin-2', name: 'Carlos Mendez', email: 'carlos.mendez@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 8U', 'Flag 6U', 'Flag 8U'], status: 'active' },
-  { id: 'maria-coach-1', name: 'Robert Jackson', email: 'robert.jackson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 14U'], status: 'active' },
-  { id: 'maria-coach-2', name: 'Steve Patterson', email: 'steve.patterson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 12U'], status: 'active' },
-  { id: 'maria-cheer-1', name: 'Lisa Anderson', email: 'lisa.anderson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Cheer Squad'], status: 'active' },
+  { id: 'maria-admin-1', name: 'Jeff Rodriguez', email: 'jeff.rodriguez@northwestyouthfootball.org', role: 'Administrator', teams: ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U'], status: 'active' },
+  { id: 'maria-admin-2', name: 'Carlos Mendez', email: 'carlos.mendez@northwestyouthfootball.org', role: 'Administrator', teams: ['Mustangs 8U', 'Flag 6U', 'Flag 8U'], status: 'active' },
+  { id: 'maria-coach-1', name: 'Robert Jackson', email: 'robert.jackson@northwestyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 14U'], status: 'active' },
+  { id: 'maria-coach-2', name: 'Steve Patterson', email: 'steve.patterson@northwestyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 12U'], status: 'active' },
+  { id: 'maria-cheer-1', name: 'Lisa Anderson', email: 'lisa.anderson@northwestyouthfootball.org', role: 'Head Coach', teams: ['Cheer Squad'], status: 'active' },
 );
 
 function MoreOptionsIcon() {

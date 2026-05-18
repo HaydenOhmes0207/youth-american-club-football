@@ -80,7 +80,7 @@ export default function FacilityClosurePanel({ isOpen, onClose, allEvents, cance
       setChannelEmail(true);
       setChannelSms(false);
       setChannelPush(false);
-      const orgName = facilities === MARIA_FACILITIES ? 'Westside Youth Football Club' : 'Lincoln East';
+      const orgName = facilities === MARIA_FACILITIES ? 'Westside Youth Football Club' : 'Northwest High';
       setMessage(`Due to a severe thunderstorm warning, the following facilities at ${orgName} will be closed on ${closureDateLabel}. All affected events have been canceled. We apologize for the inconvenience.`);
       setIsCancelling(false);
     }

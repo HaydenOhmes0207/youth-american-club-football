@@ -409,7 +409,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
 
   const mariaBookingRequest: BookingRequest = {
     id: 'booking-1',
-    fromOrg: 'Lincoln Junior Football Club',
+    fromOrg: 'Northwest Junior Football Club',
     fromDirector: 'Maria Rodriguez',
     fromRole: 'Club Director',
     facility: 'Spartan Field',
@@ -520,7 +520,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
     // Add the championship event to imported events so it shows on the resource view
     const champEvent: CalendarEvent = {
       id: 'ext-champ-saturday',
-      title: 'Championship Saturday - Lincoln Jr. Football',
+      title: 'Championship Saturday - Northwest Jr. Football',
       date: new Date(2026, 10, 7),
       time: '8:00 AM',
       endTime: '6:00 PM',
@@ -896,7 +896,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         categoryLabel: 'Facility',
         timestamp: '3m ago',
         title: 'Ext. Booking',
-        description: 'Lincoln Junior Football Club requesting Spartan Field for Nov 7.',
+        description: 'Northwest Junior Football Club requesting Spartan Field for Nov 7.',
         variant: 'info',
         onClick: () => {
           setActiveRoute('/facilities');
