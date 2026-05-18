@@ -175,38 +175,10 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     confidence: 95,
   });
 
-  // Cross Country: Saturday meets — unique names, one home meet
-  const xcMeets: { name: string; location: string; isHome: boolean }[] = [
-    { name: 'Pioneers Park Twilight', location: 'Pioneers Park', isHome: false },
-    { name: 'Northwest Home Meet', location: 'Holmes Lake Park', isHome: true },
-    { name: 'Heartland Conference Championships', location: 'Mahoney State Park', isHome: false },
-    { name: 'Branched Oak Classic', location: 'Branched Oak Lake', isHome: false },
-    { name: 'Walton Stampede Invitational', location: 'Walton Community Course', isHome: false },
-    { name: 'UNL Pre-State Preview', location: 'UNL Cross Country Course', isHome: false },
-    { name: 'NSAA District D-1 Meet', location: 'Kearney Country Club', isHome: false },
-  ];
-  const xcEvents: ImportEvent[] = [];
-  const xcStart = new Date(fallStart);
-  while (xcStart.getDay() !== 6) xcStart.setDate(xcStart.getDate() + 1);
-  for (let xcI = 0; xcI < xcMeets.length; xcI++) {
-    const meet = xcMeets[xcI];
-    xcEvents.push({
-      id: `import-xc-${xcI}`, title: `Cross Country - ${meet.name}`,
-      date: new Date(xcStart), time: '9:00 AM', endTime: '12:00 PM',
-      sport: 'Cross Country', type: 'game',
-      location: meet.location, color: C['Cross Country'],
-      opponent: meet.name, isHome: meet.isHome, facility: meet.location,
-      hasStream: false, hasTickets: false, hasCameras: false, status: 'pending',
-      confidence: 85 + Math.floor(Math.random() * 12), // 85-96%
-    });
-    xcStart.setDate(xcStart.getDate() + 14);
-  }
-
   return [
     { sport: 'Football', teamName: 'Varsity Football', color: C['Football'], events: fbEvents },
     { sport: 'Girls Volleyball', teamName: 'Varsity Girls Volleyball', color: C['Girls Volleyball'], events: vbEvents },
     { sport: 'Boys Soccer', teamName: 'Varsity Boys Soccer', color: C['Boys Soccer'], events: socEvents },
-    { sport: 'Cross Country', teamName: 'Varsity Cross Country', color: C['Cross Country'], events: xcEvents },
   ];
 }
 
@@ -219,7 +191,6 @@ function buildAgentLog(tickets: boolean, streaming: boolean, focus: boolean): { 
     { text: 'Found 9 Varsity Football games (Aug 28 - Oct 30)', type: 'found' },
     { text: 'Found 11 Varsity Girls Volleyball matches + 1 tournament', type: 'found' },
     { text: 'Found 9 Varsity Boys Soccer matches (Aug 28 - Oct 24)', type: 'found' },
-    { text: 'Found 7 Varsity Cross Country meets (Aug 29 - Oct 31)', type: 'found' },
     { text: 'Mapping home games to facilities...', type: 'working' },
     { text: 'Memorial Stadium assigned to 5 football home games', type: 'done' },
     { text: 'Main Gym assigned to 6 volleyball home matches', type: 'done' },
