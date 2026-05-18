@@ -2439,6 +2439,9 @@
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; background: #fff;
 }
+.camera-card-image img {
+  mix-blend-mode: multiply;
+}
 .camera-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .camera-card-name {
   font-family: var(--u-font-heading); font-size: 15px; font-weight: 600;
