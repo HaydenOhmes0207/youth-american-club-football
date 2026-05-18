@@ -2114,22 +2114,24 @@
   font-size: 14px;
 }
 
-/* Task Card - no borders */
+/* Task Card */
 .db-task-card {
   flex: 1;
   min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 0;
-  background: transparent;
-  border: none;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
-  transition: opacity 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .db-task-card:hover {
-  opacity: 0.7;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 .db-task-header {
   display: flex;
