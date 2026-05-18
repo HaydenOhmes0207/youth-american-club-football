@@ -40,22 +40,52 @@ interface Camera {
 const MOCK_CAMERAS: Camera[] = [
   {
     id: 'camera-1',
+    name: 'Focus Outdoor',
+    type: 'outdoor',
+    facility: 'Memorial Stadium',
+    venue: 'Memorial Stadium',
+    status: 'online',
+    image: '/images/focus-outdoor.png',
+    accessGrants: [],
+  },
+  {
+    id: 'camera-2',
     name: 'Focus Indoor',
     type: 'indoor',
     facility: 'Main Gym',
-    venue: 'Lincoln Stadium',
+    venue: 'Main Gym',
     status: 'online',
     image: '/images/focus-indoor.jpg',
     accessGrants: [],
   },
   {
-    id: 'camera-2',
-    name: 'Outdoor',
+    id: 'camera-3',
+    name: 'Focus Outdoor',
     type: 'outdoor',
-    facility: 'Memorial Stadium',
-    venue: 'Lincoln Stadium',
+    facility: 'Soccer Complex',
+    venue: 'Soccer Complex',
     status: 'online',
     image: '/images/focus-outdoor.png',
+    accessGrants: [],
+  },
+  {
+    id: 'camera-4',
+    name: 'Focus Outdoor',
+    type: 'outdoor',
+    facility: 'Tennis Courts',
+    venue: 'Tennis Courts',
+    status: 'offline',
+    image: '/images/focus-outdoor.png',
+    accessGrants: [],
+  },
+  {
+    id: 'camera-5',
+    name: 'Focus Indoor',
+    type: 'indoor',
+    facility: 'Weight Room',
+    venue: 'Weight Room',
+    status: 'online',
+    image: '/images/focus-indoor.jpg',
     accessGrants: [],
   },
 ];
@@ -99,7 +129,7 @@ interface CamerasViewProps {
 
 type ViewState = 'list' | 'detail' | 'grant-search' | 'grant-configure';
 
-export default function CamerasView({ venueName = 'Lincoln Stadium' }: CamerasViewProps) {
+export default function CamerasView({ venueName = 'Northwest High School' }: CamerasViewProps) {
   const [cameras, setCameras] = useState<Camera[]>(MOCK_CAMERAS);
   const [viewState, setViewState] = useState<ViewState>('list');
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);

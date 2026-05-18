@@ -863,7 +863,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
     }
   } else if (activeRoute === '/cameras') {
     pageContent = (
-      <CamerasView venueName={activePersona.id === 'maria' ? 'Westside Fields' : 'Lincoln Stadium'} />
+      <CamerasView venueName={activePersona.id === 'maria' ? 'Westside Fields' : 'Northwest High School'} />
     );
   } else if (activeRoute === '/tickets') {
     pageContent = (

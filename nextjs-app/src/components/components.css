@@ -2420,40 +2420,41 @@
 .cameras-breadcrumb-sep { color: var(--u-color-base-foreground-subtle, #607081); }
 .cameras-breadcrumb-active { color: var(--u-color-base-foreground-contrast, #071c31); }
 
-.cameras-list { display: flex; flex-direction: column; gap: 16px; }
+.cameras-list { display: flex; flex-direction: column; gap: 0; }
 .camera-card {
-  display: flex; align-items: center; gap: 20px;
-  padding: 20px 24px; background: #fff;
-  border: 1px solid var(--u-color-line-subtle, #e5e7eb); border-radius: 8px;
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px; background: #fff;
+  border-bottom: 1px solid var(--u-color-line-subtle, #e5e7eb);
 }
+.camera-card:first-child { border-top: 1px solid var(--u-color-line-subtle, #e5e7eb); }
 .camera-card-image {
-  width: 120px; height: 80px; flex-shrink: 0;
+  width: 72px; height: 48px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: #f9fafb; border-radius: 6px; overflow: hidden;
+  overflow: hidden;
 }
-.camera-card-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.camera-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .camera-card-name {
-  font-family: var(--u-font-heading); font-size: 18px; font-weight: 600;
+  font-family: var(--u-font-heading); font-size: 15px; font-weight: 600;
   color: var(--u-color-base-foreground-contrast, #071c31);
 }
 .camera-card-location {
-  display: flex; align-items: center; gap: 6px;
-  font-family: var(--u-font-body); font-size: 14px;
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--u-font-body); font-size: 13px;
   color: var(--u-color-base-foreground, #36485c);
 }
 .camera-card-location svg { color: var(--u-color-base-foreground-subtle, #607081); }
 .camera-card-access {
-  display: flex; align-items: center; gap: 6px;
-  font-family: var(--u-font-body); font-size: 14px;
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--u-font-body); font-size: 13px;
   color: var(--u-color-base-foreground-subtle, #607081);
 }
 .camera-card-access svg { color: var(--u-color-base-foreground-subtle, #607081); }
 .camera-card-access-count { font-weight: 600; color: var(--u-color-base-foreground-contrast, #071c31); }
 .camera-card-manage {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 20px; background: #fff;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; background: #fff;
   border: 1px solid var(--u-color-line-subtle, #e5e7eb); border-radius: 6px;
-  font-family: var(--u-font-body); font-size: 14px; font-weight: 500;
+  font-family: var(--u-font-body); font-size: 13px; font-weight: 500;
   color: var(--u-color-base-foreground-contrast, #071c31);
   cursor: pointer; transition: all 0.15s ease;
 }
