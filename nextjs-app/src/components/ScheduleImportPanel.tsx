@@ -15,6 +15,7 @@ interface ImportEvent extends CalendarEvent {
   hasTickets: boolean;
   hasCameras: boolean;
   status: 'pending' | 'accepted' | 'rejected';
+  confidence: number; // AI confidence percentage (0-100)
 }
 
 interface SportSection {
@@ -106,6 +107,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
       location: home ? 'Memorial Stadium' : `${opp} HS`, color: C['Football'],
       opponent: opp, isHome: home, facility: home ? 'Memorial Stadium' : `${opp} HS`,
       hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
+      confidence: 92 + Math.floor(Math.random() * 8), // 92-99%
     });
     fd.setDate(fd.getDate() + 7);
   }
@@ -126,6 +128,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
       location: home ? 'Main Gym' : `${opp} HS`, color: C['Girls Volleyball'],
       opponent: opp, isHome: home, facility: home ? 'Main Gym' : `${opp} HS`,
       hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
+      confidence: 90 + Math.floor(Math.random() * 10), // 90-99%
     });
     vt.setDate(vt.getDate() + 7);
     vbI++;
@@ -137,6 +140,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     location: 'Main Gym', color: C['Girls Volleyball'],
     opponent: 'Multiple', isHome: true, facility: 'Main Gym',
     hasStream: streaming, hasTickets: tickets, hasCameras: focus, status: 'pending',
+    confidence: 88,
   });
 
   // Soccer: biweekly Tuesday
@@ -155,6 +159,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
       location: home ? 'Soccer Complex' : `${opp} HS`, color: C['Boys Soccer'],
       opponent: opp, isHome: home, facility: home ? 'Soccer Complex' : `${opp} HS`,
       hasStream: home && streaming, hasTickets: home && tickets, hasCameras: home && focus, status: 'pending',
+      confidence: 91 + Math.floor(Math.random() * 9), // 91-99%
     });
     st2.setDate(st2.getDate() + 7);
     socI++;
@@ -167,6 +172,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
     location: 'Soccer Complex', color: C['Boys Soccer'],
     opponent: 'Papillion Hawks', isHome: true, facility: 'Soccer Complex',
     hasStream: streaming, hasTickets: tickets, hasCameras: focus, status: 'pending',
+    confidence: 95,
   });
 
   // Cross Country: Saturday meets — unique names, one home meet
@@ -191,6 +197,7 @@ function generateImportEvents(tickets: boolean, streaming: boolean, focus: boole
       location: meet.location, color: C['Cross Country'],
       opponent: meet.name, isHome: meet.isHome, facility: meet.location,
       hasStream: false, hasTickets: false, hasCameras: false, status: 'pending',
+      confidence: 85 + Math.floor(Math.random() * 12), // 85-96%
     });
     xcStart.setDate(xcStart.getDate() + 14);
   }
@@ -567,58 +574,61 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                             {section.events.map(evt => (
                               <div
                                 key={evt.id}
-                                className={`import-event-row import-event-row--${evt.status}`}
+                                className={`import-event-card import-event-card--${evt.status}`}
+                                style={{ '--event-color': section.color } as React.CSSProperties}
                               >
-                                <div className="import-event-row-top">
-                                  <button
-                                    className="import-event-row-clickable"
-                                    onClick={() => setEditingEvent(evt)}
-                                    aria-label={`Edit ${evt.title}`}
-                                  >
-                                    <span className="import-event-date">{formatEventDate(evt.date)}</span>
-                                    <span className="import-event-title">{evt.isHome ? 'vs.' : '@'} {evt.opponent}</span>
-                                    <span className="import-event-time">{evt.time}</span>
-                                  </button>
-                                  <div className="import-event-actions">
-                                    <button
-                                      className={`import-action-btn import-action-btn--accept ${evt.status === 'accepted' ? 'import-action-btn--active' : ''}`}
-                                      onClick={() => setEventStatus(evt.id, evt.status === 'accepted' ? 'pending' : 'accepted')}
-                                      aria-label="Accept"
-                                    >
-                                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    </button>
-                                    <button
-                                      className={`import-action-btn import-action-btn--reject ${evt.status === 'rejected' ? 'import-action-btn--active' : ''}`}
-                                      onClick={() => setEventStatus(evt.id, evt.status === 'rejected' ? 'pending' : 'rejected')}
-                                      aria-label="Reject"
-                                    >
-                                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    </button>
+                                {/* Header: Opponent, Home/Away badge, Confidence */}
+                                <div className="import-event-header">
+                                  <div className="import-event-header-left">
+                                    <span className="import-event-opponent">{evt.opponent}</span>
+                                    <span className={`import-event-home-badge ${evt.isHome ? 'import-event-home-badge--home' : 'import-event-home-badge--away'}`}>
+                                      {evt.isHome ? 'Home' : 'Away'}
+                                    </span>
                                   </div>
+                                  <span className="import-event-confidence">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v1m0 10v1m6-6h-1M2 7H1m10.07 4.07l-.707-.707M3.637 3.637l-.707-.707m8.14 0l-.707.707M3.637 10.363l-.707.707M10 7a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                    {evt.confidence}%
+                                  </span>
                                 </div>
-                                <div className="import-event-row-meta">
-                                  <span className="import-event-badge import-event-badge--facility">
-                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 4h10M3 1h6a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
+
+                                {/* Details row: Date, Time, Location */}
+                                <div className="import-event-details">
+                                  <span className="import-event-detail">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                                    {formatEventDate(evt.date)}
+                                  </span>
+                                  <span className="import-event-detail">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/><path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                    {evt.time}
+                                  </span>
+                                  <span className="import-event-detail">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
                                     {evt.facility}
                                   </span>
-                                  {evt.hasStream && (
-                                    <span className="import-event-badge import-event-badge--stream">
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3.5v5l3-2.5 2 1.5 2-2 3 3V3.5a1 1 0 00-1-1H2a1 1 0 00-1 1z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                      Live Stream
-                                    </span>
-                                  )}
-                                  {evt.hasTickets && (
-                                    <span className="import-event-badge import-event-badge--tickets">
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l1-2h6l1 2M2 4v5a1 1 0 001 1h6a1 1 0 001-1V4M2 4h8M5 7h2" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
-                                      Tickets
-                                    </span>
-                                  )}
-                                  {evt.hasCameras && (
-                                    <span className="import-event-badge import-event-badge--cameras">
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="2" stroke="currentColor" strokeWidth="1"/><path d="M1 4a1 1 0 011-1h1l1-1h4l1 1h1a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1"/></svg>
-                                      Cameras
-                                    </span>
-                                  )}
+                                </div>
+
+                                {/* AI Status */}
+                                <div className="import-event-ai-status">
+                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.5.5 3.5L7 9l-3 1.5.5-3.5L2 4.5l3.5-.5L7 1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  <span>All details verified. Ready to add.</span>
+                                </div>
+
+                                {/* Actions: Approve / Reject */}
+                                <div className="import-event-actions-row">
+                                  <button
+                                    className={`import-event-btn import-event-btn--approve ${evt.status === 'accepted' ? 'import-event-btn--active' : ''}`}
+                                    onClick={() => setEventStatus(evt.id, evt.status === 'accepted' ? 'pending' : 'accepted')}
+                                  >
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                    Approve
+                                  </button>
+                                  <button
+                                    className={`import-event-btn import-event-btn--reject ${evt.status === 'rejected' ? 'import-event-btn--active' : ''}`}
+                                    onClick={() => setEventStatus(evt.id, evt.status === 'rejected' ? 'pending' : 'rejected')}
+                                  >
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10.5 3.5l-7 7M3.5 3.5l7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                    Reject
+                                  </button>
                                 </div>
                               </div>
                             ))}
