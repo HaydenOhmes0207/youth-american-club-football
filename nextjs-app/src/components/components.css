@@ -895,17 +895,16 @@
 
 /* New Event Card Design */
 .import-event-card {
-  display: flex; flex-direction: column; gap: 10px;
-  padding: 14px 16px 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 16px;
   background: transparent;
   border: none;
-  border-left: 3px solid var(--event-color, #16a34a);
   border-radius: 0;
   transition: background 0.15s ease, opacity 0.15s ease;
 }
 .import-event-card:not(:last-child) {
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
 }
 .import-event-card--pending { background: transparent; }
 .import-event-card--accepted { background: #f8fdf8; }
@@ -944,18 +943,18 @@
 }
 .import-event-detail {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--u-font-body); font-size: 13px; color: #6b7280;
+  font-family: var(--u-font-body); font-size: 13px; color: #4b5563;
 }
-.import-event-detail svg { color: #9ca3af; flex-shrink: 0; }
+.import-event-detail svg { color: #6b7280; flex-shrink: 0; }
 
 .import-event-footer {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .import-event-ai-status {
   display: flex; align-items: center; gap: 6px;
-  font-family: var(--u-font-body); font-size: 13px; color: #9ca3af;
+  font-family: var(--u-font-body); font-size: 13px; color: #6b7280;
 }
 .import-event-ai-status svg { color: #a78bfa; }
 
