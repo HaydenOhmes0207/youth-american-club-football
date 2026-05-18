@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PersonaProvider, usePersona, CHAPTERS_BY_PERSONA, type PersonaId, type ChapterId } from '@/lib/persona-context';
 import NavigationWrapper from './NavigationWrapper';
+import PersonaLanding from './PersonaLanding';
 
 function DemoBar() {
   const { activePersona, setActivePersonaId, personas, activeChapter, setActiveChapter } = usePersona();
@@ -35,23 +36,43 @@ function DemoBar() {
   );
 }
 
-function DemoShellInner() {
+function DemoShellInner({ onBackToLanding }: { onBackToLanding: () => void }) {
   const { activePersona } = usePersona();
 
   return (
     <div className="demo-shell" style={{ backgroundColor: activePersona.barColor }}>
       <DemoBar />
       <div className="demo-shell-content">
-        <NavigationWrapper />
+        <NavigationWrapper onBackToLanding={onBackToLanding} />
       </div>
     </div>
   );
 }
 
+function DemoShellWithLanding() {
+  const [showLanding, setShowLanding] = useState(true);
+  const { setActivePersonaId } = usePersona();
+
+  const handleSelectPersona = (id: PersonaId) => {
+    setActivePersonaId(id);
+    setShowLanding(false);
+  };
+
+  const handleBackToLanding = () => {
+    setShowLanding(true);
+  };
+
+  if (showLanding) {
+    return <PersonaLanding onSelectPersona={handleSelectPersona} />;
+  }
+
+  return <DemoShellInner onBackToLanding={handleBackToLanding} />;
+}
+
 export default function DemoShell() {
   return (
     <PersonaProvider>
-      <DemoShellInner />
+      <DemoShellWithLanding />
     </PersonaProvider>
   );
 }

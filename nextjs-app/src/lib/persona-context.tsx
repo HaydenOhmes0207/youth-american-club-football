@@ -42,36 +42,39 @@ export interface Persona {
   secondaryColor: string;
   barColor: string;
   orgAvatar: string;
+  description: string;
 }
 
 const personas: Record<PersonaId, Persona> = {
   alex: {
     id: 'alex',
-    firstName: 'Alex',
+    firstName: 'Sarah',
     lastName: 'Mitchell',
-    email: 'alex.mitchell@lincoln.edu',
-    role: 'High School Director',
-    label: 'YCHS Group Spotlight - High School Director',
+    email: 'sarah.mitchell@lincoln.edu',
+    role: 'Athletic Director — Lincoln High School',
+    label: 'Director Spotlight Demo — High School Athletic Director',
     orgName: 'Lincoln High School',
     orgId: 'org-hs',
     primaryColor: '#1e40af',
     secondaryColor: '#fbbf24',
     barColor: '#1b3a2a',
     orgAvatar: '/images/alex-avatar.png',
+    description: 'Sarah is a high school athletic director at a mid-sized school. She manages 18 facilities and coordinates schedules across multiple sports.',
   },
   maria: {
     id: 'maria',
-    firstName: 'Maria',
+    firstName: 'Jeff',
     lastName: 'Rodriguez',
-    email: 'maria.rodriguez@lincolnjr.org',
-    role: 'Club Director',
-    label: 'YCHS Group Spotlight - Club Director',
+    email: 'jeff.rodriguez@lincolnjr.org',
+    role: 'Club Director — Lincoln Junior Football Club',
+    label: 'Director Spotlight Demo — Club Director',
     orgName: 'Lincoln Junior Football Club',
     orgId: 'org-club',
     primaryColor: '#16a34a',
     secondaryColor: '#ffffff',
     barColor: '#1a2744',
     orgAvatar: '/images/maria-avatar.png',
+    description: 'Jeff is a youth AmFB club director managing 40 teams across football and cheer. His teams practice and play across multiple facilities in his community, and he manages a robust registration pipeline.',
   },
 };
 

@@ -2,6 +2,139 @@
    Shared Component Styles (replaces all <style jsx>)
    ============================================ */
 
+/* === PersonaLanding === */
+.persona-landing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  padding: 24px;
+}
+
+.persona-landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.persona-landing-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.persona-landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.persona-landing-logo-text {
+  font-family: var(--u-font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.persona-landing-title {
+  font-family: var(--u-font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.persona-landing-subtitle {
+  font-family: var(--u-font-body);
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.persona-landing-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.persona-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: left;
+  width: 100%;
+}
+
+.persona-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.persona-card-avatar {
+  flex-shrink: 0;
+}
+
+.persona-card-avatar-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.persona-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.persona-card-name {
+  font-family: var(--u-font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 2px 0;
+}
+
+.persona-card-role {
+  font-family: var(--u-font-body);
+  font-size: 13px;
+  color: #374151;
+  margin: 0 0 4px 0;
+}
+
+.persona-card-description {
+  font-family: var(--u-font-body);
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.persona-card-chevron {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.persona-landing-footer {
+  font-family: var(--u-font-body);
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+}
+
 /* === DemoShell === */
 .demo-shell {
   display: flex;

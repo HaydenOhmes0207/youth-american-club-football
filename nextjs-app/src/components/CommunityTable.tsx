@@ -59,7 +59,7 @@ alexCommunityData.unshift(
 );
 
 mariaCommunityData.unshift(
-  { id: 'maria-admin-1', name: 'Maria Santos', email: 'maria.santos@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U'], status: 'active' },
+  { id: 'maria-admin-1', name: 'Jeff Rodriguez', email: 'jeff.rodriguez@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 14U', 'Mustangs 12U', 'Mustangs 10U'], status: 'active' },
   { id: 'maria-admin-2', name: 'Carlos Mendez', email: 'carlos.mendez@lincolnyouthfootball.org', role: 'Administrator', teams: ['Mustangs 8U', 'Flag 6U', 'Flag 8U'], status: 'active' },
   { id: 'maria-coach-1', name: 'Robert Jackson', email: 'robert.jackson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 14U'], status: 'active' },
   { id: 'maria-coach-2', name: 'Steve Patterson', email: 'steve.patterson@lincolnyouthfootball.org', role: 'Head Coach', teams: ['Mustangs 12U'], status: 'active' },

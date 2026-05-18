@@ -107,6 +107,7 @@ interface LegacyNavigationProps {
   currentUser?: CurrentUserData | null;
   activeRoute?: string;
   onNavigate?: (route: string) => void;
+  onLogout?: () => void;
   children?: React.ReactNode;
   overlay?: React.ReactNode;
 }
@@ -144,6 +145,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
   currentUser,
   activeRoute = '/',
   onNavigate,
+  onLogout,
   children,
   overlay,
 }) => {
@@ -518,7 +520,19 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                 item.type === 'separator' ? (
                   <div key={`separator-${index}`} className="user-menu-separator" />
                 ) : (
-                  <div key={item.id} className="user-menu-item" onClick={(e) => { e.stopPropagation(); setIsUserMenuOpen(false); }}>{item.label}</div>
+                  <div 
+                    key={item.id} 
+                    className="user-menu-item" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setIsUserMenuOpen(false); 
+                      if (item.id === 'logout' && onLogout) {
+                        onLogout();
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </div>
                 )
               ))}
             </div>

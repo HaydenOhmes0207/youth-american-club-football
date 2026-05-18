@@ -57,7 +57,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 88,
     outstandingAmount: 2_100,
     totalRevenue: 15_750,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-jv-fall',
@@ -75,7 +75,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 92,
     outstandingAmount: 1_200,
     totalRevenue: 13_200,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-freshman-fall',
@@ -93,7 +93,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 85,
     outstandingAmount: 1_925,
     totalRevenue: 10_725,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-summer-camp',
@@ -111,7 +111,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 100,
     outstandingAmount: 0,
     totalRevenue: 13_050,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-spring-training',
@@ -129,7 +129,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 100,
     outstandingAmount: 0,
     totalRevenue: 5_100,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-7on7',
@@ -147,7 +147,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 100,
     outstandingAmount: 0,
     totalRevenue: 4_375,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-weight-room',
@@ -165,7 +165,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 100,
     outstandingAmount: 0,
     totalRevenue: 0,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-qb-camp',
@@ -183,7 +183,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 75,
     outstandingAmount: 1_400,
     totalRevenue: 4_200,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-lineman-camp',
@@ -201,7 +201,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 80,
     outstandingAmount: 840,
     totalRevenue: 3_360,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-film-study',
@@ -219,7 +219,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 100,
     outstandingAmount: 0,
     totalRevenue: 0,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
   {
     id: 'alex-winter-2027',
@@ -237,7 +237,7 @@ const alexPrograms: ProgramWithStats[] = [
     paidPercent: 0,
     outstandingAmount: 0,
     totalRevenue: 0,
-    createdBy: { id: 'user-alex', firstName: 'Alex', lastName: 'Mitchell', avatar: null },
+    createdBy: { id: 'user-alex', firstName: 'Sarah', lastName: 'Mitchell', avatar: null },
   },
 ];
 
@@ -248,7 +248,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Aug 10 – Nov 14, 2026',
     visibility: 'public', registrationStatus: 'open', status: 'published',
     registrantCount: 186, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 12, feePerPlayer: 285, paidPercent: 74, outstandingAmount: 13_680, totalRevenue: 39_330,
   },
   {
@@ -257,7 +257,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Sep 6 – Oct 25, 2026',
     visibility: 'public', registrationStatus: 'open', status: 'published',
     registrantCount: 112, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 8, feePerPlayer: 125, outstandingAmount: 2_500, totalRevenue: 11_500, paidPercent: 82,
   },
   {
@@ -266,7 +266,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Aug 10 – Nov 14, 2026',
     visibility: 'public', registrationStatus: 'open', status: 'published',
     registrantCount: 64, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 4, feePerPlayer: 195, outstandingAmount: 1_365, totalRevenue: 11_115, paidPercent: 89,
   },
   {
@@ -275,7 +275,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Jun 15 – 19, 2026',
     visibility: 'public', registrationStatus: 'closed', status: 'published',
     registrantCount: 78, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 0, feePerPlayer: 85, outstandingAmount: 0, totalRevenue: 6_630, paidPercent: 100,
   },
   {
@@ -284,7 +284,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Apr 18, 2026',
     visibility: 'public', registrationStatus: 'closed', status: 'published',
     registrantCount: 134, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 0, feePerPlayer: 35, outstandingAmount: 0, totalRevenue: 4_690, paidPercent: 100,
   },
   {
@@ -293,7 +293,7 @@ const mariaPrograms: ProgramWithStats[] = [
     keyDates: 'Jul 25, 2026',
     visibility: 'public', registrationStatus: 'open', status: 'published',
     registrantCount: 210, programValue: 0,
-    createdBy: { id: 'user-maria', firstName: 'Maria', lastName: 'Santos', avatar: null },
+    createdBy: { id: 'user-maria', firstName: 'Jeff', lastName: 'Rodriguez', avatar: null },
     teamCount: 0, feePerPlayer: 0, outstandingAmount: 0, totalRevenue: 0, paidPercent: 100,
   },
 ];
@@ -376,7 +376,11 @@ function CommunityPageContent({ sentNotifications, personaId, onContactMembers }
 
 /* ProgramsPage is now rendered inline with persona-specific data */
 
-export default function NavigationWrapper() {
+interface NavigationWrapperProps {
+  onBackToLanding?: () => void;
+}
+
+export default function NavigationWrapper({ onBackToLanding }: NavigationWrapperProps) {
   const { activePersona, activeChapter, chapterVersion } = usePersona();
   const [activeRoute, setActiveRoute] = useState('/');
   const [showImportPanel, setShowImportPanel] = useState(false);
@@ -1032,6 +1036,7 @@ export default function NavigationWrapper() {
       currentUser={currentUser}
       activeRoute={activeRoute}
       onNavigate={(route) => { setActiveRoute(route); setSelectedProgram(null); }}
+      onLogout={onBackToLanding}
       overlay={overlay}
     >
       {pageContent}
