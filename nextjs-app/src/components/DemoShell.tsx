@@ -9,20 +9,26 @@ function DemoBar() {
   const { activePersona, activeChapter, setActiveChapter } = usePersona();
   const chapters = CHAPTERS_BY_PERSONA[activePersona.id] || [];
 
+  // Extract the role part after the dash (e.g., "High School Athletic Director" from "Director Spotlight Demo — High School Athletic Director")
+  const roleLabel = activePersona.displayRole.split('—')[0]?.trim() || activePersona.displayRole;
+
   return (
     <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
-      <div className="demo-bar-label">{activePersona.label}</div>
-      <div className="demo-bar-segments">
-        {chapters.map(ch => (
-          <button
-            key={ch.id}
-            className={`demo-bar-segment ${activeChapter === ch.id ? 'demo-bar-segment-active' : ''}`}
-            onClick={() => setActiveChapter(ch.id)}
-          >
-            {ch.label}
-          </button>
-        ))}
+      <div className="demo-bar-left">Director Spotlight Demo</div>
+      <div className="demo-bar-center">
+        <div className="demo-bar-segments">
+          {chapters.map(ch => (
+            <button
+              key={ch.id}
+              className={`demo-bar-segment ${activeChapter === ch.id ? 'demo-bar-segment-active' : ''}`}
+              onClick={() => setActiveChapter(ch.id)}
+            >
+              {ch.label}
+            </button>
+          ))}
+        </div>
       </div>
+      <div className="demo-bar-right">{roleLabel}</div>
     </div>
   );
 }
