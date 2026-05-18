@@ -12,16 +12,16 @@ function DemoBar() {
   return (
     <div className="demo-bar" style={{ backgroundColor: activePersona.barColor }}>
       <div className="demo-bar-label">{activePersona.label}</div>
-      <div className="demo-bar-selects">
-        <select
-          className="demo-bar-select"
-          value={activeChapter}
-          onChange={(e) => setActiveChapter(e.target.value as ChapterId)}
-        >
-          {chapters.map(ch => (
-            <option key={ch.id} value={ch.id}>{ch.label}</option>
-          ))}
-        </select>
+      <div className="demo-bar-segments">
+        {chapters.map(ch => (
+          <button
+            key={ch.id}
+            className={`demo-bar-segment ${activeChapter === ch.id ? 'demo-bar-segment-active' : ''}`}
+            onClick={() => setActiveChapter(ch.id)}
+          >
+            {ch.label}
+          </button>
+        ))}
       </div>
     </div>
   );
