@@ -481,9 +481,8 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         setFacilitiesTab('schedule');
         break;
       case 'booking-request':
-        setActiveRoute('/facilities');
-        setFacilitiesTab('bookings');
-        setImportedEvents([]);
+        setActiveRoute('/');
+        setImportedEvents(getFallScheduleEvents());
         break;
       default:
         setActiveRoute('/');
