@@ -342,7 +342,7 @@ export default function DashboardHome({
           <div className="db-tasks-header">
             <h3 className="db-section-title">Tasks</h3>
             <div className="db-tasks-pagination">
-              <span className="db-tasks-page">{Math.min(taskPage + 1, totalPages)} of {totalPages}</span>
+                <span className="db-tasks-page">{tasks.length} of {tasks.length}</span>
               <button
                 className="db-tasks-nav"
                 onClick={() => setTaskPage(p => Math.max(0, p - 1))}
