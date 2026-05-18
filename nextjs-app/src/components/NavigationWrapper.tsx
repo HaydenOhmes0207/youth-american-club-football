@@ -775,7 +775,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
           };
           setImportedEvents(prev => [...prev, newEvent]);
           setShowAddEventPanel(false);
-          showToast({ message: 'Event added to schedule', type: 'success' });
+          showToast('Event added to schedule', 'success');
         }}
       />
     );
