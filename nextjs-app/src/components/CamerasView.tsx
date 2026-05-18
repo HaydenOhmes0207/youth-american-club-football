@@ -103,11 +103,10 @@ const MOCK_ORGANIZATIONS: Organization[] = [
     color: '#16a34a',
     avatar: '/images/maria-avatar.png',
     teams: [
-      'Varsity Football', 'JV Football', 'Freshman Football',
-      'U14 Tackle', 'U13 Tackle', 'U12 Tackle', 'U11 Tackle', 'U10 Tackle', 'U9 Tackle', 'U8 Tackle',
-      'U14 Flag', 'U12 Flag', 'U10 Flag', 'U8 Flag', 'U6 Flag',
-      'U14 Flag (Girls)', 'U12 Flag (Girls)', 'U10 Flag (Girls)', 'U8 Flag (Girls)',
-      '7v7 Elite', '7v7 Select', '7v7 Development'
+      '7th Grade Tackle', '6th Grade Tackle', '5th Grade Tackle', '4th Grade Tackle', '3rd Grade Tackle', '2nd Grade Tackle', '1st Grade Tackle',
+      '7th Grade Flag', '6th Grade Flag', '5th Grade Flag', '4th Grade Flag', '3rd Grade Flag', '2nd Grade Flag', '1st Grade Flag',
+      '7th Grade Flag (Girls)', '6th Grade Flag (Girls)', '5th Grade Flag (Girls)', '4th Grade Flag (Girls)', '3rd Grade Flag (Girls)', '2nd Grade Flag (Girls)', '1st Grade Flag (Girls)',
+      '7v7 Select'
     ],
   },
   {
