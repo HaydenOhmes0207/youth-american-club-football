@@ -2702,8 +2702,8 @@
 .camera-back-link:hover { text-decoration: underline; }
 .camera-back-link svg { color: var(--u-color-emphasis-background-contrast, #0273e3); }
 
-/* Grant Modal Content */
-.grant-modal-content {
+/* Grant Panel Content */
+.grant-panel-content {
   display: flex; flex-direction: column; gap: 16px;
 }
 
