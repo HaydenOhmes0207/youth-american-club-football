@@ -228,7 +228,7 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
               {group.cameras.map(camera => (
                 <div key={camera.id} className="camera-card">
                   <div className="camera-card-image">
-                    <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain' }} />
+                    <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain', background: '#fff' }} />
                   </div>
                   <div className="camera-card-info">
                     <h3 className="camera-card-name">{camera.name}</h3>
