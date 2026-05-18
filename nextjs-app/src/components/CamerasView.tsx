@@ -247,10 +247,6 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
                     </div>
                     <div className="camera-card-info">
                       <h3 className="camera-card-name">{camera.name}</h3>
-                      <div className="camera-card-access">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                        <span className="camera-card-access-count">{camera.accessGrants.length}</span> orgs with access
-                      </div>
                     </div>
                     <button className="camera-card-manage" onClick={() => handleManageCamera(camera)}>
                       Manage
