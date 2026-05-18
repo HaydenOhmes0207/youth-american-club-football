@@ -690,6 +690,7 @@
 .import-panel-body { flex: 1; overflow-y: auto; padding: var(--u-space-one-and-half, 24px); }
 
 .import-panel-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
   padding: var(--u-space-one, 16px) var(--u-space-one-and-half, 24px);
   border-top: 1px solid var(--u-color-line-subtle, #c4c6c8);
   flex-shrink: 0;
