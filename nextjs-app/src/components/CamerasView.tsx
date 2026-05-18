@@ -55,7 +55,7 @@ const MOCK_CAMERAS: Camera[] = [
     facility: 'Main Gym',
     venue: 'Main Gym',
     status: 'online',
-    image: '/images/focus-indoor.png',
+    image: '/images/focus-indoor.jpg',
     accessGrants: [],
   },
   {
