@@ -254,27 +254,27 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
   // Camera Detail View
   if (viewState === 'detail' && selectedCamera) {
     return (
-      <div className="cameras-container">
-        <div className="cameras-breadcrumb">
-          <span>FACILITY</span>
-          <span className="cameras-breadcrumb-sep">·</span>
-          <span>CAMERAS</span>
-          <span className="cameras-breadcrumb-sep">·</span>
-          <span className="cameras-breadcrumb-active">{selectedCamera.name.toUpperCase()}</span>
-        </div>
+      <div className="cameras-page-content">
+        <PageHeader 
+          title={selectedCamera.name}
+          breadcrumb={[
+            { label: 'Cameras', onClick: handleBack },
+            { label: selectedCamera.facility },
+          ]}
+        />
 
         <div className="camera-detail-card">
-          <div className="camera-detail-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect x="4" y="8" width="24" height="16" rx="2" stroke="#0273e3" strokeWidth="2"/>
-              <circle cx="16" cy="16" r="4" stroke="#0273e3" strokeWidth="2"/>
-            </svg>
+          <div className="camera-detail-image">
+            <Image src={selectedCamera.image} alt={selectedCamera.name} width={80} height={60} style={{ objectFit: 'contain' }} />
           </div>
           <div className="camera-detail-info">
             <h2 className="camera-detail-name">{selectedCamera.name}</h2>
             <div className="camera-detail-meta">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7.5a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.2"/><path d="M7 13c3-3 5-5.5 5-7.5a5 5 0 10-10 0c0 2 2 4.5 5 7.5z" stroke="currentColor" strokeWidth="1.2"/></svg>
-              {selectedCamera.venue} · <span className={`camera-status camera-status--${selectedCamera.status}`}>{selectedCamera.status === 'online' ? 'Online' : 'Offline'}</span>
+              {selectedCamera.facility}
+              <span className={`camera-status-badge camera-status-badge--${selectedCamera.status}`}>
+                {selectedCamera.status === 'online' ? 'Online' : 'Offline'}
+              </span>
             </div>
           </div>
           <div className="camera-detail-actions">
@@ -285,10 +285,6 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
             <button className="camera-action-btn">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.2"/><path d="M8 5v3l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
               Recording history
-            </button>
-            <button className="camera-action-btn" onClick={handleBack}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Back
             </button>
           </div>
         </div>
