@@ -948,6 +948,11 @@
 }
 .import-event-detail svg { color: #9ca3af; flex-shrink: 0; }
 
+.import-event-footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin-top: 4px;
+}
+
 .import-event-ai-status {
   display: flex; align-items: center; gap: 6px;
   font-family: var(--u-font-body); font-size: 13px; color: #9ca3af;
@@ -955,7 +960,7 @@
 .import-event-ai-status svg { color: #a78bfa; }
 
 .import-event-actions-row {
-  display: flex; align-items: center; gap: 8px; margin-top: 4px;
+  display: flex; align-items: center; gap: 8px;
 }
 .import-event-btn {
   display: inline-flex; align-items: center; gap: 6px;

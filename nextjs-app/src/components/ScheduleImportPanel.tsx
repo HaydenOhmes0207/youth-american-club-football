@@ -607,28 +607,28 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                   </span>
                                 </div>
 
-                                {/* AI Status */}
-                                <div className="import-event-ai-status">
-                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l.8 2.4L10.2 4l-2.4.8L7 7.2l-.8-2.4L3.8 4l2.4-.8L7 1zM3 8l.5 1.5L5 10l-1.5.5L3 12l-.5-1.5L1 10l1.5-.5L3 8zM10.5 9l.4 1.1 1.1.4-1.1.4-.4 1.1-.4-1.1-1.1-.4 1.1-.4.4-1.1z" fill="currentColor"/></svg>
-                                  <span>All details verified. Ready to add.</span>
-                                </div>
-
-                                {/* Actions: Approve / Reject */}
-                                <div className="import-event-actions-row">
-                                  <button
-                                    className={`import-event-btn import-event-btn--approve ${evt.status === 'accepted' ? 'import-event-btn--active' : ''}`}
-                                    onClick={() => setEventStatus(evt.id, evt.status === 'accepted' ? 'pending' : 'accepted')}
-                                  >
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    Approve
-                                  </button>
-                                  <button
-                                    className={`import-event-btn import-event-btn--reject ${evt.status === 'rejected' ? 'import-event-btn--active' : ''}`}
-                                    onClick={() => setEventStatus(evt.id, evt.status === 'rejected' ? 'pending' : 'rejected')}
-                                  >
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10.5 3.5l-7 7M3.5 3.5l7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    Reject
-                                  </button>
+                                {/* Footer: AI Status left, Actions right */}
+                                <div className="import-event-footer">
+                                  <div className="import-event-ai-status">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l.8 2.4L10.2 4l-2.4.8L7 7.2l-.8-2.4L3.8 4l2.4-.8L7 1zM3 8l.5 1.5L5 10l-1.5.5L3 12l-.5-1.5L1 10l1.5-.5L3 8zM10.5 9l.4 1.1 1.1.4-1.1.4-.4 1.1-.4-1.1-1.1-.4 1.1-.4.4-1.1z" fill="currentColor"/></svg>
+                                    <span>All details verified. Ready to add.</span>
+                                  </div>
+                                  <div className="import-event-actions-row">
+                                    <button
+                                      className={`import-event-btn import-event-btn--approve ${evt.status === 'accepted' ? 'import-event-btn--active' : ''}`}
+                                      onClick={() => setEventStatus(evt.id, evt.status === 'accepted' ? 'pending' : 'accepted')}
+                                    >
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.667 3.5L5.25 9.917 2.333 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                      Approve
+                                    </button>
+                                    <button
+                                      className={`import-event-btn import-event-btn--reject ${evt.status === 'rejected' ? 'import-event-btn--active' : ''}`}
+                                      onClick={() => setEventStatus(evt.id, evt.status === 'rejected' ? 'pending' : 'rejected')}
+                                    >
+                                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10.5 3.5l-7 7M3.5 3.5l7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                      Reject
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             ))}
