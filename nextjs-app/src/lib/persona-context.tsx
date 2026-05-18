@@ -74,7 +74,7 @@ const personas: Record<PersonaId, Persona> = {
     secondaryColor: '#ffffff',
     barColor: '#1a2744',
     orgAvatar: '/images/maria-avatar.png',
-    description: 'Jeff is a youth football club director managing 40 teams across football and cheer. He coordinates facilities, schedules, and programs.',
+    description: 'Jeff is a club football director managing 40 teams across football and cheer. He coordinates facilities, schedules, and programs.',
   },
 };
 
