@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import PageHeader from './PageHeader';
 import './components.css';
 
 // Types
@@ -213,42 +214,38 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
     const camerasByFacility = getCamerasByFacility();
     
     return (
-      <div className="cameras-container">
-        <div className="cameras-header">
-          <h1 className="cameras-title">Cameras</h1>
-          <p className="cameras-description">
-            Manage who can record at <strong>{venueName}</strong>. Approve a club or visiting team once and they&apos;ll have ongoing access to your camera.
-          </p>
-        </div>
+      <div className="cameras-page-content">
+        <PageHeader 
+          title="Cameras" 
+          description={`Manage who can record at ${venueName}. Approve a club or visiting team once and they'll have ongoing access to your camera.`}
+        />
 
-        {camerasByFacility.map(group => (
-          <div key={group.facility} className="cameras-facility-group">
-            <h2 className="cameras-facility-title">{group.facility}</h2>
-            <div className="cameras-list">
-              {group.cameras.map(camera => (
-                <div key={camera.id} className="camera-card">
-                  <div className="camera-card-image">
-                    <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain', background: '#fff' }} />
-                  </div>
-                  <div className="camera-card-info">
-                    <h3 className="camera-card-name">{camera.name}</h3>
-                    <div className="camera-card-access">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                      <span className="camera-card-access-count">{camera.accessGrants.length}</span> orgs with access
+        <div className="cameras-facility-list">
+          {camerasByFacility.map(group => (
+            <div key={group.facility} className="cameras-facility-group">
+              <h2 className="cameras-facility-title">{group.facility}</h2>
+              <div className="cameras-list">
+                {group.cameras.map(camera => (
+                  <div key={camera.id} className="camera-card">
+                    <div className="camera-card-image">
+                      <Image src={camera.image} alt={camera.name} width={120} height={80} style={{ objectFit: 'contain', background: '#fff' }} />
                     </div>
+                    <div className="camera-card-info">
+                      <h3 className="camera-card-name">{camera.name}</h3>
+                      <div className="camera-card-access">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                        <span className="camera-card-access-count">{camera.accessGrants.length}</span> orgs with access
+                      </div>
+                    </div>
+                    <button className="camera-card-manage" onClick={() => handleManageCamera(camera)}>
+                      Manage
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
                   </div>
-                  <button className="camera-card-manage" onClick={() => handleManageCamera(camera)}>
-                    Manage
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-
-        <div className="cameras-tip">
-          Need to share a camera with a visiting team or club? Open a camera and grant access from there.
+          ))}
         </div>
       </div>
     );
