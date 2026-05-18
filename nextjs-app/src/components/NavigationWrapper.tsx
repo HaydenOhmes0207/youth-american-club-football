@@ -478,6 +478,11 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         setImportedEvents(getFallScheduleEvents());
         setFacilitiesTab('schedule');
         break;
+      case 'camera-access-granted':
+        setActiveRoute('/');
+        setImportedEvents(getFallScheduleEvents());
+        setFacilitiesTab('schedule');
+        break;
       case 'booking-request':
         setActiveRoute('/facilities');
         setFacilitiesTab('bookings');
@@ -668,6 +673,7 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
       case 'schedule-ingest': return new Date(2026, 6, 16); // July 16
       case 'communication': return new Date(2026, 8, 4);    // Sep 4
       case 'cameras': return new Date(2026, 10, 7); // Nov 7
+      case 'camera-access-granted': return new Date(2026, 10, 7); // Nov 7
       case 'booking-request': return new Date(2026, 6, 16);  // Jul 16 (planning ahead)
       default: return undefined;
     }
@@ -933,6 +939,22 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
         title: 'New Signups',
         description: '7 new athletes registered overnight for the Summer Camp program.',
         onClick: () => setActiveRoute('/programs'),
+      });
+    }
+
+    // Maria (Jeff): Camera access granted notification
+    if (isMaria && activeChapter === 'camera-access-granted') {
+      dashboardTasks.push({
+        id: 'camera-access-granted',
+        category: 'facility',
+        categoryLabel: 'Facility',
+        timestamp: '15m ago',
+        title: 'Camera Access Granted',
+        description: 'Northwest High School has granted you camera access to Memorial Stadium for Nov 7.',
+        variant: 'success',
+        onClick: () => {
+          setActiveRoute('/schedule');
+        },
       });
     }
 

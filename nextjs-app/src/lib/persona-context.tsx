@@ -26,6 +26,7 @@ export const CHAPTERS_BY_PERSONA: Record<PersonaId, Chapter[]> = {
     { id: 'operations', label: 'Chapter 2: Operations' },
     { id: 'communication', label: 'Chapter 3: Communication' },
     { id: 'booking-request', label: 'Chapter 4: Booking Request' },
+    { id: 'camera-access-granted', label: 'Chapter 5: Camera Access' },
   ],
 };
 
