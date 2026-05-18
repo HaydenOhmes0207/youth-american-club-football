@@ -35,6 +35,7 @@ export interface Persona {
   lastName: string;
   email: string;
   role: string;
+  displayRole: string;
   label: string;
   orgName: string;
   orgId: string;
@@ -52,6 +53,7 @@ const personas: Record<PersonaId, Persona> = {
     lastName: 'Mitchell',
     email: 'sarah.mitchell@northwest.edu',
     role: 'Director',
+    displayRole: 'Athletic Director — Northwest High School',
     label: 'Director Spotlight Demo — High School Athletic Director',
     orgName: 'Northwest High School',
     orgId: 'org-hs',
@@ -67,6 +69,7 @@ const personas: Record<PersonaId, Persona> = {
     lastName: 'Rodriguez',
     email: 'jeff.rodriguez@northwestjr.org',
     role: 'Director',
+    displayRole: 'Club Director — Northwest Junior Football Club',
     label: 'Director Spotlight Demo — Club Director',
     orgName: 'Northwest Junior Football Club',
     orgId: 'org-club',

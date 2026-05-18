@@ -49,7 +49,7 @@ export default function PersonaLanding({ onSelectPersona }: PersonaLandingProps)
               </div>
               <div className="persona-card-info">
                 <h3 className="persona-card-name">{persona.firstName} {persona.lastName}</h3>
-                <p className="persona-card-role">{persona.role}</p>
+                <p className="persona-card-role">{persona.displayRole}</p>
                 <p className="persona-card-description">{persona.description}</p>
               </div>
               <div className="persona-card-chevron">
