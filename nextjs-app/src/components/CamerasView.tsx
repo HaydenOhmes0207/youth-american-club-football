@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import PageHeader from './PageHeader';
+import Modal from './Modal';
+import Button from './Button';
 import './components.css';
 
 // Types
@@ -15,6 +17,7 @@ interface Organization {
   teamCount: number;
   color: string;
   teams?: string[];
+  avatar?: string;
 }
 
 interface CameraAccess {
@@ -98,7 +101,8 @@ const MOCK_ORGANIZATIONS: Organization[] = [
     type: 'Youth',
     sport: 'American football',
     teamCount: 6,
-    color: '#1e40af',
+    color: '#16a34a',
+    avatar: '/images/maria-avatar.png',
     teams: ['U14 Football', 'U12 Football', 'U10 Football', 'U14 Flag (Girls)', 'U12 Flag (Girls)', 'U8 Flag'],
   },
   {
@@ -127,7 +131,8 @@ interface CamerasViewProps {
   venueName?: string;
 }
 
-type ViewState = 'list' | 'detail' | 'grant-search' | 'grant-configure';
+type ViewState = 'list' | 'detail';
+type GrantStep = 'search' | 'configure';
 
 export default function CamerasView({ venueName = 'Northwest High School' }: CamerasViewProps) {
   const [cameras, setCameras] = useState<Camera[]>(MOCK_CAMERAS);
@@ -136,7 +141,9 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Grant access form state
+  // Grant access modal state
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantStep, setGrantStep] = useState<GrantStep>('search');
   const [accessFromDate, setAccessFromDate] = useState('2026-08-15');
   const [accessToDate, setAccessToDate] = useState('2026-11-21');
   const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
@@ -148,27 +155,34 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
   };
 
   const handleBack = () => {
-    if (viewState === 'grant-configure') {
-      setViewState('grant-search');
-    } else if (viewState === 'grant-search') {
-      setViewState('detail');
-      setSearchQuery('');
-    } else {
-      setViewState('list');
-      setSelectedCamera(null);
-    }
+    setViewState('list');
+    setSelectedCamera(null);
   };
 
   const handleGrantAccess = () => {
     setSearchQuery('');
     setSelectedOrg(null);
-    setViewState('grant-search');
+    setGrantStep('search');
+    setShowGrantModal(true);
+  };
+
+  const handleCloseGrantModal = () => {
+    setShowGrantModal(false);
+    setSelectedOrg(null);
+    setSearchQuery('');
+    setGrantStep('search');
+    setRecordingWindows([]);
   };
 
   const handleSelectOrg = (org: Organization) => {
     setSelectedOrg(org);
     setSelectedTeams(new Set(org.teams || []));
-    setViewState('grant-configure');
+    setGrantStep('configure');
+  };
+
+  const handleBackToSearch = () => {
+    setSelectedOrg(null);
+    setGrantStep('search');
   };
 
   const handleConfirmGrant = () => {
@@ -189,10 +203,7 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
         : c
     ));
     setSelectedCamera(prev => prev ? { ...prev, accessGrants: [...prev.accessGrants, newAccess] } : null);
-    setViewState('detail');
-    setSelectedOrg(null);
-    setSearchQuery('');
-    setRecordingWindows([]);
+    handleCloseGrantModal();
   };
 
   const filteredOrgs = MOCK_ORGANIZATIONS.filter(org =>
@@ -314,9 +325,15 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
             <div className="camera-access-list">
               {selectedCamera.accessGrants.map(grant => (
                 <div key={grant.id} className="camera-access-item">
-                  <div className="camera-access-org-logo" style={{ backgroundColor: grant.organization.color }}>
-                    {grant.organization.abbrev}
-                  </div>
+                  {grant.organization.avatar ? (
+                    <div className="camera-access-org-avatar">
+                      <Image src={grant.organization.avatar} alt={grant.organization.name} width={40} height={40} style={{ borderRadius: '50%', objectFit: 'cover' }} />
+                    </div>
+                  ) : (
+                    <div className="camera-access-org-logo" style={{ backgroundColor: grant.organization.color }}>
+                      {grant.organization.abbrev}
+                    </div>
+                  )}
                   <div className="camera-access-org-info">
                     <div className="camera-access-org-name">{grant.organization.name}</div>
                     <div className="camera-access-org-meta">
@@ -332,205 +349,175 @@ export default function CamerasView({ venueName = 'Northwest High School' }: Cam
             </div>
           )}
         </div>
-      </div>
-    );
-  }
 
-  // Grant Access - Search Organizations
-  if (viewState === 'grant-search') {
-    return (
-      <div className="cameras-container">
-        <div className="camera-search-box">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5"/><path d="M14 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          <input
-            type="text"
-            className="camera-search-input"
-            placeholder="Search for an organization..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-          />
-        </div>
+        {/* Grant Access Modal */}
+        <Modal isOpen={showGrantModal} onClose={handleCloseGrantModal} title="Grant Camera Access">
+          {grantStep === 'search' && (
+            <div className="grant-modal-content">
+              <div className="camera-search-box">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5"/><path d="M14 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <input
+                  type="text"
+                  className="camera-search-input"
+                  placeholder="Search for an organization..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-        {searchQuery && (
-          <>
-            <div className="camera-search-results-label">{filteredOrgs.length} RESULT{filteredOrgs.length !== 1 ? 'S' : ''}</div>
-            
-            <div className="camera-search-results">
-              {filteredOrgs.map(org => (
-                <button key={org.id} className="camera-org-result" onClick={() => handleSelectOrg(org)}>
-                  <div className="camera-org-logo" style={{ backgroundColor: org.color }}>
-                    {org.abbrev}
+              {searchQuery && (
+                <>
+                  <div className="camera-search-results-label">{filteredOrgs.length} RESULT{filteredOrgs.length !== 1 ? 'S' : ''}</div>
+                  
+                  <div className="camera-search-results">
+                    {filteredOrgs.map(org => (
+                      <button key={org.id} className="camera-org-result" onClick={() => handleSelectOrg(org)}>
+                        {org.avatar ? (
+                          <div className="camera-org-avatar">
+                            <Image src={org.avatar} alt={org.name} width={40} height={40} style={{ borderRadius: '50%', objectFit: 'cover' }} />
+                          </div>
+                        ) : (
+                          <div className="camera-org-logo" style={{ backgroundColor: org.color }}>
+                            {org.abbrev}
+                          </div>
+                        )}
+                        <div className="camera-org-info">
+                          <div className="camera-org-name">{org.name}</div>
+                          <div className="camera-org-meta">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1"/><path d="M5 3V2a2 2 0 014 0v1" stroke="currentColor" strokeWidth="1"/></svg>
+                            {org.type} · {org.sport} · {org.teamCount} teams
+                          </div>
+                        </div>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </button>
+                    ))}
                   </div>
-                  <div className="camera-org-info">
-                    <div className="camera-org-name">{org.name}</div>
-                    <div className="camera-org-meta">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1"/><path d="M5 3V2a2 2 0 014 0v1" stroke="currentColor" strokeWidth="1"/></svg>
-                      {org.type} · {org.sport} · {org.teamCount} teams
+                </>
+              )}
+
+              <div className="camera-search-help">
+                <div className="camera-search-help-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M3 8h14M7 12h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                </div>
+                <div className="camera-search-help-content">
+                  <h4 className="camera-search-help-title">Don&apos;t see the org you&apos;re looking for?</h4>
+                  <p className="camera-search-help-desc">Send an invite by email. They&apos;ll choose which orgs and teams to apply this access to, and you&apos;ll give the final approval.</p>
+                  <button className="camera-invite-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M2 5l6 4 6-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    Invite by email
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {grantStep === 'configure' && selectedOrg && selectedCamera && (
+            <div className="grant-modal-content">
+              <div className="camera-grant-form">
+                {/* Organization */}
+                <div className="camera-grant-section">
+                  <div className="camera-grant-label">ORGANIZATION</div>
+                  <div className="camera-grant-org">
+                    {selectedOrg.avatar ? (
+                      <div className="camera-org-avatar">
+                        <Image src={selectedOrg.avatar} alt={selectedOrg.name} width={40} height={40} style={{ borderRadius: '50%', objectFit: 'cover' }} />
+                      </div>
+                    ) : (
+                      <div className="camera-org-logo" style={{ backgroundColor: selectedOrg.color }}>
+                        {selectedOrg.abbrev}
+                      </div>
+                    )}
+                    <div className="camera-org-info">
+                      <div className="camera-org-name">{selectedOrg.name}</div>
+                      <div className="camera-org-meta">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1"/><path d="M5 3V2a2 2 0 014 0v1" stroke="currentColor" strokeWidth="1"/></svg>
+                        {selectedOrg.type} · {selectedOrg.sport}
+                      </div>
                     </div>
                   </div>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        <div className="camera-search-help">
-          <div className="camera-search-help-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M3 8h14M7 12h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-          </div>
-          <div className="camera-search-help-content">
-            <h4 className="camera-search-help-title">Don&apos;t see the org you&apos;re looking for?</h4>
-            <p className="camera-search-help-desc">Send an invite by email. They&apos;ll choose which orgs and teams to apply this access to, and you&apos;ll give the final approval.</p>
-            <button className="camera-invite-btn">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M2 5l6 4 6-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-              Invite by email
-            </button>
-          </div>
-        </div>
-
-        <button className="camera-back-link" onClick={handleBack}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          Back to camera
-        </button>
-      </div>
-    );
-  }
-
-  // Grant Access - Configure Access
-  if (viewState === 'grant-configure' && selectedOrg && selectedCamera) {
-    const visibleTeams = selectedOrg.teams?.slice(0, 6) || [];
-    const moreCount = (selectedOrg.teams?.length || 0) - 6;
-
-    return (
-      <div className="cameras-container">
-        <div className="camera-grant-form">
-          {/* Organization */}
-          <div className="camera-grant-section">
-            <div className="camera-grant-label">ORGANIZATION</div>
-            <div className="camera-grant-org">
-              <div className="camera-org-logo" style={{ backgroundColor: selectedOrg.color }}>
-                {selectedOrg.abbrev}
-              </div>
-              <div className="camera-org-info">
-                <div className="camera-org-name">{selectedOrg.name}</div>
-                <div className="camera-org-meta">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1"/><path d="M5 3V2a2 2 0 014 0v1" stroke="currentColor" strokeWidth="1"/></svg>
-                  {selectedOrg.type} · {selectedOrg.sport}
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Camera */}
-          <div className="camera-grant-section">
-            <div className="camera-grant-label">CAMERA</div>
-            <div className="camera-grant-camera">
-              <div className="camera-grant-camera-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              </div>
-              <div className="camera-grant-camera-info">
-                <div className="camera-grant-camera-name">{selectedCamera.name}</div>
-                <div className="camera-grant-camera-location">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 6.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" stroke="currentColor" strokeWidth="1"/><path d="M6 11c2.5-2.5 4-4.5 4-6a4 4 0 10-8 0c0 1.5 1.5 3.5 4 6z" stroke="currentColor" strokeWidth="1"/></svg>
-                  {selectedCamera.venue}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Teams */}
-          <div className="camera-grant-section">
-            <div className="camera-grant-section-header">
-              <div className="camera-grant-label">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                TEAMS · ALL {selectedOrg.teams?.length || 0}
-              </div>
-              <button className="camera-grant-edit-link">Edit teams</button>
-            </div>
-            <div className="camera-grant-teams">
-              {visibleTeams.map(team => (
-                <span 
-                  key={team} 
-                  className={`camera-grant-team-chip ${selectedTeams.has(team) ? 'camera-grant-team-chip--selected' : ''}`}
-                  onClick={() => toggleTeam(team)}
-                >
-                  {team}
-                </span>
-              ))}
-              {moreCount > 0 && (
-                <span className="camera-grant-team-chip camera-grant-team-chip--more">+ {moreCount} more</span>
-              )}
-            </div>
-          </div>
-
-          {/* Access Window */}
-          <div className="camera-grant-section">
-            <div className="camera-grant-label">ACCESS WINDOW</div>
-            <div className="camera-grant-suggestion">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2"/><path d="M7 4v3l2 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-              {selectedOrg.name}&apos;s schedule suggests <strong>Aug 14 - Nov 20, 2026</strong>.
-            </div>
-            <div className="camera-grant-dates">
-              <div className="camera-grant-date-field">
-                <label>From</label>
-                <div className="camera-grant-date-input">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                  <input type="date" value={accessFromDate} onChange={(e) => setAccessFromDate(e.target.value)} />
-                </div>
-              </div>
-              <div className="camera-grant-date-field">
-                <label>To</label>
-                <div className="camera-grant-date-input">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                  <input type="date" value={accessToDate} onChange={(e) => setAccessToDate(e.target.value)} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recording Times */}
-          <div className="camera-grant-section">
-            <div className="camera-grant-label">ALLOWED RECORDING TIMES <span className="camera-grant-optional">(OPTIONAL)</span></div>
-            <p className="camera-grant-desc">Leave empty to allow recording any time during the access window. Add windows to restrict to specific days and times.</p>
-            
-            {recordingWindows.length === 0 ? (
-              <div className="camera-grant-no-restrictions">
-                No restrictions — recording allowed any time during the access window.
-              </div>
-            ) : (
-              <div className="camera-grant-windows">
-                {recordingWindows.map((w, i) => (
-                  <div key={i} className="camera-grant-window">
-                    {w.day}: {w.from} - {w.to}
-                    <button onClick={() => setRecordingWindows(prev => prev.filter((_, j) => j !== i))}>×</button>
+                {/* Camera */}
+                <div className="camera-grant-section">
+                  <div className="camera-grant-label">CAMERA</div>
+                  <div className="camera-grant-camera">
+                    <div className="camera-grant-camera-image">
+                      <Image src={selectedCamera.image} alt={selectedCamera.name} width={48} height={36} style={{ objectFit: 'contain' }} />
+                    </div>
+                    <div className="camera-grant-camera-info">
+                      <div className="camera-grant-camera-name">{selectedCamera.name}</div>
+                      <div className="camera-grant-camera-location">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 6.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" stroke="currentColor" strokeWidth="1"/><path d="M6 11c2.5-2.5 4-4.5 4-6a4 4 0 10-8 0c0 1.5 1.5 3.5 4 6z" stroke="currentColor" strokeWidth="1"/></svg>
+                        {selectedCamera.facility}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-            
-            <button className="camera-add-window-btn">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v8M3 7h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              Add window
-            </button>
-          </div>
+                </div>
 
-          {/* Footer */}
-          <div className="camera-grant-footer">
-            <button className="camera-back-link" onClick={handleBack}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Back
-            </button>
-            <button className="camera-confirm-btn" onClick={handleConfirmGrant}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333 2.667 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Grant access
-            </button>
-          </div>
-        </div>
+                {/* Teams */}
+                <div className="camera-grant-section">
+                  <div className="camera-grant-section-header">
+                    <div className="camera-grant-label">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 7a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM3 12.5c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                      TEAMS · ALL {selectedOrg.teams?.length || 0}
+                    </div>
+                    <button className="camera-grant-edit-link">Edit teams</button>
+                  </div>
+                  <div className="camera-grant-teams">
+                    {(selectedOrg.teams?.slice(0, 6) || []).map(team => (
+                      <span 
+                        key={team} 
+                        className={`camera-grant-team-chip ${selectedTeams.has(team) ? 'camera-grant-team-chip--selected' : ''}`}
+                        onClick={() => toggleTeam(team)}
+                      >
+                        {team}
+                      </span>
+                    ))}
+                    {((selectedOrg.teams?.length || 0) - 6) > 0 && (
+                      <span className="camera-grant-team-chip camera-grant-team-chip--more">+ {(selectedOrg.teams?.length || 0) - 6} more</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Access Window */}
+                <div className="camera-grant-section">
+                  <div className="camera-grant-label">ACCESS WINDOW</div>
+                  <div className="camera-grant-suggestion">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.2"/><path d="M7 4v3l2 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    {selectedOrg.name}&apos;s schedule suggests <strong>Aug 14 - Nov 20, 2026</strong>.
+                  </div>
+                  <div className="camera-grant-dates">
+                    <div className="camera-grant-date-field">
+                      <label>From</label>
+                      <div className="camera-grant-date-input">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                        <input type="date" value={accessFromDate} onChange={(e) => setAccessFromDate(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="camera-grant-date-field">
+                      <label>To</label>
+                      <div className="camera-grant-date-input">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.2"/><path d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                        <input type="date" value={accessToDate} onChange={(e) => setAccessToDate(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="camera-grant-footer">
+                  <Button buttonStyle="standard" buttonType="secondary" onClick={handleBackToSearch}>
+                    Back
+                  </Button>
+                  <Button buttonStyle="standard" buttonType="primary" onClick={handleConfirmGrant}>
+                    Grant access
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
       </div>
     );
   }

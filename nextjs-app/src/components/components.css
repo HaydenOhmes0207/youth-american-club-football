@@ -2580,11 +2580,15 @@
   padding: 16px 20px; background: #fff;
   border: 1px solid var(--u-color-line-subtle, #e5e7eb); border-radius: 8px;
 }
+.camera-access-org-avatar {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 50%; overflow: hidden;
+}
 .camera-access-org-logo {
-  width: 48px; height: 48px; flex-shrink: 0;
+  width: 40px; height: 40px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; font-family: var(--u-font-heading);
-  font-size: 14px; font-weight: 700; color: #fff;
+  border-radius: 50%; font-family: var(--u-font-heading);
+  font-size: 12px; font-weight: 700; color: #fff;
 }
 .camera-access-org-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .camera-access-org-name {
@@ -2634,11 +2638,15 @@
   cursor: pointer; transition: all 0.15s ease; text-align: left; width: 100%;
 }
 .camera-org-result:hover { background: #f9fafb; border-color: #d1d5db; }
+.camera-org-avatar {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 50%; overflow: hidden;
+}
 .camera-org-logo {
-  width: 48px; height: 48px; flex-shrink: 0;
+  width: 40px; height: 40px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; font-family: var(--u-font-heading);
-  font-size: 14px; font-weight: 700; color: #fff;
+  border-radius: 50%; font-family: var(--u-font-heading);
+  font-size: 12px; font-weight: 700; color: #fff;
 }
 .camera-org-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .camera-org-name {
@@ -2694,10 +2702,14 @@
 .camera-back-link:hover { text-decoration: underline; }
 .camera-back-link svg { color: var(--u-color-emphasis-background-contrast, #0273e3); }
 
+/* Grant Modal Content */
+.grant-modal-content {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
 /* Camera Grant Form */
 .camera-grant-form {
   display: flex; flex-direction: column; gap: 0;
-  background: #fff; border: 1px solid var(--u-color-line-subtle, #e5e7eb); border-radius: 8px;
 }
 .camera-grant-section {
   padding: 20px 24px;
@@ -2726,6 +2738,11 @@
 
 .camera-grant-org, .camera-grant-camera {
   display: flex; align-items: center; gap: 12px;
+}
+.camera-grant-camera-image {
+  width: 56px; height: 40px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
 }
 .camera-grant-camera-icon {
   width: 40px; height: 40px; flex-shrink: 0;
@@ -2831,10 +2848,9 @@
 .camera-add-window-btn svg { color: var(--u-color-emphasis-background-contrast, #0273e3); }
 
 .camera-grant-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; background: #f9fafb;
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  padding: 16px 0 0 0; margin-top: 8px;
   border-top: 1px solid var(--u-color-line-subtle, #e5e7eb);
-  border-radius: 0 0 8px 8px;
 }
 .camera-confirm-btn {
   display: flex; align-items: center; gap: 6px;
