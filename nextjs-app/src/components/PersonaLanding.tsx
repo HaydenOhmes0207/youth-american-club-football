@@ -25,8 +25,7 @@ export default function PersonaLanding({ onSelectPersona }: PersonaLandingProps)
         {/* Header */}
         <div className="persona-landing-header">
           <div className="persona-landing-logo">
-            <Image src="/icons/hudl-logo.svg" alt="Hudl" width={32} height={32} />
-            <span className="persona-landing-logo-text">Hudl</span>
+            <Image src="/images/hudl-logo.png" alt="Hudl" width={120} height={40} style={{ objectFit: 'contain' }} />
           </div>
           <h1 className="persona-landing-title">Director Spotlight Demo</h1>
           <p className="persona-landing-subtitle">Select a persona to continue</p>
