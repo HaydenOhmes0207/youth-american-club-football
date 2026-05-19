@@ -34,6 +34,7 @@ interface VenueOption {
   org?: string;
   isExternal: boolean;
   availableOnDate?: boolean;
+  hasCameraAccess?: boolean;
 }
 
 const MY_VENUES: VenueOption[] = [
@@ -45,7 +46,7 @@ const MY_VENUES: VenueOption[] = [
 ];
 
 const NETWORK_VENUES: VenueOption[] = [
-  { id: 'v-spartan', name: 'Spartan Field - Memorial Stadium', org: 'Northwest HS', isExternal: true, availableOnDate: true },
+  { id: 'v-spartan', name: 'Spartan Field - Memorial Stadium', org: 'Northwest HS', isExternal: true, availableOnDate: true, hasCameraAccess: true },
   { id: 'v-hawks', name: 'Hawks Field', org: 'Papillion-La Vista HS', isExternal: true, availableOnDate: false },
   { id: 'v-mustang', name: 'Mustang Stadium', org: 'Millard North HS', isExternal: true, availableOnDate: true },
 ];
@@ -222,10 +223,11 @@ interface ScheduleImportPanelProps {
   onClose: () => void;
   onImport: (events: CalendarEvent[]) => void;
   onManualSubmit?: (result: ManualEventResult) => void;
+  initialPhase?: Phase;
 }
 
-export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManualSubmit }: ScheduleImportPanelProps) {
-  const [phase, setPhase] = useState<Phase>('choose');
+export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManualSubmit, initialPhase }: ScheduleImportPanelProps) {
+  const [phase, setPhase] = useState<Phase>(initialPhase || 'choose');
   const [logEntries, setLogEntries] = useState<number>(0);
   const [sections, setSections] = useState<SportSection[]>([]);
   const [editingEvent, setEditingEvent] = useState<ImportEvent | null>(null);
@@ -250,12 +252,14 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
   const [selectedVenue, setSelectedVenue] = useState<VenueOption | null>(null);
   const [showVenueDropdown, setShowVenueDropdown] = useState(false);
   const [selectedAmenities, setSelectedAmenities] = useState<Set<string>>(new Set(['camera', 'scoreboard', 'pa']));
+  const [enableFocusRecording, setEnableFocusRecording] = useState(true);
+  const [enableLiveStream, setEnableLiveStream] = useState(true);
   const [isManualSubmitting, setIsManualSubmitting] = useState(false);
 
   // Reset state when panel opens
   useEffect(() => {
     if (isOpen) {
-      setPhase('choose');
+      setPhase(initialPhase || 'choose');
       setLogEntries(0);
       setSections([]);
       setEditingEvent(null);
@@ -276,6 +280,8 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
       setSelectedVenue(null);
       setShowVenueDropdown(false);
       setSelectedAmenities(new Set(['camera', 'scoreboard', 'pa']));
+      setEnableFocusRecording(true);
+      setEnableLiveStream(true);
       setIsManualSubmitting(false);
     }
   }, [isOpen]);
@@ -780,6 +786,33 @@ export default function ScheduleImportPanel({ isOpen, onClose, onImport, onManua
                                   </label>
                                 ))}
                               </div>
+                            </div>
+                          )}
+
+                          {/* Recording Options -- shown when venue has camera access */}
+                          {selectedVenue.hasCameraAccess && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <span style={{ fontFamily: 'var(--u-font-body)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--u-color-base-foreground-subtle, #607081)' }}>Recording Options</span>
+                              <label className="add-event-recording-toggle">
+                                <input type="checkbox" checked={enableFocusRecording} onChange={e => setEnableFocusRecording(e.target.checked)} />
+                                <span className="add-event-toggle-switch" />
+                                <span className="add-event-toggle-content">
+                                  <span className="add-event-toggle-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                                  </span>
+                                  <span className="add-event-toggle-label">Focus Recording</span>
+                                </span>
+                              </label>
+                              <label className="add-event-recording-toggle">
+                                <input type="checkbox" checked={enableLiveStream} onChange={e => setEnableLiveStream(e.target.checked)} />
+                                <span className="add-event-toggle-switch" />
+                                <span className="add-event-toggle-content">
+                                  <span className="add-event-toggle-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                  </span>
+                                  <span className="add-event-toggle-label">Live Stream</span>
+                                </span>
+                              </label>
                             </div>
                           )}
                         </div>

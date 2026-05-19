@@ -17,7 +17,6 @@ import ProgramDetailView from './ProgramDetailView';
 import type { Registrant } from './ProgramDetailView';
 import MessageComposePanel from './MessageComposePanel';
 import type { MessagePayload } from './MessageComposePanel';
-import AddEventPanel from './AddEventPanel';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import BookingRequestPanel from './BookingRequestPanel';
 import type { BookingRequest } from './BookingRequestPanel';
@@ -748,35 +747,29 @@ export default function NavigationWrapper({ onBackToLanding }: NavigationWrapper
     );
   } else if (activeRoute === '/schedule' && showAddEventPanel) {
     overlay = (
-      <AddEventPanel
+      <ScheduleImportPanel
         isOpen={showAddEventPanel}
         onClose={() => setShowAddEventPanel(false)}
-        onSubmit={(event) => {
+        onImport={handleImport}
+        onManualSubmit={(result) => {
           // Add the event to the calendar
-          // Parse date string as local time by adding T00:00:00
-          const [year, month, day] = event.date.split('-').map(Number);
-          const eventDate = new Date(year, month - 1, day);
-          // Map 'other' to 'event' for CalendarEvent type compatibility
-          const eventTypeMap: Record<string, 'game' | 'practice' | 'event'> = {
-            game: 'game',
-            practice: 'practice',
-            other: 'event',
-          };
+          const eventDate = new Date(2026, 10, 7); // Nov 7, 2026
           const newEvent: CalendarEvent = {
             id: `manual-${Date.now()}`,
-            title: event.eventType === 'game' ? `vs ${event.opponent}` : event.title,
+            title: result.title,
             date: eventDate,
-            time: event.startTime,
-            endTime: event.endTime,
+            time: result.timeBlock.split(' - ')[0] || '10:00 AM',
+            endTime: result.timeBlock.split(' - ')[1] || '12:00 PM',
             sport: 'Football',
-            type: eventTypeMap[event.eventType] || 'event',
-            location: event.location,
+            type: 'game',
+            location: result.location,
             color: '#16a34a',
           };
           setImportedEvents(prev => [...prev, newEvent]);
           setShowAddEventPanel(false);
           showToast('Event added to schedule', 'success');
         }}
+        initialPhase="manual"
       />
     );
   } else if (activeRoute === '/facilities' && showBookingPanel) {
