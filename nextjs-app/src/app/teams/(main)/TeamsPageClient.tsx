@@ -266,7 +266,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
               size="medium"
               onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}`)}
             >
-              Manage Teams
+              Add Draft Teams
             </Button>
           ) : (
             <>
@@ -284,7 +284,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
                 size="medium"
                 onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}`)}
               >
-                Manage Teams
+                Add Draft Teams
               </Button>
             </>
           )}
