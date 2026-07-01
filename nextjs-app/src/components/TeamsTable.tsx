@@ -48,10 +48,19 @@ function formatGender(gender: string): string {
   return genderMap[gender.toLowerCase()] || gender;
 }
 
+function getAcademicYear(seasonName: string): string {
+  const match = seasonName.match(/(Fall|Spring)\s+(\d{4})/i);
+  if (!match) return seasonName;
+  const term = match[1].toLowerCase();
+  const year = parseInt(match[2], 10);
+  return term === 'fall' ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+}
+
 function getSeasonName(seasonId: string | null, seasons: Season[]): string {
   if (!seasonId) return '—';
   const season = seasons.find(s => s.id === seasonId);
-  return season?.name || '—';
+  if (!season) return '—';
+  return getAcademicYear(season.name);
 }
 
 // Sport-specific SVG paths for the circular icon

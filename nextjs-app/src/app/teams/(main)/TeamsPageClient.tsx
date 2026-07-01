@@ -61,6 +61,14 @@ const maryvilleTeams: TeamWithStats[] = [
   { id: 'mhs-34', title: 'Varsity Tennis (M)',       sport: 'tennis',       gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 12, maxRosterSize: 14, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
 ];
 
+function getAcademicYear(seasonName: string): string {
+  const match = seasonName.match(/(Fall|Spring)\s+(\d{4})/i);
+  if (!match) return seasonName;
+  const term = match[1].toLowerCase();
+  const year = parseInt(match[2], 10);
+  return term === 'fall' ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+}
+
 function formatGender(gender: string): string {
   const genderMap: Record<string, string> = {
     male: 'Male',
@@ -124,27 +132,54 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [filterGender, setFilterGender] = useState('');
   const [filterSport, setFilterSport] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterSeason, setFilterSeason] = useState('');
 
   const selectedSeason = seasons.find(s => s.id === selectedSeasonId);
 
-  // High school uses its own static mock data; club uses server-loaded teams
+  // Show all teams across all seasons so the year column and filter are meaningful
   const activeTeamPool = isHighSchool ? maryvilleTeams : localTeams;
-  const seasonFilteredTeams = isHighSchool
-    ? activeTeamPool
-    : activeTeamPool.filter(team => team.seasonId === selectedSeasonId);
+  const seasonFilteredTeams = activeTeamPool;
 
   const STATUS_ORDER: Record<string, number> = { draft: 0, active: 1, archived: 2 };
 
-  const filteredTeams = seasonFilteredTeams.filter(team => {
+  const preStatusFiltered = seasonFilteredTeams.filter(team => {
     if (searchQuery.trim() && !team.title.toLowerCase().includes(searchQuery.toLowerCase()) && !team.sport.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (filterGender && team.gender !== filterGender) return false;
     if (filterSport && team.sport !== filterSport) return false;
+    if (filterSeason) {
+      if (isHighSchool) {
+        if (team.grades !== filterSeason) return false;
+      } else {
+        if (team.seasonId !== filterSeason) return false;
+      }
+    }
+    return true;
+  });
+  const statusCounts = {
+    active: preStatusFiltered.filter(t => t.status === 'active').length,
+    draft: preStatusFiltered.filter(t => t.status === 'draft').length,
+    archived: preStatusFiltered.filter(t => t.status === 'archived').length,
+  };
+
+  const filteredTeams = preStatusFiltered.filter(team => {
     if (filterStatus && team.status !== filterStatus) return false;
     return true;
   }).sort((a, b) => (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99));
 
   const uniqueSports = Array.from(new Set(seasonFilteredTeams.map((t: { sport: string }) => t.sport).filter(Boolean)));
   const uniqueGenders = Array.from(new Set(seasonFilteredTeams.map((t: { gender: string }) => t.gender).filter(Boolean)));
+  const combinedSeasonOptions = isHighSchool
+    ? Array.from(new Set(seasonFilteredTeams.map((t: { grades: string | null }) => t.grades).filter(Boolean)) as Set<string>)
+        .map(g => ({ value: g, label: g }))
+    : seasons.map(s => {
+        const match = s.name.match(/(Fall|Spring|Winter)\s+(\d{4})/i);
+        if (!match) return { value: s.id, label: s.name };
+        const term = match[1];
+        const year = parseInt(match[2], 10);
+        const termLower = term.toLowerCase();
+        const yearRange = termLower === 'fall' ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+        return { value: s.id, label: `${term} ${yearRange}` };
+      });
 
   const handleTeamSelectionChange = (teamId: string, checked: boolean, index: number, shiftKey: boolean) => {
     if (shiftKey && lastClickedIndex !== null) {
@@ -391,6 +426,12 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             extraFilters={
               <>
                 <Select
+                  options={[{ value: '', label: 'Season' }, ...combinedSeasonOptions]}
+                  value={filterSeason}
+                  onChange={setFilterSeason}
+                  placeholder="Season"
+                />
+                <Select
                   options={[{ value: '', label: 'Sport' }, ...uniqueSports.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))]}
                   value={filterSport}
                   onChange={setFilterSport}
@@ -402,19 +443,8 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
                   onChange={setFilterGender}
                   placeholder="Gender"
                 />
-                <Select
-                  options={[
-                    { value: '', label: 'Status' },
-                    { value: 'active', label: 'Active' },
-                    { value: 'draft', label: 'Draft' },
-                    { value: 'archived', label: 'Archived' },
-                  ]}
-                  value={filterStatus}
-                  onChange={setFilterStatus}
-                  placeholder="Status"
-                />
-                {(filterGender || filterSport || filterStatus) && (
-                  <button className="filter-clear" onClick={() => { setFilterGender(''); setFilterSport(''); setFilterStatus(''); }}>
+                {(filterGender || filterSport || filterSeason) && (
+                  <button className="filter-clear" onClick={() => { setFilterGender(''); setFilterSport(''); setFilterSeason(''); }}>
                     Clear filters
                   </button>
                 )}
@@ -455,6 +485,26 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             />
           )}
         </div>
+        <div className="status-tabs">
+          {[
+            { value: '', label: 'All' },
+            { value: 'active', label: 'Active' },
+            { value: 'draft', label: 'Draft' },
+            { value: 'archived', label: 'Archived' },
+          ].map(tab => (
+            <button
+              key={tab.value}
+              className={`status-tab ${filterStatus === tab.value ? 'status-tab--selected' : ''}`}
+              onClick={() => setFilterStatus(tab.value)}
+            >
+              {tab.label}
+              <span className="status-tab-count">
+                {tab.value === '' ? preStatusFiltered.length : statusCounts[tab.value as keyof typeof statusCounts]}
+              </span>
+            </button>
+          ))}
+        </div>
+
         {draftTeams.length > 0 && (
           <div className="draft-notice">
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: 'var(--u-color-background-canvas, #eff0f0)', flexShrink: 0, marginTop: 1 }}>
@@ -509,6 +559,62 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
 
 
+
+        .status-tabs {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: var(--u-space-half, 8px);
+        }
+
+        .status-tab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 6px 14px;
+          border-radius: 9999px;
+          border: none;
+          background: var(--u-color-background-canvas, #eff0f0);
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-text-small, 12px);
+          font-weight: var(--u-font-weight-bold, 700);
+          color: var(--u-color-base-foreground, #36485c);
+          cursor: pointer;
+          transition: background 0.15s ease, color 0.15s ease;
+          white-space: nowrap;
+        }
+
+        .status-tab:hover {
+          background: var(--u-color-background-default, #e8eaec);
+        }
+
+        .status-tab--selected {
+          background: var(--u-color-base-foreground-contrast, #071c31);
+          color: #ffffff;
+        }
+
+        .status-tab--selected:hover {
+          background: var(--u-color-base-foreground-contrast, #071c31);
+        }
+
+        .status-tab-count {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          border-radius: 9999px;
+          background: rgba(0, 0, 0, 0.12);
+          font-size: 11px;
+          font-weight: var(--u-font-weight-bold, 700);
+          line-height: 1;
+        }
+
+        .status-tab--selected .status-tab-count {
+          background: rgba(255, 255, 255, 0.2);
+        }
 
         .teams-content {
           display: flex;
