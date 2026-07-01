@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import SubNavItem from './SubNavigation';
 import Button from './Button';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 
 // Icon paths for public folder
 const HomeIcon = '/icons/home.svg';
@@ -141,6 +142,14 @@ const iconMap: Record<string, string> = {
   messages: MessagesIcon,
   notifications: NotificationsIcon,
   placeholder: PlaceholderIcon,
+  // Elevation / Hudl sport nav icons
+  watchnow: PlaceholderIcon,
+  library: PlaceholderIcon,
+  reports: PlaceholderIcon,
+  exchanges: PlaceholderIcon,
+  highlights: PlaceholderIcon,
+  recruiting: PlaceholderIcon,
+  upload: PlaceholderIcon,
 };
 
 const LegacyNavigation: React.FC<LegacyNavigationProps> = ({ 
@@ -152,6 +161,7 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const { setWorkspaceType } = useWorkspace();
   
   // Get user display info
   const userName = currentUser 
@@ -188,15 +198,21 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
       return teamRouteMap[path] || 'Library';
     }
     
-    // Organization workspace routes
+    // Organization workspace routes — exact match first
     const pathWithoutSlash = path.replace('/', '') || '';
     const navItem = navItems.find(item => item.route?.replace('/', '') === pathWithoutSlash);
     if (navItem) return navItem.label;
-    // Check children
+    // Check children exact match
     for (const item of navItems) {
       const child = item.children.find(c => c.route?.replace('/', '') === pathWithoutSlash);
       if (child) return child.label;
     }
+    // Prefix match — keep the parent nav item active for sub-routes
+    // e.g. /teams/t-1 should keep "Teams" active
+    const prefixMatch = navItems.find(
+      item => item.route && path.startsWith(item.route + '/')
+    );
+    if (prefixMatch) return prefixMatch.label;
     return navItems[0]?.label || 'Programs';
   };
   
@@ -257,43 +273,9 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
       ];
 
   const teamNavItems: NavItem[] = [
-    { id: 'Library', icon: PlaceholderIcon, label: 'Library', hasPill: false, pillText: '', route: '/team/library' },
-    { id: 'Reports', icon: PlaceholderIcon, label: 'Reports', hasPill: false, pillText: '', route: '/team/reports' },
-    { id: 'Exchanges', icon: PlaceholderIcon, label: 'Exchanges', hasPill: false, pillText: '', route: '/team/exchanges' },
-    {
-      id: 'Team',
-      icon: PlaceholderIcon,
-      label: 'Team',
-      route: '/team/profile',
-      children: [
-        { id: 'Team Profile', label: 'Team Profile', hasPill: false, pillText: '', route: '/team/profile' },
-        { id: 'Manage Team', label: 'Manage Team', hasPill: false, pillText: '', route: '/team/manage' },
-        { id: 'Schedule', label: 'Schedule', hasPill: false, pillText: '', route: '/team/schedule' },
-        { id: 'Team Settings', label: 'Team Settings', hasPill: false, pillText: '', route: '/team/settings' },
-      ],
-    },
-    {
-      id: 'Highlights',
-      icon: PlaceholderIcon,
-      label: 'Highlights',
-      route: '/team/highlights',
-      children: [
-        { id: 'Team Highlights', label: 'Team Highlights', hasPill: false, pillText: '', route: '/team/highlights' },
-        { id: 'Your Highlights', label: 'Your Highlights', hasPill: false, pillText: '', route: '/team/highlights/yours' },
-      ],
-    },
-    {
-      id: 'Recruiting',
-      icon: PlaceholderIcon,
-      label: 'Recruiting',
-      route: '/team/recruiting',
-      children: [
-        { id: 'Sharing', label: 'Sharing', hasPill: false, pillText: '', route: '/team/recruiting/sharing' },
-        { id: 'College Search', label: 'College Search', hasPill: false, pillText: '', route: '/team/recruiting/college-search' },
-        { id: 'Verify Athletes', label: 'Verify Athletes', hasPill: false, pillText: '', route: '/team/recruiting/verify' },
-        { id: 'Recruiting Settings', label: 'Recruiting Settings', hasPill: false, pillText: '', route: '/team/recruiting/settings' },
-      ],
-    },
+    { id: 'Home',     icon: HomeIcon,     label: 'Home',     hasPill: false, pillText: '', route: '/'         },
+    { id: 'Teams',    icon: TeamsIcon,    label: 'Teams',    hasPill: false, pillText: '', route: '/teams'    },
+    { id: 'Programs', icon: ProgramsIcon, label: 'Programs', hasPill: false, pillText: '', route: '/programs' },
   ];
 
   const bottomNavItems: NavItem[] = [
@@ -313,6 +295,16 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
     avatar: organization?.avatar || getInitials(organization?.name || 'ORG'),
     primaryColor: organization?.primary_color,
     secondaryColor: organization?.secondary_color,
+  };
+
+  const maryvilleWorkspace: Workspace = {
+    id: 'org-maryville',
+    name: 'Maryville High School',
+    role: 'Director',
+    type: 'organization',
+    avatar: 'MH',
+    primaryColor: '#003087',
+    secondaryColor: '#FFD700',
   };
 
   // Map database teams to workspace format
@@ -1709,10 +1701,11 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedOrg(orgWorkspace);
-                      setActiveItem('Programs');
+                      setWorkspaceType('club');
+                      setActiveItem('Home');
                       setOpenGroups([]);
                       setIsOrgPopoverOpen(false);
-                      router.push('/programs');
+                      router.push(pathname);
                     }}
                   >
                     <div className="org-popover-item-wrapper position-top">
@@ -1733,13 +1726,19 @@ const LegacyNavigation: React.FC<LegacyNavigationProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedOrg(workspace);
-                          setActiveItem('Library');
+                          setWorkspaceType(workspace.id === 'team-maryville' ? 'highschool' : 'club');
+                          setActiveItem('Home');
                           setOpenGroups([]);
                           setIsOrgPopoverOpen(false);
-                          router.push('/team/library');
+                          router.push(pathname);
                         }}
                       >
                         <div className={`org-popover-item-wrapper position-${workspace.position?.toLowerCase()}`}>
+                          {(workspace.position === 'Single') && (
+                            <div className="org-popover-avatar">
+                              <img src={workspace.avatar || HudlHighSchoolLogo} alt={workspace.name} />
+                            </div>
+                          )}
                           {workspace.position === 'Middle' && (
                             <>
                               <div className="org-popover-line org-popover-line-above" />

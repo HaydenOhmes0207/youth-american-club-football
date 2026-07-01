@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Select from './Select';
 import Icon from './Icon';
 
@@ -24,6 +24,9 @@ interface ToolbarProps {
   onExport?: () => void;
   showFilter?: boolean;
   showExport?: boolean;
+  extraFilters?: React.ReactNode;
+  viewMode?: 'list' | 'grid';
+  onViewModeChange?: (mode: 'list' | 'grid') => void;
 }
 
 
@@ -45,6 +48,9 @@ export default function Toolbar({
   onExport,
   showFilter = true,
   showExport = true,
+  extraFilters,
+  viewMode,
+  onViewModeChange,
 }: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -57,10 +63,42 @@ export default function Toolbar({
   return (
     <div className="toolbar">
       <div className="toolbar-left">
+        {viewMode !== undefined && onViewModeChange && (
+          <div className="view-toggle">
+            <button
+              className={`view-toggle-btn${viewMode === 'list' ? ' view-toggle-btn--active' : ''}`}
+              onClick={() => onViewModeChange('list')}
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
+            >
+              {/* List icon */}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3.5" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+                <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+                <rect x="2" y="11" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+              </svg>
+            </button>
+            <button
+              className={`view-toggle-btn${viewMode === 'grid' ? ' view-toggle-btn--active' : ''}`}
+              onClick={() => onViewModeChange('grid')}
+              aria-label="Grid view"
+              aria-pressed={viewMode === 'grid'}
+            >
+              {/* Grid icon */}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+                <rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+                <rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+                <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        )}
+
         {showFilter && (
           <>
-            <button 
-              className="toolbar-icon-btn" 
+            <button
+              className="toolbar-icon-btn"
               onClick={onFilter}
               aria-label="Filter"
             >
@@ -69,7 +107,7 @@ export default function Toolbar({
             <div className="toolbar-divider" />
           </>
         )}
-        
+
         <div className="toolbar-segments">
           {segments.map((segment, index) => (
             <Select
@@ -80,6 +118,7 @@ export default function Toolbar({
               onChange={segment.onChange}
             />
           ))}
+          {extraFilters}
         </div>
       </div>
 
@@ -118,6 +157,49 @@ export default function Toolbar({
           display: flex;
           align-items: center;
           gap: var(--u-space-three-quarter, 12px);
+        }
+
+        .view-toggle {
+          display: flex;
+          align-items: center;
+          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+          border-radius: 4px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .view-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border: none;
+          background: var(--u-color-background-container, #fefefe);
+          color: var(--u-color-base-foreground-subtle, #607081);
+          cursor: pointer;
+          transition: background 0.12s ease, color 0.12s ease;
+          position: relative;
+        }
+
+        .view-toggle-btn + .view-toggle-btn::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          bottom: 6px;
+          width: 1px;
+          background: var(--u-color-line-subtle, #c4c6c8);
+        }
+
+        .view-toggle-btn:hover {
+          background: var(--u-color-background-canvas, #eff0f0);
+          color: var(--u-color-base-foreground, #36485c);
+        }
+
+        .view-toggle-btn--active {
+          background: var(--u-color-background-canvas, #eff0f0);
+          color: var(--u-color-base-foreground-contrast, #071c31);
         }
 
         .toolbar-right {

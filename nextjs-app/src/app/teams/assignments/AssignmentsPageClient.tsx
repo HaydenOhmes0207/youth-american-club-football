@@ -78,6 +78,7 @@ export default function AssignmentsPageClient({
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedRegistrationId, setSelectedRegistrationId] = useState<string>('');
+  const [selectedPreviousTeamTitle, setSelectedPreviousTeamTitle] = useState<string>('');
   const [athleteSearch, setAthleteSearch] = useState<string>('');
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
   const [lastClickedAthleteIndex, setLastClickedAthleteIndex] = useState<number | null>(null);
@@ -123,6 +124,14 @@ export default function AssignmentsPageClient({
   // Filter teams by selected season
   const filteredTeams = teams.filter(team => team.seasonId === selectedSeasonId);
 
+  // Find the previous season to offer populate-from action
+  const seasonIndex = seasons.findIndex(s => s.id === selectedSeasonId);
+  const previousSeason = seasonIndex > 0 ? seasons[seasonIndex - 1] : null;
+
+  // For a given team, find athletes whose previousTeamTitle matches — these are carryover candidates
+  const getPreviousSeasonAthletes = (teamTitle: string) =>
+    athletes.filter(a => a.previousTeamTitle === teamTitle);
+
   // Filter registrations by selected program
   const filteredRegistrations = selectedProgramId
     ? registrations.filter(r => r.programId === selectedProgramId)
@@ -133,8 +142,13 @@ export default function AssignmentsPageClient({
 
   const handleProgramChange = (programId: string) => {
     setSelectedProgramId(programId);
-    // Reset registration when program changes
     setSelectedRegistrationId('');
+    setSelectedPreviousTeamTitle('');
+  };
+
+  const handleRegistrationChange = (registrationId: string) => {
+    setSelectedRegistrationId(registrationId);
+    setSelectedPreviousTeamTitle('');
   };
 
   const handleTeamSelect = (teamId: string, index: number, shiftKey: boolean) => {
@@ -233,16 +247,29 @@ export default function AssignmentsPageClient({
               {selectedTeamIds.map(teamId => {
                 const team = filteredTeams.find(t => t.id === teamId);
                 if (!team) return null;
+                const isTeamEmpty = (teamAssignments[team.id]?.length || 0) === 0;
+                const carryoverAthletes = getPreviousSeasonAthletes(team.title);
+                const canPopulate = isTeamEmpty && previousSeason && carryoverAthletes.length > 0;
                 return (
                   <TeamCard
                     key={team.id}
                     teamId={team.id}
                     teamName={team.title}
                     avatar={team.avatar}
+                    status={team.seasonId === 'season-1' ? 'archived' : team.status}
                     assignedCount={teamAssignments[team.id]?.length || 0}
                     invitedCount={0}
                     acceptedCount={0}
                     declinedCount={0}
+                    populateFromSeasonName={canPopulate ? `${previousSeason.name} Season` : undefined}
+                    onPopulateFromPreviousSeason={canPopulate ? () => {
+                      const newIds = carryoverAthletes.map(a => a.submissionId);
+                      setTeamAssignments(prev => ({
+                        ...prev,
+                        [team.id]: Array.from(new Set([...(prev[team.id] || []), ...newIds])),
+                      }));
+                      showToast(`${newIds.length} ${newIds.length === 1 ? 'athlete' : 'athletes'} added from ${previousSeason.name} Season`, 'success');
+                    } : undefined}
                     assignedAthletes={(teamAssignments[team.id] || []).map(athleteId => {
                       const athlete = athletes.find(a => a.submissionId === athleteId);
                       return athlete ? {
@@ -285,16 +312,14 @@ export default function AssignmentsPageClient({
                         showToast(result.error || 'Failed to assign athletes', 'error');
                       }
                     }}
-                    onRemoveAthlete={async (athleteId) => {
-                      // Remove athlete from this team
+                    onRemoveAthlete={selectedSeasonId === 'season-1' ? undefined : async (athleteId) => {
                       setTeamAssignments(prev => ({
                         ...prev,
                         [team.id]: (prev[team.id] || []).filter(id => id !== athleteId),
                       }));
-                      
-                      // Save to database - pass both teamId and submissionId
+
                       const result = await unassignAthleteFromTeam(team.id, athleteId);
-                      
+
                       if (result.success) {
                         showToast('Athlete removed from team', 'success');
                       } else {
@@ -317,16 +342,33 @@ export default function AssignmentsPageClient({
             // Get all assigned athlete IDs
             const allAssignedIds = Object.values(teamAssignments).flat();
             
-            // Filter athletes by selected registration (keep assigned athletes visible)
+            // Determine if selected program is from a previous season (already ended)
+            const selectedProgram = programs.find(p => p.id === selectedProgramId);
+            const isPreviousSeason = !!selectedProgram?.eventDates?.end && new Date(selectedProgram.eventDates.end) < new Date();
+
+            // Athletes in the selected registration
             const registrationAthletes = selectedRegistrationId
               ? athletes.filter(a => a.registrationId === selectedRegistrationId)
               : [];
-            
-            const athleteCount = registrationAthletes.length;
-            const isSearchDisabled = athleteCount === 0;
-            
-            // Filter athletes by search query
-            const filteredAthletes = registrationAthletes.filter(athlete => {
+
+            // Previous team options derived from registration athletes
+            const previousTeamTitles = Array.from(
+              new Set(registrationAthletes.map(a => a.previousTeamTitle).filter((t): t is string => !!t))
+            ).sort();
+            const previousTeamOptions = [
+              { value: '', label: 'All previous teams' },
+              ...previousTeamTitles.map(t => ({ value: t, label: t })),
+            ];
+
+            // Apply previous-team filter (only relevant for previous seasons)
+            const teamFilteredAthletes = isPreviousSeason && selectedPreviousTeamTitle
+              ? registrationAthletes.filter(a => a.previousTeamTitle === selectedPreviousTeamTitle)
+              : registrationAthletes;
+
+            const athleteCount = teamFilteredAthletes.length;
+            const isSearchDisabled = registrationAthletes.length === 0;
+
+            const filteredAthletes = teamFilteredAthletes.filter(athlete => {
               const fullName = `${athlete.firstName} ${athlete.lastName}`.toLowerCase();
               return fullName.includes(athleteSearch.toLowerCase());
             });
@@ -374,13 +416,22 @@ export default function AssignmentsPageClient({
                   <Select
                     options={registrationOptions}
                     value={selectedRegistrationId}
-                    onChange={setSelectedRegistrationId}
+                    onChange={handleRegistrationChange}
                     placeholder="Select Registration"
                     fullWidth
                     disabled={!selectedProgramId}
                     searchable
                     searchPlaceholder="Search registrations..."
                   />
+                  {selectedRegistrationId && isPreviousSeason && previousTeamTitles.length > 0 && (
+                    <Select
+                      options={previousTeamOptions}
+                      value={selectedPreviousTeamTitle}
+                      onChange={setSelectedPreviousTeamTitle}
+                      placeholder="Team"
+                      fullWidth
+                    />
+                  )}
                   <div className={`search-input ${isSearchDisabled ? 'search-input--disabled' : ''}`}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -399,47 +450,84 @@ export default function AssignmentsPageClient({
                 <div className="right-rail-athletes">
                   {selectedRegistrationId && (
                     <div className="athlete-list">
-                      {filteredAthletes.map((athlete, index) => {
-                        const isAssigned = allAssignedIds.includes(athlete.submissionId);
-                        // Get teams this athlete is assigned to in the current season
-                        const athleteTeams = athlete.teamAssignments
-                          .filter(ta => ta.teamSeasonId === selectedSeasonId)
-                          .map(ta => {
-                            const team = teams.find(t => t.id === ta.teamId);
-                            return team ? {
-                              id: team.id,
-                              name: team.title,
-                              avatar: team.avatar,
-                            } : null;
-                          })
-                          .filter((t): t is { id: string; name: string; avatar: string | null } => t !== null);
+                      {(() => {
+                        // Group athletes: returning players by previous team, new players last
+                        const groups: Map<string, typeof filteredAthletes> = new Map();
+                        const newPlayers: typeof filteredAthletes = [];
+
+                        filteredAthletes.forEach(athlete => {
+                          if (athlete.previousTeamTitle) {
+                            const group = groups.get(athlete.previousTeamTitle) ?? [];
+                            group.push(athlete);
+                            groups.set(athlete.previousTeamTitle, group);
+                          } else {
+                            newPlayers.push(athlete);
+                          }
+                        });
+
+                        const hasReturning = groups.size > 0;
+
+                        const renderAthleteCard = (athlete: typeof filteredAthletes[0], index: number) => {
+                          const isAssigned = allAssignedIds.includes(athlete.submissionId);
+                          const athleteTeams = athlete.teamAssignments
+                            .filter(ta => ta.teamSeasonId === selectedSeasonId)
+                            .map(ta => {
+                              const team = teams.find(t => t.id === ta.teamId);
+                              return team ? { id: team.id, name: team.title, avatar: team.avatar } : null;
+                            })
+                            .filter((t): t is { id: string; name: string; avatar: string | null } => t !== null);
+                          return (
+                            <AthleteCard
+                              key={athlete.submissionId}
+                              name={`${athlete.firstName} ${athlete.lastName}`}
+                              date={athlete.birthdate}
+                              status={isAssigned ? 'assigned' : undefined}
+                              isSelected={selectedAthleteIds.includes(athlete.submissionId)}
+                              onSelect={(e) => handleAthleteSelect(athlete.submissionId, index, e.shiftKey)}
+                              showCheckbox={true}
+                              draggable={true}
+                              teams={athleteTeams}
+                              onDragStart={() => {
+                                const athletesToDrag = selectedAthleteIds.includes(athlete.submissionId)
+                                  ? selectedAthleteIds
+                                  : [athlete.submissionId];
+                                setDraggedAthleteIds(athletesToDrag);
+                                setIsDragging(true);
+                              }}
+                              onDragEnd={() => {
+                                setIsDragging(false);
+                                setDraggedAthleteIds([]);
+                              }}
+                            />
+                          );
+                        };
+
+                        let globalIndex = 0;
                         return (
-                          <AthleteCard
-                            key={athlete.submissionId}
-                            name={`${athlete.firstName} ${athlete.lastName}`}
-                            date={athlete.birthdate}
-                            status={isAssigned ? 'assigned' : undefined}
-                            isSelected={selectedAthleteIds.includes(athlete.submissionId)}
-                            onSelect={(e) => handleAthleteSelect(athlete.submissionId, index, e.shiftKey)}
-                            showCheckbox={true}
-                            draggable={true}
-                            teams={athleteTeams}
-                            onDragStart={() => {
-                              // If this athlete is selected, drag all selected athletes
-                              // Otherwise, drag just this one
-                              const athletesToDrag = selectedAthleteIds.includes(athlete.submissionId)
-                                ? selectedAthleteIds
-                                : [athlete.submissionId];
-                              setDraggedAthleteIds(athletesToDrag);
-                              setIsDragging(true);
-                            }}
-                            onDragEnd={() => {
-                              setIsDragging(false);
-                              setDraggedAthleteIds([]);
-                            }}
-                          />
+                          <>
+                            {hasReturning && Array.from(groups.entries()).map(([teamName, groupAthletes]) => (
+                              <div key={teamName} className="athlete-group">
+                                <div className="athlete-group-header">
+                                  <span className="athlete-group-label">2025 {teamName}</span>
+                                  <span className="athlete-group-count">{groupAthletes.length}</span>
+                                </div>
+                                {groupAthletes.map(athlete => renderAthleteCard(athlete, globalIndex++))}
+                              </div>
+                            ))}
+                            {newPlayers.length > 0 && (
+                              <div className="athlete-group">
+                                {hasReturning && (
+                                  <div className="athlete-group-header">
+                                    <span className="athlete-group-label">New Players</span>
+                                    <span className="athlete-group-count">{newPlayers.length}</span>
+                                  </div>
+                                )}
+                                {newPlayers.map(athlete => renderAthleteCard(athlete, globalIndex++))}
+                              </div>
+                            )}
+                          </>
                         );
-                      })}
+                      })()}
                     </div>
                   )}
                 </div>
@@ -566,6 +654,36 @@ export default function AssignmentsPageClient({
           flex: 1;
           overflow-y: auto;
           min-height: 0;
+        }
+
+        .athlete-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--u-space-quarter, 4px);
+        }
+
+        .athlete-group-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: var(--u-space-quarter, 4px) var(--u-space-half, 8px);
+          background: var(--u-color-background-canvas, #eff0f0);
+          border-radius: var(--u-border-radius-small, 4px);
+          margin-bottom: 2px;
+        }
+
+        .athlete-group-label {
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-150, 12px);
+          font-weight: 600;
+          color: var(--u-color-base-foreground, #36485c);
+          letter-spacing: 0.02em;
+        }
+
+        .athlete-group-count {
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-150, 12px);
+          color: var(--u-color-base-foreground-subtle, #7a8fa6);
         }
 
         .rail-header {

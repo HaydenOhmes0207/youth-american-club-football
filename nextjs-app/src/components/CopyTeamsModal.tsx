@@ -15,11 +15,11 @@ interface CopyTeamsModalProps {
   sourceSeasonId: string;
   seasons: Season[];
   onSuccess?: (newTeams: TeamWithStats[]) => void;
+  defaultTargetSeasonId?: string;
 }
 
 interface CopyOptions {
   name: boolean;
-  colors: boolean;
   avatar: boolean;
   sport: boolean;
   gender: boolean;
@@ -33,17 +33,18 @@ export default function CopyTeamsModal({
   sourceSeasonId,
   seasons,
   onSuccess,
+  defaultTargetSeasonId,
 }: CopyTeamsModalProps) {
   const { showToast } = useToast();
   const [targetSeasonId, setTargetSeasonId] = useState('');
   const [copyOptions, setCopyOptions] = useState<CopyOptions>({
     name: true,
-    colors: true,
     avatar: true,
     sport: true,
     gender: true,
     grade: true,
   });
+  const [includeAthletes, setIncludeAthletes] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,10 +52,15 @@ export default function CopyTeamsModal({
   const availableSeasons = seasons;
 
   useEffect(() => {
-    if (isOpen && sourceSeasonId) {
-      setTargetSeasonId(sourceSeasonId);
+    if (isOpen) {
+      if (defaultTargetSeasonId) {
+        setTargetSeasonId(defaultTargetSeasonId);
+      } else {
+        const otherSeason = seasons.find(s => s.id !== sourceSeasonId);
+        setTargetSeasonId(otherSeason?.id ?? sourceSeasonId);
+      }
     }
-  }, [isOpen, sourceSeasonId]);
+  }, [isOpen, sourceSeasonId, seasons, defaultTargetSeasonId]);
 
   const handleSubmit = async () => {
     if (!targetSeasonId) {
@@ -79,7 +85,7 @@ export default function CopyTeamsModal({
     setIsSubmitting(false);
 
     if (result.success) {
-      showToast(`Successfully duplicated ${selectedTeamIds.length} ${selectedTeamIds.length === 1 ? 'team' : 'teams'}`, 'success');
+      showToast(`Successfully transferred ${selectedTeamIds.length} ${selectedTeamIds.length === 1 ? 'team' : 'teams'} to new season`, 'success');
       if (result.teams && onSuccess) {
         onSuccess(result.teams);
       }
@@ -169,7 +175,7 @@ export default function CopyTeamsModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Duplicate Teams">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Transfer to New Season">
       <div className="form-content">
         <div className="form-field">
           <label className="form-label">Select Season</label>
@@ -194,11 +200,6 @@ export default function CopyTeamsModal({
               label="Name"
             />
             <AttributeCheckbox
-              checked={copyOptions.colors}
-              onChange={() => handleOptionChange('colors')}
-              label="Colors"
-            />
-            <AttributeCheckbox
               checked={copyOptions.avatar}
               onChange={() => handleOptionChange('avatar')}
               label="Avatar"
@@ -221,6 +222,23 @@ export default function CopyTeamsModal({
           </div>
         </div>
 
+        <div className="toggle-field">
+          <div className="toggle-label-group">
+            <span className="toggle-label">Include Athletes</span>
+            <span className="toggle-description">Carry over each team's roster into the new season</span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={includeAthletes}
+            onClick={() => setIncludeAthletes(prev => !prev)}
+            disabled={isSubmitting}
+            className={`toggle-switch ${includeAthletes ? 'toggle-switch--on' : ''}`}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+
         {error && <p className="form-error">{error}</p>}
 
         <div className="form-actions">
@@ -238,7 +256,7 @@ export default function CopyTeamsModal({
             onClick={handleSubmit}
             isInactive={isSubmitting || !targetSeasonId}
           >
-            {isSubmitting ? 'Duplicating...' : `Duplicate ${selectedTeamIds.length} ${selectedTeamIds.length === 1 ? 'Team' : 'Teams'}`}
+            {isSubmitting ? 'Transferring...' : `Transfer ${selectedTeamIds.length} ${selectedTeamIds.length === 1 ? 'Team' : 'Teams'}`}
           </Button>
         </div>
       </div>
@@ -290,6 +308,71 @@ export default function CopyTeamsModal({
           font-size: var(--u-font-size-150, 12px);
           color: var(--u-color-alert-foreground, #bb1700);
           margin: 0;
+        }
+
+        .toggle-field {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--u-space-one, 16px);
+        }
+
+        .toggle-label-group {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .toggle-label {
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-default, 16px);
+          font-weight: var(--u-font-weight-default, 400);
+          color: var(--u-color-base-foreground-contrast, #071c31);
+        }
+
+        .toggle-description {
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-200, 14px);
+          color: var(--u-color-base-foreground, #36485c);
+        }
+
+        .toggle-switch {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          width: 44px;
+          height: 24px;
+          border-radius: 12px;
+          border: none;
+          background: var(--u-color-base-foreground-subtle, #607081);
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background 0.2s ease;
+          padding: 0;
+        }
+
+        .toggle-switch--on {
+          background: var(--u-color-emphasis-background-contrast, #0273e3);
+        }
+
+        .toggle-switch:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .toggle-thumb {
+          position: absolute;
+          left: 3px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: white;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          transition: transform 0.2s ease;
+        }
+
+        .toggle-switch--on .toggle-thumb {
+          transform: translateX(20px);
         }
 
         .form-actions {

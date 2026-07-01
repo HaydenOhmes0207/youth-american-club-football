@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import { WorkspaceProvider } from '@/contexts/WorkspaceContext';
 
 const LegacyNavigation = dynamic(
   () => import('./LegacyNavigation'),
@@ -68,7 +69,11 @@ export default function NavigationWrapper({
   const pathname = usePathname();
   
   // Full-screen pages that hide navigation
-  const isFullScreenPage = pathname === '/teams/manage' || pathname === '/teams/assignments';
+  const isFullScreenPage =
+    pathname === '/teams/manage' ||
+    pathname === '/teams/assignments' ||
+    pathname === '/programs/new' ||
+    pathname === '/programs/transfer';
 
   // If on a full-screen page, render children without navigation
   if (isFullScreenPage) {
@@ -76,13 +81,15 @@ export default function NavigationWrapper({
   }
 
   return (
-    <LegacyNavigation 
-      organization={organization} 
-      teams={teams} 
-      navItems={navItems}
-      currentUser={currentUser}
-    >
-      {children}
-    </LegacyNavigation>
+    <WorkspaceProvider>
+      <LegacyNavigation
+        organization={organization}
+        teams={teams}
+        navItems={navItems}
+        currentUser={currentUser}
+      >
+        {children}
+      </LegacyNavigation>
+    </WorkspaceProvider>
   );
 }

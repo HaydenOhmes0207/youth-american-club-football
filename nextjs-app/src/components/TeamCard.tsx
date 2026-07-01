@@ -15,6 +15,7 @@ interface TeamCardProps {
   teamName: string;
   teamId: string;
   avatar?: string | null;
+  status?: string;
   assignedCount?: number;
   invitedCount?: number;
   acceptedCount?: number;
@@ -30,6 +31,7 @@ export default function TeamCard({
   teamName,
   teamId,
   avatar,
+  status,
   assignedCount = 0,
   invitedCount = 0,
   acceptedCount = 0,
@@ -89,7 +91,10 @@ export default function TeamCard({
           </div>
         </div>
         <div className="team-card-info">
-          <h3 className="team-card-name">{teamName}</h3>
+          <div className="team-card-name-row">
+            <h3 className="team-card-name">{teamName}</h3>
+            {status === 'archived' && <span className="team-card-status-badge">Archived</span>}
+          </div>
           <div className="team-card-stats">
             <span className="team-card-stat">
               Assigned: <strong>{assignedCount}</strong>
@@ -140,7 +145,7 @@ export default function TeamCard({
                   name={athlete.name}
                   date={athlete.birthdate}
                   avatar={athlete.avatar}
-                  status="assigned"
+                  status={status === 'archived' ? undefined : 'assigned'}
                   showCheckbox={false}
                   draggable={false}
                   onRemove={onRemoveAthlete ? () => onRemoveAthlete(athlete.id) : undefined}
@@ -233,6 +238,25 @@ export default function TeamCard({
           min-width: 0;
         }
 
+        .team-card-name-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .team-card-status-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-family: var(--u-font-body);
+          font-size: 11px;
+          font-weight: 600;
+          background: var(--u-color-background-default, #e8eaec);
+          color: var(--u-color-base-foreground-subtle, #607081);
+          white-space: nowrap;
+        }
+
         .team-card-name {
           margin: 0;
           font-family: var(--u-font-body);
@@ -244,16 +268,18 @@ export default function TeamCard({
 
         .team-card-stats {
           display: flex;
-          gap: var(--u-space-three-quarter, 12px);
-          flex-wrap: wrap;
+          gap: var(--u-space-half, 8px);
+          flex-wrap: nowrap;
+          overflow: hidden;
         }
 
         .team-card-stat {
           font-family: var(--u-font-body);
-          font-size: var(--u-font-size-200, 14px);
+          font-size: var(--u-font-size-150, 12px);
           font-weight: var(--u-font-weight-medium, 500);
           color: var(--u-color-base-foreground, #36485c);
           line-height: 1.4;
+          white-space: nowrap;
         }
 
         .team-card-stat strong {

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { Barlow } from 'next/font/google';
+import { Suspense } from 'react';
 import './globals.css';
 import NavigationWrapper from '@/components/NavigationWrapper';
 import { ToastProvider } from '@/components/Toast';
 import { getOrganizationWithNavItems, getCurrentUser } from '@/lib/data';
+import VersionBadge from '@/components/VersionBadge';
 
 const barlow = Barlow({ 
   subsets: ['latin'],
@@ -13,8 +15,8 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  title: 'Youth American Club Football',
-  description: 'Youth football club management platform',
+  title: 'Elevation Volleyball Club',
+  description: 'Volleyball club management platform',
 };
 
 // Force dynamic rendering to ensure fresh data for workspace switcher
@@ -75,14 +77,17 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${barlow.className} ${barlow.variable}`}>
         <ToastProvider>
-          <NavigationWrapper 
-            organization={organization} 
-            teams={teams} 
+          <NavigationWrapper
+            organization={organization}
+            teams={teams}
             navItems={navItems}
             currentUser={currentUser}
           >
             {children}
           </NavigationWrapper>
+          <Suspense>
+            <VersionBadge />
+          </Suspense>
         </ToastProvider>
       </body>
     </html>

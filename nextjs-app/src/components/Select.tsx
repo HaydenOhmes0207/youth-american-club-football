@@ -254,7 +254,7 @@ export default function Select({ options, value, placeholder = 'Select...', onCh
           color: var(--u-color-base-foreground, #36485c);
           cursor: pointer;
           transition: background 0.15s ease, border-color 0.15s ease;
-          min-width: 195px;
+          min-width: 205px;
           width: 100%;
         }
 

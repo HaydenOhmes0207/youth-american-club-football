@@ -107,6 +107,7 @@ interface EmptyStateProps {
   variant: EmptyStateVariant;
   searchQuery?: string;
   seasonName?: string;
+  action?: { label: string; onClick: () => void };
 }
 
 const contentMap: Record<EmptyStateVariant, { title: string; description: string; icon: React.ReactNode }> = {
@@ -131,8 +132,8 @@ const contentMap: Record<EmptyStateVariant, { title: string; description: string
     icon: <UsersIcon />,
   },
   'teams-season': {
-    title: 'No teams for this season',
-    description: 'Click "Manage Teams" to create new teams or copy from a previous season.',
+    title: 'Ready for a new season?',
+    description: 'Create new teams for this upcoming season.',
     icon: <CalendarIcon />,
   },
   'teams-athletes': {
@@ -202,7 +203,7 @@ const contentMap: Record<EmptyStateVariant, { title: string; description: string
   },
 };
 
-export default function EmptyState({ variant, searchQuery, seasonName }: EmptyStateProps) {
+export default function EmptyState({ variant, searchQuery, seasonName, action }: EmptyStateProps) {
   const content = contentMap[variant];
   
   // Override title for search with query or season
@@ -219,6 +220,11 @@ export default function EmptyState({ variant, searchQuery, seasonName }: EmptySt
       </div> */}
       <h3 className="empty-title">{title}</h3>
       <p className="empty-description">{content.description}</p>
+      {action && (
+        <button className="empty-action" onClick={action.onClick}>
+          {action.label}
+        </button>
+      )}
 
       <style jsx>{`
         .empty-state {
@@ -243,6 +249,24 @@ export default function EmptyState({ variant, searchQuery, seasonName }: EmptySt
           font-weight: var(--u-font-weight-medium, 500);
           font-size: var(--u-font-size-250, 18px);
           color: var(--u-color-base-foreground-contrast, #071c31);
+        }
+
+        .empty-action {
+          margin-top: var(--u-space-one, 16px);
+          padding: var(--u-space-three-quarter, 12px) var(--u-space-one-and-half, 24px);
+          background: var(--u-color-emphasis-background, #e7f3fd);
+          border: 1px solid var(--u-color-emphasis-foreground, #085bb4);
+          border-radius: var(--u-border-radius-medium, 4px);
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-200, 14px);
+          font-weight: 600;
+          color: var(--u-color-emphasis-foreground-contrast, #0d3673);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+
+        .empty-action:hover {
+          background: var(--u-color-emphasis-background-hover, #c9e5f9);
         }
 
         .empty-description {

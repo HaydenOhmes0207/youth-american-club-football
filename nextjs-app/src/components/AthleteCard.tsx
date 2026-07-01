@@ -102,11 +102,11 @@ export default function AthleteCard({
               </span>
             </div>
           ) : (
-            <span className="athlete-card-date">Birthdate: {date}</span>
+            <span className="athlete-card-date">{date}</span>
           )}
         </div>
       </div>
-      {status && (
+      {status && status !== 'assigned' && (
         <span className={`athlete-card-status athlete-card-status--${status}`}>
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
@@ -147,7 +147,7 @@ export default function AthleteCard({
           align-items: center;
           gap: var(--u-space-half, 8px);
           height: 52px;
-          padding: 0 var(--u-space-quarter, 4px) 0 0;
+          padding: 0 var(--u-space-half, 8px) 0 0;
           background: var(--u-color-background-callout, #f8f8f9);
           border: 1px solid transparent;
           border-radius: 4px;
@@ -264,8 +264,8 @@ export default function AthleteCard({
         }
 
         .athlete-card-status--assigned {
-          background: var(--u-color-background-default, #e8eaec);
-          color: var(--u-color-base-foreground, #36485c);
+          background: #e8f3fe;
+          color: #0273e3;
         }
 
         .athlete-card--assigned {

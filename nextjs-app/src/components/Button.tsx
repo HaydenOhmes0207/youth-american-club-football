@@ -3,7 +3,7 @@
 import React from 'react';
 
 type ButtonStyle = 'standard' | 'minimal';
-type ButtonType = 'primary' | 'secondary' | 'subtle' | 'destroy' | 'confirm' | 'cancel';
+type ButtonType = 'primary' | 'secondary' | 'subtle' | 'destroy' | 'confirm' | 'cancel' | 'dark';
 type ButtonSize = 'xsmall' | 'small' | 'medium' | 'large';
 type IconAlignment = 'none' | 'left' | 'right' | 'icon only';
 type ButtonStatus = 'none' | 'spinning' | 'failure' | 'success';
@@ -132,6 +132,16 @@ const Button: React.FC<ButtonProps> = ({
           background-color: var(--u-color-background-default, #e8eaec);
           color: var(--u-color-base-foreground, #36485c);
           border-color: var(--u-color-line-subtle, #c4c6c8);
+        }
+
+        .u-button--style-standard.u-button--type-dark {
+          background-color: #4a5568;
+          color: #fefefe;
+          border-color: transparent;
+        }
+
+        .u-button--style-standard.u-button--type-dark:not(.u-button--inactive):hover {
+          background-color: #38434f;
         }
 
         /* MINIMAL: TEXT / GHOST BUTTONS */

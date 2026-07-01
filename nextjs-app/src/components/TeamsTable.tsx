@@ -3,7 +3,6 @@
 import type { TeamWithStats, Season } from '@/lib/actions/teams';
 import EmptyState from './EmptyState';
 import type { EmptyStateVariant } from './EmptyState';
-import Icon from './Icon';
 import Checkbox from './Checkbox';
 
 function formatGrades(grades: string | null): string {
@@ -42,9 +41,9 @@ function formatSport(sport: string): string {
 
 function formatGender(gender: string): string {
   const genderMap: Record<string, string> = {
-    male: 'Boys',
-    female: 'Girls',
-    coed: 'Co-ed',
+    male: 'Male',
+    female: 'Female',
+    coed: 'Coed',
   };
   return genderMap[gender.toLowerCase()] || gender;
 }
@@ -53,6 +52,114 @@ function getSeasonName(seasonId: string | null, seasons: Season[]): string {
   if (!seasonId) return '—';
   const season = seasons.find(s => s.id === seasonId);
   return season?.name || '—';
+}
+
+// Sport-specific SVG paths for the circular icon
+const sportIconPaths: Record<string, React.ReactNode> = {
+  volleyball: (
+    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="8.5" stroke="white" strokeWidth="1.25"/>
+      <path d="M4.2 6.5C5.8 5.5 7.8 5.2 9.7 5.8" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M15.8 6.5C14.2 5.5 12.2 5.2 10.3 5.8" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M10 5.8C10 7.8 11.2 9.6 13 10.5" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M10 5.8C10 7.8 8.8 9.6 7 10.5" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M4.2 13.5C5.5 12 6 10 5.5 8.2" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M15.8 13.5C14.5 12 14 10 14.5 8.2" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+      <path d="M4.2 13.5C6.5 14.8 9.5 14.8 11.5 13.2" stroke="white" strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  ),
+  baseball: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="8" stroke="white" strokeWidth="1.5"/>
+      <path d="M6 4.5C7.5 6 8 8 8 10s-.5 4-2 5.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+      <path d="M14 4.5C12.5 6 12 8 12 10s.5 4 2 5.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  basketball: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="8" stroke="white" strokeWidth="1.5"/>
+      <path d="M2 10h16M10 2v16M4.5 4.5c1.5 1.5 2 3.5 2 5.5s-.5 4-2 5.5M15.5 4.5c-1.5 1.5-2 3.5-2 5.5s.5 4 2 5.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  football: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <ellipse cx="10" cy="10" rx="7" ry="4.5" stroke="white" strokeWidth="1.5" transform="rotate(-30 10 10)"/>
+      <path d="M5.5 7.5l9 5M7 5.5l6 9" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  fieldhockey: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M5 4l2 8c.5 1.5 1.5 2.5 3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M5 12c0 1.5 1.5 3 3.5 3s3.5-1.5 3.5-3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="14" cy="6" r="2" stroke="white" strokeWidth="1.2"/>
+    </svg>
+  ),
+  golf: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 3v12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M10 3l5 2.5-5 2.5" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+      <circle cx="10" cy="16" r="1.5" fill="white"/>
+    </svg>
+  ),
+  gymnastics: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="5" r="1.5" fill="white"/>
+      <path d="M10 7v4l-3 4M10 11l3 4M7 9h6" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  icehockey: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M6 4l2 12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M6 13c1 1.5 3 2.5 5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <ellipse cx="13" cy="15.5" rx="2.5" ry="1" stroke="white" strokeWidth="1.2"/>
+    </svg>
+  ),
+  lacrosse: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M5 15l9-9" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M14 6c1-1 2-.5 2 .5s-1 1.5-2 1.5H12c-1 0-1.5-1-1.5-2S11 4 12 4" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+      <circle cx="5.5" cy="14.5" r="1.2" fill="white"/>
+    </svg>
+  ),
+  swimming: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M3 10c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M3 14c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
+      <circle cx="10" cy="6" r="1.5" fill="white"/>
+      <path d="M10 7.5v2" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  ),
+  cheer: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 3l1.5 4h4l-3.5 2.5 1.5 4L10 11 6.5 13.5 8 9.5 4.5 7h4z" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  ),
+};
+
+function SportIcon({ sport }: { sport: string }) {
+  const icon = sportIconPaths[sport.toLowerCase()] ?? (
+    <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7" stroke="white" strokeWidth="1.5"/>
+      <path d="M10 3v14M3 10h14" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  );
+  return (
+    <span className="sport-circle-icon">
+      {icon}
+      <style jsx>{`
+        .sport-circle-icon {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #1a2332;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+      `}</style>
+    </span>
+  );
 }
 
 function TeamAvatar({ avatar, title }: { avatar: string | null; title: string }) {
@@ -115,8 +222,8 @@ function TeamAvatar({ avatar, title }: { avatar: string | null; title: string })
   );
 }
 
-function RosterBadge({ count, max }: { count: number; max: number | null }) {
-  const displayText = max ? `${count}/${max}` : `${count}`;
+function RosterBadge({ count }: { count: number; max: number | null }) {
+  const displayText = `${count}`;
   
   return (
     <span className="roster-badge">
@@ -196,24 +303,17 @@ function TeamColors({ primaryColor, secondaryColor }: { primaryColor: string | n
 
 function StatusBadge({ status }: { status: string }) {
   const isDraft = status === 'draft';
-  const label = isDraft ? 'Draft' : 'Active';
-  
+  const isArchived = status === 'archived';
+  const label = isDraft ? 'Draft' : isArchived ? 'Archived' : 'Active';
+  const badgeClass = isDraft ? 'status-badge--draft' : isArchived ? 'status-badge--archived' : 'status-badge--active';
+
   return (
     <span className="status-badge-wrapper">
-      <span className={`status-badge ${isDraft ? 'status-badge--draft' : 'status-badge--active'}`}>
-        {isDraft && (
-          <Icon 
-            src="/icons/info.svg" 
-            alt="Info" 
-            width={16} 
-            height={16}
-            className="status-badge-icon"
-          />
-        )}
+      <span className={`status-badge ${badgeClass}`}>
         {label}
       </span>
       {isDraft && (
-        <span className="status-tooltip">Contact your CSM to add this team to your Hudl account</span>
+        <span className="status-tooltip">Build your teams and confirm to make active.</span>
       )}
       <style jsx>{`
         .status-badge-wrapper {
@@ -227,9 +327,10 @@ function StatusBadge({ status }: { status: string }) {
           gap: 4px;
           padding: 4px 8px;
           border-radius: 4px;
-          font-family: var(--u-font-body);
+          font-family: var(--u-font-body, sans-serif);
           font-size: 12px;
-          font-weight: var(--u-font-weight-medium, 500);
+          font-weight: 500;
+          line-height: 1;
         }
 
         .status-badge-icon {
@@ -237,14 +338,19 @@ function StatusBadge({ status }: { status: string }) {
         }
 
         .status-badge--draft {
-          background: var(--u-color-background-default, #e8eaec);
-          color: var(--u-color-base-foreground, #36485c);
+          background: #fef3c7;
+          color: #92400e;
           cursor: help;
         }
 
         .status-badge--active {
-          background: #E7F3FD;
-          color: #085BB4;
+          background: #dcfce7;
+          color: #14532d;
+        }
+
+        .status-badge--archived {
+          background: var(--u-color-background-default, #e8eaec);
+          color: var(--u-color-base-foreground-subtle, #607081);
         }
 
         .status-tooltip {
@@ -287,15 +393,59 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function TableContent({ 
-  teams, 
-  copyMode, 
-  selectedTeamIds = [], 
-  onTeamSelectionChange, 
+function TierBadge({ tier }: { tier: 'free' | 'performance' | null }) {
+  const label = tier === 'performance' ? 'Performance' : tier === 'free' ? 'Free' : 'None';
+  const cls = tier === 'performance' ? 'tier-badge--performance' : tier === 'free' ? 'tier-badge--free' : 'tier-badge--none';
+  return (
+    <span className={`tier-badge ${cls}`}>
+      {label}
+      <style jsx>{`
+        .tier-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-family: var(--u-font-body, sans-serif);
+          font-size: 12px;
+          font-weight: 500;
+          line-height: 1;
+        }
+        .tier-badge--performance {
+          background: #fff3e0;
+          color: #e65100;
+        }
+        .tier-badge--free {
+          background: #e8f5e9;
+          color: #2e7d32;
+        }
+        .tier-badge--none {
+          background: var(--u-color-background-default, #e8eaec);
+          color: var(--u-color-base-foreground, #36485c);
+        }
+      `}</style>
+    </span>
+  );
+}
+
+function SortIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0, opacity: 0.5 }}>
+      <path d="M6 2L8 4.5H4L6 2Z" fill="currentColor"/>
+      <path d="M6 10L4 7.5H8L6 10Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function TableContent({
+  teams,
+  copyMode,
+  selectedTeamIds = [],
+  onTeamSelectionChange,
   onSelectAllChange,
   onSelectAllChangeWithReset,
+  onTeamClick,
   seasons = []
-}: { 
+}: {
   teams: TeamWithStats[];
   copyMode?: boolean;
   seasons?: Season[];
@@ -303,13 +453,14 @@ function TableContent({
   onTeamSelectionChange?: (teamId: string, checked: boolean, index: number, shiftKey: boolean) => void;
   onSelectAllChange?: (checked: boolean) => void;
   onSelectAllChangeWithReset?: () => void;
+  onTeamClick?: (teamId: string) => void;
 }) {
   const allSelected = !!(copyMode && teams.length > 0 && teams.every(team => selectedTeamIds.includes(team.id)));
   const someSelected = !!(copyMode && teams.length > 0 && selectedTeamIds.length > 0 && !allSelected);
 
   return (
     <div className="teams-table">
-      {/* Header Row */}
+      {/* Header row */}
       <div className="table-row table-header">
         {copyMode && (
           <div className="table-cell cell-checkbox">
@@ -317,11 +468,9 @@ function TableContent({
               checked={allSelected}
               indeterminate={someSelected}
               onChange={() => {
-                // If all are selected, deselect all. Otherwise (none or some selected), select all.
                 if (allSelected) {
                   onSelectAllChange?.(false);
                 } else {
-                  // Select all (whether currently none or some selected)
                   if (onSelectAllChangeWithReset) {
                     onSelectAllChangeWithReset();
                   } else {
@@ -332,74 +481,72 @@ function TableContent({
             />
           </div>
         )}
-        <div className="table-cell cell-team">
-          <span className="header-label">Team</span>
+        <div className="table-cell cell-team-name">
+          <span className="header-label">Team Name</span>
+          <SortIcon />
         </div>
         <div className="table-cell cell-status">
           <span className="header-label">Status</span>
+          <SortIcon />
         </div>
-        <div className="table-cell cell-season">
+        <div className="table-cell cell-year">
           <span className="header-label">Season</span>
-        </div>
-        <div className="table-cell cell-sport">
-          <span className="header-label">Sport</span>
-        </div>
-        <div className="table-cell cell-grade">
-          <span className="header-label">Grade</span>
+          <SortIcon />
         </div>
         <div className="table-cell cell-gender">
           <span className="header-label">Gender</span>
+          <SortIcon />
         </div>
-        <div className="table-cell cell-colors">
-          <span className="header-label">Colors</span>
+        <div className="table-cell cell-birthday">
+          <span className="header-label">Birthday Range</span>
+          <SortIcon />
         </div>
-        <div className="table-cell cell-roster align-right">
+        <div className="table-cell cell-sport">
+          <span className="header-label">Sport</span>
+          <SortIcon />
+        </div>
+        <div className="table-cell cell-coaches">
+          <span className="header-label">Coaches</span>
+          <SortIcon />
+        </div>
+        <div className="table-cell cell-athletes">
           <span className="header-label">Athletes</span>
+          <SortIcon />
         </div>
       </div>
 
-      {/* Data Rows */}
+      {/* Data rows */}
       {teams.map((team, index) => {
         const isSelected = !!(copyMode && selectedTeamIds.includes(team.id));
+        const yearLabel = getSeasonName(team.seasonId, seasons);
         return (
-          <div 
-            key={team.id} 
+          <div
+            key={team.id}
             className={`table-row table-data ${isSelected ? 'table-data--selected' : ''} ${team.status === 'draft' ? 'table-data--draft' : ''}`}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest('.cell-checkbox')) return;
+              if (team.status !== 'draft') onTeamClick?.(team.id);
+            }}
           >
             {copyMode && (
               <div className="table-cell cell-checkbox">
-                <Checkbox
-                  checked={isSelected}
-                  onChange={(checked, shiftKey) => onTeamSelectionChange?.(team.id, checked, index, shiftKey)}
-                />
+                <Checkbox checked={isSelected} onChange={(checked, shiftKey) => onTeamSelectionChange?.(team.id, checked, index, shiftKey)} />
               </div>
             )}
-          <div className="table-cell cell-team">
-            <TeamAvatar avatar={team.avatar} title={team.title} />
-            <span className="team-name">{team.title}</span>
+            <div className="table-cell cell-team-name" style={{ gap: '8px' }}>
+              <SportIcon sport={team.sport} />
+              <span className="team-name-text">{team.title}</span>
+            </div>
+            <div className="table-cell cell-status"><StatusBadge status={team.status} /></div>
+            <div className="table-cell cell-year">{yearLabel}</div>
+            <div className="table-cell cell-gender">{formatGender(team.gender)}</div>
+            <div className="table-cell cell-birthday">
+              {team.birthdayFrom || team.birthdayTo ? `${team.birthdayFrom ?? '—'} – ${team.birthdayTo ?? '—'}` : '—'}
+            </div>
+            <div className="table-cell cell-sport">{team.sport ? formatSport(team.sport) : '—'}</div>
+            <div className="table-cell cell-coaches">{team.coachCount}</div>
+            <div className="table-cell cell-athletes">{team.rosterCount}</div>
           </div>
-          <div className="table-cell cell-status">
-            <StatusBadge status={team.status} />
-          </div>
-          <div className="table-cell cell-season">
-            {getSeasonName(team.seasonId, seasons)}
-          </div>
-          <div className="table-cell cell-sport">
-            {formatSport(team.sport)}
-          </div>
-          <div className="table-cell cell-grade">
-            {formatGrades(team.grades)}
-          </div>
-          <div className="table-cell cell-gender">
-            {formatGender(team.gender)}
-          </div>
-          <div className="table-cell cell-colors">
-            <TeamColors primaryColor={team.primaryColor} secondaryColor={team.secondaryColor} />
-          </div>
-          <div className="table-cell cell-roster align-right">
-            <RosterBadge count={team.rosterCount} max={team.maxRosterSize} />
-          </div>
-        </div>
         );
       })}
 
@@ -424,7 +571,7 @@ function TableContent({
         .table-data {
           background: var(--u-color-background-container, #fefefe);
           border-bottom: 1px dashed var(--u-color-line-subtle, #c4c6c8);
-          height: 52px;
+          min-height: 52px;
           box-sizing: border-box;
         }
 
@@ -444,8 +591,8 @@ function TableContent({
         .table-cell {
           display: flex;
           align-items: center;
-          gap: var(--u-space-half, 8px);
-          padding: 6px var(--u-space-one, 16px);
+          gap: var(--u-space-quarter, 4px);
+          padding: var(--u-space-half, 8px) var(--u-space-one, 16px);
           font-family: var(--u-font-body);
           font-weight: var(--u-font-weight-medium, 500);
           font-size: var(--u-font-size-200, 14px);
@@ -453,6 +600,7 @@ function TableContent({
           color: var(--u-color-base-foreground, #36485c);
           height: 100%;
           box-sizing: border-box;
+          white-space: nowrap;
         }
 
         .table-header .table-cell {
@@ -460,18 +608,21 @@ function TableContent({
           color: var(--u-color-base-foreground-contrast, #071c31);
         }
 
-        .cell-team {
+        /* All data columns equal width, filling the full table */
+        .cell-team-name,
+        .cell-sport,
+        .cell-year,
+        .cell-season,
+        .cell-gender,
+        .cell-birthday,
+        .cell-coaches,
+        .cell-athletes,
+        .cell-status {
           flex: 1;
-          min-width: 200px;
+          min-width: 0;
         }
 
-        .cell-colors {
-          width: 100px;
-          flex-shrink: 0;
-          justify-content: center;
-        }
-
-        .team-name {
+        .team-name-text {
           font-weight: var(--u-font-weight-bold, 700);
           color: var(--u-color-base-foreground-contrast, #071c31);
           text-decoration: underline;
@@ -479,44 +630,17 @@ function TableContent({
           text-decoration-style: dashed;
           text-underline-offset: 4px;
           transition: text-decoration-color 0.15s ease;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .table-data:hover .team-name {
+
+        .table-data:hover .team-name-text {
           text-decoration-color: var(--u-color-line-subtle, #c4c6c8);
         }
 
-        .table-data--draft:hover .team-name {
+        .table-data--draft:hover .team-name-text {
           text-decoration-color: transparent;
-        }
-
-        .cell-sport {
-          width: 120px;
-          flex-shrink: 0;
-        }
-
-        .cell-grade {
-          width: 120px;
-          flex-shrink: 0;
-        }
-
-        .cell-gender {
-          width: 100px;
-          flex-shrink: 0;
-        }
-
-        .cell-roster {
-          width: 100px;
-          flex-shrink: 0;
-        }
-
-        .cell-status {
-          width: 100px;
-          flex-shrink: 0;
-        }
-
-        .cell-season {
-          width: 140px;
-          flex-shrink: 0;
         }
 
         .cell-checkbox {
@@ -526,14 +650,11 @@ function TableContent({
           padding-right: 2px;
         }
 
-        .align-right {
-          justify-content: flex-end;
-          text-align: right;
-        }
-
         .header-label {
           white-space: nowrap;
         }
+
+
       `}</style>
     </div>
   );
@@ -544,30 +665,34 @@ interface TeamsTableProps {
   seasons?: Season[];
   emptyStateVariant?: EmptyStateVariant;
   emptyStateSeasonName?: string;
+  emptyStateAction?: { label: string; onClick: () => void };
   searchQuery?: string;
   copyMode?: boolean;
   selectedTeamIds?: string[];
   onTeamSelectionChange?: (teamId: string, checked: boolean, index: number, shiftKey: boolean) => void;
   onSelectAllChange?: (checked: boolean) => void;
   onSelectAllChangeWithReset?: () => void;
+  onTeamClick?: (teamId: string) => void;
 }
 
-export default function TeamsTable({ 
+export default function TeamsTable({
   teams,
   seasons = [],
   emptyStateVariant = 'teams',
   emptyStateSeasonName,
+  emptyStateAction,
   searchQuery,
   copyMode = false,
   selectedTeamIds = [],
   onTeamSelectionChange,
   onSelectAllChange,
-  onSelectAllChangeWithReset
+  onSelectAllChangeWithReset,
+  onTeamClick,
 }: TeamsTableProps) {
   return (
     <div className="teams-content">
       {teams.length > 0 ? (
-        <TableContent 
+        <TableContent
           teams={teams}
           seasons={seasons}
           copyMode={copyMode}
@@ -575,12 +700,14 @@ export default function TeamsTable({
           onTeamSelectionChange={onTeamSelectionChange}
           onSelectAllChange={onSelectAllChange}
           onSelectAllChangeWithReset={onSelectAllChangeWithReset}
+          onTeamClick={onTeamClick}
         />
       ) : (
-        <EmptyState 
-          variant={emptyStateVariant} 
+        <EmptyState
+          variant={emptyStateVariant}
           seasonName={emptyStateSeasonName}
           searchQuery={searchQuery}
+          action={emptyStateAction}
         />
       )}
 

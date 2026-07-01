@@ -4,15 +4,17 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { differenceInYears, subYears, format } from 'date-fns';
 import type { TeamWithStats, Season, UpdateTeamInput } from '@/lib/actions/teams';
-import { updateTeam, createTeam, deleteTeams } from '@/lib/actions/teams';
+import { updateTeam, createTeam, deleteTeams, archiveTeams } from '@/lib/actions/teams';
 import Button from '@/components/Button';
 import Select from '@/components/Select';
 import { useToast } from '@/components/Toast';
 import ViewHeader from '@/components/ViewHeader';
 import ActionBar from '@/components/ActionBar';
 import CopyTeamsModal from '@/components/CopyTeamsModal';
+import ArchiveTeamsModal from '@/components/ArchiveTeamsModal';
 import EmptyState from '@/components/EmptyState';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import NewSeasonModal from '@/components/NewSeasonModal';
 import Checkbox from '@/components/Checkbox';
 
 interface ManageTeamsPageClientProps {
@@ -733,8 +735,10 @@ export default function ManageTeamsPageClient({
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isNewSeasonModalOpen, setIsNewSeasonModalOpen] = useState(false);
 
   // Sync localTeams with fresh teams data from server when navigating back to the page
   useEffect(() => {
@@ -742,6 +746,8 @@ export default function ManageTeamsPageClient({
   }, [teams]);
 
   // Filter teams by season and search
+  const draftTeams = localTeams.filter(t => t.seasonId === selectedSeasonId && t.status === 'draft');
+
   const filteredTeams = localTeams.filter(team => {
     const matchesSeason = team.seasonId === selectedSeasonId;
     const matchesSearch = !searchQuery.trim() || 
@@ -1004,6 +1010,20 @@ export default function ManageTeamsPageClient({
         }}
       />
 
+      <ArchiveTeamsModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        selectedCount={selectedTeamIds.length}
+        seasonName={seasons.find(s => s.id === selectedSeasonId)?.name ?? ''}
+        onConfirm={async () => {
+          const ids = [...selectedTeamIds];
+          await archiveTeams(ids);
+          setLocalTeams(prev => prev.map(t => ids.includes(t.id) ? { ...t, status: 'archived' } : t));
+          showToast(`Successfully archived ${ids.length} ${ids.length === 1 ? 'team' : 'teams'}`, 'success');
+          handleClearSelection();
+        }}
+      />
+
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
         message={`If you delete ${selectedTeamIds.length === 1 ? 'this team' : `these ${selectedTeamIds.length} teams`}, ${selectedTeamIds.length === 1 ? "it" : "they"} can't be recovered. Do you want to continue?`}
@@ -1011,6 +1031,19 @@ export default function ManageTeamsPageClient({
         isLoading={isDeleting}
         onConfirm={handleDeleteTeams}
         onCancel={() => setIsDeleteDialogOpen(false)}
+      />
+
+      <NewSeasonModal
+        isOpen={isNewSeasonModalOpen}
+        onClose={() => setIsNewSeasonModalOpen(false)}
+        onTransfer={() => {
+          const activeSeason = seasons.find(s => s.isActive) || seasons[0];
+          setIsNewSeasonModalOpen(false);
+          setSelectedSeasonId(activeSeason?.id ?? '');
+        }}
+        onCreateNew={() => {
+          setIsNewSeasonModalOpen(false);
+        }}
       />
 
       <div className="manage-teams-page">
@@ -1049,24 +1082,53 @@ export default function ManageTeamsPageClient({
         {selectedTeamIds.length > 0 && (
           <ActionBar
             selectedCount={selectedTeamIds.length}
+            onUpgrade={() => {}}
             onDuplicate={() => setIsCopyModalOpen(true)}
+            onArchive={() => setIsArchiveModalOpen(true)}
             onDelete={() => setIsDeleteDialogOpen(true)}
             onClose={handleClearSelection}
             onClearSelection={handleClearSelection}
-            deleteDisabled={selectedTeamIds.some(id => 
-              localTeams.find(t => t.id === id)?.status !== 'draft'
+            upgradeDisabled={selectedTeamIds.some(id =>
+              localTeams.find(t => t.id === id)?.status === 'draft'
             )}
+            duplicateDisabled={selectedTeamIds.some(id =>
+              localTeams.find(t => t.id === id)?.status === 'draft'
+            )}
+            deleteDisabled={false}
           />
         )}
       </div>
 
+      {/* Draft notice */}
+      {draftTeams.length > 0 && (
+        <div className="draft-notice">
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: 'var(--u-color-background-canvas, #eff0f0)', flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: 'var(--u-color-base-foreground-subtle, #607081)' }}>
+              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M8 5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="8" cy="11" r="0.75" fill="currentColor" />
+            </svg>
+          </span>
+          <div>
+              You have {draftTeams.length} {draftTeams.length === 1 ? 'team' : 'teams'} in draft status. Select teams below to confirm and begin the season.
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="manage-teams-table-wrapper">
         {filteredTeams.length === 0 ? (
-          <EmptyState 
+          <EmptyState
             variant={searchQuery.trim() ? 'search' : 'teams-season'}
             searchQuery={searchQuery}
             seasonName={seasons.find(s => s.id === selectedSeasonId)?.name}
+            action={(() => {
+              const activeSeason = seasons.find(s => s.isActive) || seasons[0];
+              return selectedSeasonId !== activeSeason?.id ? {
+                label: 'Create New Draft Team',
+                onClick: () => handleAddTeam(),
+              } : undefined;
+            })()}
           />
         ) : (
           <table className="manage-teams-table">
@@ -1093,8 +1155,6 @@ export default function ManageTeamsPageClient({
                 <th className="cell-grade">Grade</th>
                 <th className="cell-birthdate">Birthdate From</th>
                 <th className="cell-birthdate">Birthdate To</th>
-                <th className="cell-color">Primary Color</th>
-                <th className="cell-color">Secondary Color</th>
               </tr>
             </thead>
             <tbody>
@@ -1155,18 +1215,6 @@ export default function ManageTeamsPageClient({
                     <EditableDateCell
                       age={team.ageMax}
                       onSave={(age) => handleUpdateTeam(team.id, { ageMax: age })}
-                    />
-                  </td>
-                  <td className="cell-color">
-                    <EditableColorCell
-                      value={team.primaryColor}
-                      onSave={(value) => handleUpdateTeam(team.id, { primaryColor: value })}
-                    />
-                  </td>
-                  <td className="cell-color">
-                    <EditableColorCell
-                      value={team.secondaryColor}
-                      onSave={(value) => handleUpdateTeam(team.id, { secondaryColor: value })}
                     />
                   </td>
                 </tr>
@@ -1255,6 +1303,20 @@ export default function ManageTeamsPageClient({
 
         .search-input input::placeholder {
           color: var(--u-color-base-foreground-subtle, #607081);
+        }
+
+        .draft-notice {
+          display: inline-flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 16px;
+          background: var(--u-color-background-container, #fefefe);
+          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+          border-radius: var(--u-border-radius-medium, 4px);
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-200, 14px);
+          color: var(--u-color-base-foreground-subtle, #607081);
+          line-height: 1.5;
         }
 
         .manage-teams-table-wrapper {
