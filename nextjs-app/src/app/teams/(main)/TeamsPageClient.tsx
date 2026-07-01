@@ -235,7 +235,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const getEmptyStateVariant = (): EmptyStateVariant => {
     if (searchQuery.trim() && filteredTeams.length === 0) return 'search';
-    if (seasonFilteredTeams.length === 0) return 'teams-season';
+    if (filteredTeams.length === 0 && filterSeason) return 'teams-season';
     return 'teams';
   };
 
@@ -533,8 +533,8 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             seasons={seasons}
             emptyStateVariant={getEmptyStateVariant()}
             emptyStateSeasonName={selectedSeason?.name}
-            emptyStateAction={selectedSeasonId !== activeSeason?.id && seasonFilteredTeams.length === 0 ? {
-              label: 'Add New Team',
+            emptyStateAction={filteredTeams.length === 0 && !searchQuery.trim() ? {
+              label: 'Add Draft Teams',
               onClick: () => router.push(`/teams/manage?season=${selectedSeasonId}`),
             } : undefined}
             searchQuery={searchQuery}

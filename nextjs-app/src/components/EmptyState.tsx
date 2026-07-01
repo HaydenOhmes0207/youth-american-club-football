@@ -128,12 +128,12 @@ const contentMap: Record<EmptyStateVariant, { title: string; description: string
   },
   'teams': {
     title: 'No teams yet',
-    description: 'Create teams to organize your athletes into groups for the season.',
+    description: 'Add a draft team to get started. Draft teams let you build out your roster before the season is confirmed.',
     icon: <UsersIcon />,
   },
   'teams-season': {
-    title: 'Ready for a new season?',
-    description: 'Create new teams for this upcoming season.',
+    title: 'No teams for this season yet',
+    description: 'Add a draft team to get started. Draft teams let you build out your roster before the season is confirmed.',
     icon: <CalendarIcon />,
   },
   'teams-athletes': {
