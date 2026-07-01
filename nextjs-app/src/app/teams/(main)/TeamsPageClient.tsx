@@ -132,7 +132,9 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [filterGender, setFilterGender] = useState('');
   const [filterSport, setFilterSport] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterSeason, setFilterSeason] = useState('');
+  const [filterSeason, setFilterSeason] = useState(() =>
+    isHighSchool ? '' : (seasons.find(s => s.name === 'Fall 2026')?.id ?? '')
+  );
 
   const selectedSeason = seasons.find(s => s.id === selectedSeasonId);
 
@@ -237,7 +239,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
     return 'teams';
   };
 
-  const draftTeams = seasonFilteredTeams.filter((t: { status: string }) => t.status === 'draft');
+  const draftTeams = preStatusFiltered.filter((t: { status: string }) => t.status === 'draft');
   const activeTeamRows = seasonFilteredTeams.filter((t: { status: string }) => t.status === 'active');
   const totalAthletes = seasonFilteredTeams.reduce((sum: number, t: { rosterCount: number }) => sum + t.rosterCount, 0);
   const uniqueSportsCount = new Set(seasonFilteredTeams.map((t: { sport: string }) => t.sport)).size;
