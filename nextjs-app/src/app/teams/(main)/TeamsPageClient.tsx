@@ -495,10 +495,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             seasons={seasons}
             emptyStateVariant={getEmptyStateVariant()}
             emptyStateSeasonName={selectedSeason?.name}
-            emptyStateAction={filteredTeams.length === 0 && !searchQuery.trim() ? {
-              label: 'Add Draft Teams',
-              onClick: () => router.push(`/teams/manage?season=${selectedSeasonId}${isHighSchool ? '&workspace=highschool' : ''}`),
-            } : undefined}
+            emptyStateAction={undefined}
             searchQuery={searchQuery}
             copyMode={true}
             selectedTeamIds={selectedTeamIds}

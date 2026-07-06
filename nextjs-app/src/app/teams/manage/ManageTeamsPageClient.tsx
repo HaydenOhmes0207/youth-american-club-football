@@ -1122,13 +1122,7 @@ const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
             variant={searchQuery.trim() ? 'search' : 'teams-season'}
             searchQuery={searchQuery}
             seasonName={seasons.find(s => s.id === selectedSeasonId)?.name}
-            action={(() => {
-              const activeSeason = seasons.find(s => s.isActive) || seasons[0];
-              return selectedSeasonId !== activeSeason?.id ? {
-                label: 'Create New Draft Team',
-                onClick: () => handleAddTeam(),
-              } : undefined;
-            })()}
+            action={undefined}
           />
         ) : (
           <table className="manage-teams-table">
