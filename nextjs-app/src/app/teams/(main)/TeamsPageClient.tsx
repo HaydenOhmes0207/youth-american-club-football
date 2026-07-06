@@ -95,7 +95,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [filterSport, setFilterSport] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterSeason, setFilterSeason] = useState(() =>
-    isHighSchool ? '' : (seasons.find(s => s.name === 'Fall 2026')?.id ?? '')
+    isHighSchool ? '' : '2026-2027'
   );
 
   const selectedSeason = seasons.find(s => s.id === selectedSeasonId);
@@ -114,7 +114,8 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
       if (isHighSchool) {
         if (team.grades !== filterSeason) return false;
       } else {
-        if (team.seasonId !== filterSeason) return false;
+        const teamSeason = seasons.find(s => s.id === team.seasonId);
+        if (!teamSeason || getAcademicYear(teamSeason.name) !== filterSeason) return false;
       }
     }
     return true;
@@ -135,15 +136,8 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const combinedSeasonOptions = isHighSchool
     ? Array.from(new Set(seasonFilteredTeams.map((t: { grades: string | null }) => t.grades).filter(Boolean)) as Set<string>)
         .map(g => ({ value: g, label: g }))
-    : seasons.map(s => {
-        const match = s.name.match(/(Fall|Spring|Winter)\s+(\d{4})/i);
-        if (!match) return { value: s.id, label: s.name };
-        const term = match[1];
-        const year = parseInt(match[2], 10);
-        const termLower = term.toLowerCase();
-        const yearRange = termLower === 'fall' ? `${year}-${year + 1}` : `${year - 1}-${year}`;
-        return { value: s.id, label: `${term} ${yearRange}` };
-      });
+    : Array.from(new Set(seasons.map(s => getAcademicYear(s.name)).filter(Boolean)))
+        .map(year => ({ value: year, label: year }));
 
   const handleTeamSelectionChange = (teamId: string, checked: boolean, index: number, shiftKey: boolean) => {
     if (shiftKey && lastClickedIndex !== null) {
