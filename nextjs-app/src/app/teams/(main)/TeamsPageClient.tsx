@@ -16,50 +16,12 @@ import NewSeasonModal from '@/components/NewSeasonModal';
 import type { TeamWithStats, Season, StaffUser, RosterAthlete } from '@/lib/actions/teams';
 import ConfirmTeamsDrawer from '@/components/ConfirmTeamsDrawer';
 import { deleteTeams, archiveTeams, updateTeam } from '@/lib/actions/teams';
+import { maryvilleTeams } from '@/lib/mockHighSchoolData';
 import { type EmptyStateVariant } from '@/components/EmptyState';
 import Select from '@/components/Select';
 import StatsBar from '@/components/StatsBar';
 import { useToast } from '@/components/Toast';
 
-// --- High School mock data uses the same TeamsTable as club ---
-
-// --- Maryville High School sport programs (static mock data) ---
-const maryvilleTeams: TeamWithStats[] = [
-  { id: 'mhs-1',  title: 'Varsity Football',         sport: 'football',     gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 52, maxRosterSize: 55, ageMin: null, ageMax: null, coachCount: 8, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-2',  title: 'JV Football',              sport: 'football',     gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 44, maxRosterSize: 50, ageMin: null, ageMax: null, coachCount: 5, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-3',  title: 'Freshman Football',        sport: 'football',     gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 38, maxRosterSize: 45, ageMin: null, ageMax: null, coachCount: 4, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-4',  title: 'Varsity Basketball (M)',   sport: 'basketball',   gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 15, maxRosterSize: 15, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-5',  title: 'JV Basketball (M)',        sport: 'basketball',   gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 12, maxRosterSize: 15, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-6',  title: 'Varsity Basketball (F)',   sport: 'basketball',   gender: 'female', grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 14, maxRosterSize: 15, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-7',  title: 'JV Basketball (F)',        sport: 'basketball',   gender: 'female', grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 11, maxRosterSize: 15, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-8',  title: 'Varsity Baseball',         sport: 'baseball',     gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 22, maxRosterSize: 25, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-9',  title: 'JV Baseball',              sport: 'baseball',     gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 20, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-10', title: 'Varsity Softball',         sport: 'softball',     gender: 'female', grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 20, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-11', title: 'JV Softball',              sport: 'softball',     gender: 'female', grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 15, maxRosterSize: 18, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-12', title: 'Varsity Soccer (M)',       sport: 'soccer',       gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 22, maxRosterSize: 24, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-13', title: 'JV Soccer (M)',            sport: 'soccer',       gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 22, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-14', title: 'Varsity Soccer (F)',       sport: 'soccer',       gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 20, maxRosterSize: 24, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-15', title: 'JV Soccer (F)',            sport: 'soccer',       gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 16, maxRosterSize: 20, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-16', title: 'Varsity Volleyball',       sport: 'volleyball',   gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 14, maxRosterSize: 14, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-17', title: 'JV Volleyball',            sport: 'volleyball',   gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 12, maxRosterSize: 14, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-18', title: 'Varsity Wrestling',        sport: 'wrestling',    gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 22, maxRosterSize: 28, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-19', title: 'JV Wrestling',             sport: 'wrestling',    gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 24, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-20', title: 'Varsity Track & Field (M)',sport: 'track',        gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 42, maxRosterSize: 50, ageMin: null, ageMax: null, coachCount: 5, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-21', title: 'Varsity Track & Field (F)',sport: 'track',        gender: 'female', grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 38, maxRosterSize: 50, ageMin: null, ageMax: null, coachCount: 4, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-22', title: 'Varsity Cheer',            sport: 'cheer',        gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 20, maxRosterSize: 25, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-23', title: 'JV Cheer',                 sport: 'cheer',        gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 16, maxRosterSize: 20, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-24', title: 'Varsity Swimming (M)',     sport: 'swimming',     gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 28, maxRosterSize: 35, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-25', title: 'Varsity Swimming (F)',     sport: 'swimming',     gender: 'female', grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 25, maxRosterSize: 35, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-26', title: 'Varsity Ice Hockey',       sport: 'icehockey',    gender: 'male',   grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 22, maxRosterSize: 25, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-27', title: 'Varsity Lacrosse (M)',     sport: 'lacrosse',     gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 24, maxRosterSize: 28, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-28', title: 'Varsity Lacrosse (F)',     sport: 'lacrosse',     gender: 'female', grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 20, maxRosterSize: 24, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-29', title: 'Varsity Cross Country (M)',sport: 'crosscountry', gender: 'male',   grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 30, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-30', title: 'Varsity Cross Country (F)',sport: 'crosscountry', gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 15, maxRosterSize: 30, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-31', title: 'Varsity Field Hockey',     sport: 'fieldhockey',  gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 18, maxRosterSize: 22, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-32', title: 'Varsity Golf (M)',         sport: 'golf',         gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 10, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 1, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-33', title: 'Varsity Gymnastics',       sport: 'gymnastics',   gender: 'female', grades: 'Winter', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 14, maxRosterSize: 18, ageMin: null, ageMax: null, coachCount: 3, birthdayFrom: null, birthdayTo: null },
-  { id: 'mhs-34', title: 'Varsity Tennis (M)',       sport: 'tennis',       gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'active', tier: null, seasonId: 'season-1', rosterCount: 12, maxRosterSize: 14, ageMin: null, ageMax: null, coachCount: 2, birthdayFrom: null, birthdayTo: null },
-];
 
 function getAcademicYear(seasonName: string): string {
   const match = seasonName.match(/(Fall|Spring)\s+(\d{4})/i);
@@ -240,9 +202,9 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   };
 
   const draftTeams = preStatusFiltered.filter((t: { status: string }) => t.status === 'draft');
-  const activeTeamRows = seasonFilteredTeams.filter((t: { status: string }) => t.status === 'active');
-  const totalAthletes = seasonFilteredTeams.reduce((sum: number, t: { rosterCount: number }) => sum + t.rosterCount, 0);
-  const uniqueSportsCount = new Set(seasonFilteredTeams.map((t: { sport: string }) => t.sport)).size;
+  const activeTeamRows = preStatusFiltered.filter((t: { status: string }) => t.status === 'active');
+  const totalAthletes = preStatusFiltered.reduce((sum: number, t: { rosterCount: number }) => sum + t.rosterCount, 0);
+  const uniqueSportsCount = new Set(preStatusFiltered.map((t: { sport: string }) => t.sport)).size;
 
   return (
     <div className="teams-page">
@@ -266,7 +228,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
               buttonStyle="standard"
               buttonType="primary"
               size="medium"
-              onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}`)}
+              onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}&workspace=highschool`)}
             >
               Add Draft Teams
             </Button>
@@ -535,7 +497,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             emptyStateSeasonName={selectedSeason?.name}
             emptyStateAction={filteredTeams.length === 0 && !searchQuery.trim() ? {
               label: 'Add Draft Teams',
-              onClick: () => router.push(`/teams/manage?season=${selectedSeasonId}`),
+              onClick: () => router.push(`/teams/manage?season=${selectedSeasonId}${isHighSchool ? '&workspace=highschool' : ''}`),
             } : undefined}
             searchQuery={searchQuery}
             copyMode={true}
