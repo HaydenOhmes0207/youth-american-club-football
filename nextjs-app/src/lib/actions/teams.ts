@@ -63,7 +63,7 @@ declare global {
 }
 
 // Bump this any time the seed data changes — forces re-init on next hot reload
-const MOCK_STORE_VERSION = 12;
+const MOCK_STORE_VERSION = 15;
 
 // Base team shapes — reused across seasons
 const BASE_TEAMS = [
@@ -113,13 +113,9 @@ global.__mockTeamStore = [
   { id: 'td-2', title: '14 Timberline', sport: 'volleyball', gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'draft', tier: null, seasonId: 'season-2', rosterCount: 0, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 0, birthdayFrom: '01/01/2012', birthdayTo: '12/31/2012' },
   { id: 'td-3', title: '15 Mountain',   sport: 'volleyball', gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'draft', tier: null, seasonId: 'season-2', rosterCount: 0, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 0, birthdayFrom: '01/01/2011', birthdayTo: '12/31/2011' },
   // Archived past seasons — each gets a different seed for varied roster counts
-  ...makeTeams('season-active',  'archived', 'ta',  1),  // Fall 2025
-  ...makeTeams('season-current', 'archived', 'tc',  3),  // Spring 2025
-  ...makeTeams('season-1',       'archived', 't1',  5),  // Fall 2024
-  ...makeTeams('season-past-0',  'archived', 'tp0', 7),  // Spring 2024
-  ...makeTeams('season-past-1',  'archived', 'tp1', 2),  // Fall 2023
-  ...makeTeams('season-past-2',  'archived', 'tp2', 6),  // Spring 2023
-  ...makeTeams('season-past-3',  'archived', 'tp3', 4),  // Fall 2022
+  ...makeTeams('season-active',  'archived', 'ta', 1),  // Fall 2025
+  ...makeTeams('season-current', 'archived', 'tc', 3),  // Spring 2025
+  ...makeTeams('season-1',       'archived', 't1', 5),  // Fall 2024
 ];
 global.__mockTeamStoreVersion = MOCK_STORE_VERSION;
 }
@@ -212,19 +208,12 @@ export interface Season {
 
 export async function getSeasons(_organizationId: string): Promise<Season[]> {
   return [
-    { id: 'season-past-3',  name: 'Fall 2022',   isActive: false },
-    { id: 'season-past-2',  name: 'Spring 2023', isActive: false },
-    { id: 'season-past-1',  name: 'Fall 2023',   isActive: false },
-    { id: 'season-past-0',  name: 'Spring 2024', isActive: false },
     { id: 'season-1',       name: 'Fall 2024',   isActive: false },
     { id: 'season-current', name: 'Spring 2025', isActive: false },
     { id: 'season-active',  name: 'Fall 2025',   isActive: false },
     { id: 'season-2',       name: 'Spring 2026', isActive: true  },
     { id: 'season-3',       name: 'Fall 2026',   isActive: false },
     { id: 'season-4',       name: 'Spring 2027', isActive: false },
-    { id: 'season-5',       name: 'Fall 2027',   isActive: false },
-    { id: 'season-6',       name: 'Spring 2028', isActive: false },
-    { id: 'season-7',       name: 'Fall 2028',   isActive: false },
   ];
 }
 
