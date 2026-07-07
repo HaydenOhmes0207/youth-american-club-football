@@ -61,6 +61,14 @@ function UpgradeIcon() {
 }
 
 
+function ConfirmIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.66667 8L6.66667 12L13.3333 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 function CloseIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -88,11 +96,6 @@ export default function ActionBar({ selectedCount, onDuplicate, onArchive, onUna
         </Button>
       </div>
       <div className="action-bar-right">
-        {showConfirm && (
-          <button className="action-bar-confirm" onClick={onConfirm}>
-            Confirm
-          </button>
-        )}
         <Button
           buttonStyle="standard"
           buttonType="primary"
@@ -135,6 +138,21 @@ export default function ActionBar({ selectedCount, onDuplicate, onArchive, onUna
             <span>Delete</span>
           </span>
         </Button>
+        {showConfirm && (
+          <Button
+            buttonStyle="standard"
+            buttonType="primary"
+            size="medium"
+            iconAlignment="left"
+            onClick={onConfirm}
+            className="action-bar-button"
+          >
+            <span className="action-bar-button-content">
+              <ConfirmIcon />
+              <span>Confirm</span>
+            </span>
+          </Button>
+        )}
         <Button
           buttonStyle="standard"
           buttonType="primary"
@@ -185,30 +203,7 @@ export default function ActionBar({ selectedCount, onDuplicate, onArchive, onUna
           gap: var(--u-space-eighth, 2px);
         }
 
-        .action-bar-confirm {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 36px;
-          padding: 0 var(--u-space-one-and-half, 24px);
-          background: #1db954;
-          color: #fff;
-          border: none;
-          border-radius: 4px;
-          font-family: var(--u-font-body);
-          font-size: var(--u-font-size-default, 16px);
-          font-weight: 600;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: background 0.15s ease;
-          margin-right: var(--u-space-half, 8px);
-        }
-
-        .action-bar-confirm:hover {
-          background: #17a349;
-        }
-
-        .action-bar-button-content {
+.action-bar-button-content {
           display: flex !important;
           align-items: center;
           gap: var(--u-space-half, 8px);
