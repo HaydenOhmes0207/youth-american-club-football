@@ -355,11 +355,12 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
           const ids = [...selectedTeamIds];
           setLocalTeams(prev => prev.map(t => ids.includes(t.id) ? { ...t, status: 'active' } : t));
           setIsConfirmDrawerOpen(false);
-          showToast(`${ids.length} ${ids.length === 1 ? 'team' : 'teams'} confirmed for the 2026-2027 season`, 'success');
+          const seasonLabel = selectedSeason ? getAcademicYear(selectedSeason.name) : '';
+          showToast(`${ids.length} ${ids.length === 1 ? 'team' : 'teams'} confirmed${seasonLabel ? ` for the ${seasonLabel} season` : ''}`, 'success');
           handleClearSelection();
         }}
         teams={activeTeamPool.filter(t => selectedTeamIds.includes(t.id))}
-        seasonName={selectedSeason?.name ?? '2026-2027'}
+        seasonName={selectedSeason ? getAcademicYear(selectedSeason.name) : ''}
       />
 
       <ConfirmDialog
@@ -412,7 +413,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
           {selectedTeamIds.length > 0 && (
             <ActionBar
               selectedCount={selectedTeamIds.length}
-              showConfirm={selectedSeason?.name === '2026-2027'}
+              showConfirm={selectedTeamIds.some(id => activeTeamPool.find(t => t.id === id)?.status === 'draft')}
               onConfirm={() => setIsConfirmDrawerOpen(true)}
               onUpgrade={() => setIsUpgradeModalOpen(true)}
               onDuplicate={() => setIsCopyModalOpen(true)}
