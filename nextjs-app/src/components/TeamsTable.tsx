@@ -313,8 +313,9 @@ function TeamColors({ primaryColor, secondaryColor }: { primaryColor: string | n
 function StatusBadge({ status }: { status: string }) {
   const isDraft = status === 'draft';
   const isArchived = status === 'archived';
-  const label = isDraft ? 'Draft' : isArchived ? 'Archived' : 'Active';
-  const badgeClass = isDraft ? 'status-badge--draft' : isArchived ? 'status-badge--archived' : 'status-badge--active';
+  const isPending = status === 'pending';
+  const label = isDraft ? 'Draft' : isArchived ? 'Archived' : isPending ? 'Pending' : 'Active';
+  const badgeClass = isDraft ? 'status-badge--draft' : isArchived ? 'status-badge--archived' : isPending ? 'status-badge--pending' : 'status-badge--active';
 
   return (
     <span className="status-badge-wrapper">
@@ -360,6 +361,11 @@ function StatusBadge({ status }: { status: string }) {
         .status-badge--archived {
           background: var(--u-color-background-default, #e8eaec);
           color: var(--u-color-base-foreground-subtle, #607081);
+        }
+
+        .status-badge--pending {
+          background: #dbeafe;
+          color: #1e40af;
         }
 
         .status-tooltip {
@@ -453,6 +459,7 @@ function TableContent({
   onSelectAllChange,
   onSelectAllChangeWithReset,
   onTeamClick,
+  onDeleteTeam,
   seasons = []
 }: {
   teams: TeamWithStats[];
@@ -463,6 +470,7 @@ function TableContent({
   onSelectAllChange?: (checked: boolean) => void;
   onSelectAllChangeWithReset?: () => void;
   onTeamClick?: (teamId: string) => void;
+  onDeleteTeam?: (teamId: string) => void;
 }) {
   const allSelected = !!(copyMode && teams.length > 0 && teams.every(team => selectedTeamIds.includes(team.id)));
   const someSelected = !!(copyMode && teams.length > 0 && selectedTeamIds.length > 0 && !allSelected);
@@ -506,10 +514,6 @@ function TableContent({
           <span className="header-label">Gender</span>
           <SortIcon />
         </div>
-        <div className="table-cell cell-birthday">
-          <span className="header-label">Birthday Range</span>
-          <SortIcon />
-        </div>
         <div className="table-cell cell-sport">
           <span className="header-label">Sport</span>
           <SortIcon />
@@ -522,6 +526,7 @@ function TableContent({
           <span className="header-label">Athletes</span>
           <SortIcon />
         </div>
+        {onDeleteTeam && <div className="table-cell cell-actions" />}
       </div>
 
       {/* Data rows */}
@@ -534,7 +539,7 @@ function TableContent({
             className={`table-row table-data ${isSelected ? 'table-data--selected' : ''} ${team.status === 'draft' ? 'table-data--draft' : ''}`}
             onClick={(e) => {
               if ((e.target as HTMLElement).closest('.cell-checkbox')) return;
-              if (team.status !== 'draft') onTeamClick?.(team.id);
+              onTeamClick?.(team.id);
             }}
           >
             {copyMode && (
@@ -549,12 +554,24 @@ function TableContent({
             <div className="table-cell cell-status"><StatusBadge status={team.status} /></div>
             <div className="table-cell cell-year">{yearLabel}</div>
             <div className="table-cell cell-gender">{formatGender(team.gender)}</div>
-            <div className="table-cell cell-birthday">
-              {team.birthdayFrom || team.birthdayTo ? `${team.birthdayFrom ?? '—'} – ${team.birthdayTo ?? '—'}` : '—'}
-            </div>
             <div className="table-cell cell-sport">{team.sport ? formatSport(team.sport) : '—'}</div>
             <div className="table-cell cell-coaches">{team.coachCount}</div>
             <div className="table-cell cell-athletes">{team.rosterCount}</div>
+            {onDeleteTeam && (
+              <div className="table-cell cell-actions">
+                {team.status === 'draft' && (
+                  <button
+                    className="team-delete-btn"
+                    aria-label={`Delete ${team.title}`}
+                    onClick={(e) => { e.stopPropagation(); onDeleteTeam(team.id); }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M2.5 4.5h11M6 4.5V3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1.5M12.5 4.5l-.8 8a1 1 0 0 1-1 .9H5.3a1 1 0 0 1-1-.9l-.8-8" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       })}
@@ -589,10 +606,6 @@ function TableContent({
           cursor: pointer;
         }
 
-        .table-data--draft:hover {
-          cursor: default;
-        }
-
         .table-data--selected {
           background: var(--u-color-background-subtle, #f5f6f7);
         }
@@ -623,12 +636,35 @@ function TableContent({
         .cell-year,
         .cell-season,
         .cell-gender,
-        .cell-birthday,
         .cell-coaches,
         .cell-athletes,
         .cell-status {
           flex: 1;
           min-width: 0;
+        }
+
+        .cell-actions {
+          width: 48px;
+          flex: 0 0 48px;
+          justify-content: center;
+        }
+
+        .team-delete-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border: none;
+          background: none;
+          border-radius: 4px;
+          cursor: pointer;
+          color: var(--u-color-base-foreground-subtle, #607081);
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .team-delete-btn:hover {
+          background: rgba(187, 23, 0, 0.08);
+          color: var(--u-color-alert-foreground, #bb1700);
         }
 
         .team-name-text {
@@ -646,10 +682,6 @@ function TableContent({
 
         .table-data:hover .team-name-text {
           text-decoration-color: var(--u-color-line-subtle, #c4c6c8);
-        }
-
-        .table-data--draft:hover .team-name-text {
-          text-decoration-color: transparent;
         }
 
         .cell-checkbox {
@@ -682,6 +714,7 @@ interface TeamsTableProps {
   onSelectAllChange?: (checked: boolean) => void;
   onSelectAllChangeWithReset?: () => void;
   onTeamClick?: (teamId: string) => void;
+  onDeleteTeam?: (teamId: string) => void;
 }
 
 export default function TeamsTable({
@@ -697,6 +730,7 @@ export default function TeamsTable({
   onSelectAllChange,
   onSelectAllChangeWithReset,
   onTeamClick,
+  onDeleteTeam,
 }: TeamsTableProps) {
   return (
     <div className="teams-content">
@@ -710,6 +744,7 @@ export default function TeamsTable({
           onSelectAllChange={onSelectAllChange}
           onSelectAllChangeWithReset={onSelectAllChangeWithReset}
           onTeamClick={onTeamClick}
+          onDeleteTeam={onDeleteTeam}
         />
       ) : (
         <EmptyState

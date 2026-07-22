@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 export interface SelectOption {
   value: string;
   label: string;
+  /** Optional status pill shown next to the label in the dropdown (e.g. 'published', 'draft', 'archived') */
+  status?: string;
 }
 
 export interface SelectProps {
@@ -91,6 +93,11 @@ function SelectMenu({ options, value, onSelect, searchable, searchPlaceholder, s
                 type="button"
               >
                 <span className="select-option-label">{option.label}</span>
+                {option.status && (
+                  <span className={`select-status-pill select-status-pill--${option.status}`}>
+                    {option.status.charAt(0).toUpperCase() + option.status.slice(1)}
+                  </span>
+                )}
                 {isSelected && <CheckIcon />}
               </button>
             );
@@ -174,6 +181,32 @@ function SelectMenu({ options, value, onSelect, searchable, searchPlaceholder, s
 
         .select-option-label {
           flex: 1;
+        }
+
+        .select-status-pill {
+          flex-shrink: 0;
+          padding: 1px 7px;
+          border-radius: 9999px;
+          font-family: var(--u-font-body);
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          line-height: 18px;
+        }
+
+        .select-status-pill--published {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .select-status-pill--draft {
+          background: var(--u-color-background-canvas, #eff0f0);
+          color: var(--u-color-base-foreground-subtle, #607081);
+        }
+
+        .select-status-pill--archived {
+          background: #fef3c7;
+          color: #92400e;
         }
       `}</style>
     </div>

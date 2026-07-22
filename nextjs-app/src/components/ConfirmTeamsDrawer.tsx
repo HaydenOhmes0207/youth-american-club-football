@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import type { TeamWithStats } from '@/lib/actions/teams';
 import Button from './Button';
+import Checkbox from './Checkbox';
 
 // ─── Mock athlete data for prototype ──────────────────────────────────────────
 const ATHLETE_POOL = [
@@ -125,7 +126,7 @@ function StatusBadge({ status }: { status: string }) {
 interface ConfirmTeamsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void>;
+  onConfirm: (teamIds: string[]) => Promise<void>;
   teams: TeamWithStats[];
   seasonName: string;
 }
@@ -141,13 +142,21 @@ export default function ConfirmTeamsDrawer({
   const [isConfirming, setIsConfirming] = useState(false);
   // First team expanded by default
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  // Which teams the user wants to confirm — all selected by default
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Sync expanded state when teams change or drawer opens
+  // Sync expanded + selected state when teams change or drawer opens
   useEffect(() => {
     if (isOpen && teams.length > 0) {
       setExpandedIds([teams[0].id]);
+      setSelectedIds(teams.map(t => t.id));
     }
   }, [isOpen, teams]);
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
+    );
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); },
@@ -210,26 +219,34 @@ export default function ConfirmTeamsDrawer({
 
                 return (
                   <div key={team.id} className="ctd-team-card">
-                    {/* Team header row — click to expand/collapse */}
-                    <button
-                      className="ctd-team-header"
-                      onClick={() => toggleTeam(team.id)}
-                      aria-expanded={isExpanded}
-                    >
-                      <VolleyballIcon />
-                      <div className="ctd-team-info">
-                        <span className="ctd-team-name">{team.title}</span>
-                        <div className="ctd-team-stats">
-                          <span>Assigned: <strong>{assigned}</strong></span>
-                          <span>Invited: <strong>{invited}</strong></span>
-                          <span>Accepted: <strong>{accepted}</strong></span>
-                          <span>Declined: <strong>{declined}</strong></span>
-                        </div>
-                      </div>
-                      <span className="ctd-chevron">
-                        {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                    {/* Team header row — checkbox to select, rest toggles expand/collapse */}
+                    <div className="ctd-team-header-row">
+                      <span className="ctd-team-check">
+                        <Checkbox
+                          checked={selectedIds.includes(team.id)}
+                          onChange={() => toggleSelect(team.id)}
+                        />
                       </span>
-                    </button>
+                      <button
+                        className="ctd-team-header"
+                        onClick={() => toggleTeam(team.id)}
+                        aria-expanded={isExpanded}
+                      >
+                        <VolleyballIcon />
+                        <div className="ctd-team-info">
+                          <span className="ctd-team-name">{team.title}</span>
+                          <div className="ctd-team-stats">
+                            <span>Assigned: <strong>{assigned}</strong></span>
+                            <span>Invited: <strong>{invited}</strong></span>
+                            <span>Accepted: <strong>{accepted}</strong></span>
+                            <span>Declined: <strong>{declined}</strong></span>
+                          </div>
+                        </div>
+                        <span className="ctd-chevron">
+                          {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </span>
+                      </button>
+                    </div>
 
                     {/* Athlete list (expanded only) */}
                     {isExpanded && (
@@ -259,14 +276,14 @@ export default function ConfirmTeamsDrawer({
             buttonStyle="standard"
             buttonType="primary"
             size="medium"
-            isInactive={isConfirming}
+            isInactive={isConfirming || selectedIds.length === 0}
             onClick={async () => {
               setIsConfirming(true);
-              await onConfirm();
+              await onConfirm(selectedIds);
               setIsConfirming(false);
             }}
           >
-            Confirm {teams.length} {teams.length === 1 ? 'Team' : 'Teams'}
+            Confirm {selectedIds.length} {selectedIds.length === 1 ? 'Team' : 'Teams'}
           </Button>
         </div>
       </div>
@@ -385,11 +402,22 @@ export default function ConfirmTeamsDrawer({
           border-radius: 8px;
           overflow: hidden;
         }
+        .ctd-team-header-row {
+          display: flex;
+          align-items: center;
+        }
+        .ctd-team-check {
+          display: flex;
+          align-items: center;
+          padding-left: 14px;
+          flex-shrink: 0;
+        }
         .ctd-team-header {
           display: flex;
           align-items: center;
-          width: 100%;
-          padding: 14px 16px 14px 16px;
+          flex: 1;
+          min-width: 0;
+          padding: 14px 16px 14px 10px;
           background: none;
           border: none;
           cursor: pointer;
@@ -485,7 +513,6 @@ export default function ConfirmTeamsDrawer({
           background: var(--u-color-background-container, #fefefe);
           border-top: 1px solid var(--u-color-line-subtle, #c4c6c8);
           flex-shrink: 0;
-          box-shadow: 0 -2px 1.5px rgba(0, 0, 0, 0.25), 0 0 2px rgba(0, 0, 0, 0.2);
         }
       `}</style>
     </>

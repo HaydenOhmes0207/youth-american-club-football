@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import ProgramsTable from '@/components/ProgramsTable';
+import { useToast } from '@/components/Toast';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 
 interface ProgramsPageClientProps {
@@ -12,8 +13,38 @@ interface ProgramsPageClientProps {
 
 export default function ProgramsPageClient({ programs }: ProgramsPageClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Merge in programs created through the builder (prototype: stored in localStorage)
+  const [allPrograms, setAllPrograms] = useState<ProgramWithStats[]>(programs);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('createdPrograms');
+      const created = raw ? (JSON.parse(raw) as ProgramWithStats[]) : [];
+      setAllPrograms(Array.isArray(created) && created.length ? [...created, ...programs] : programs);
+    } catch {
+      setAllPrograms(programs);
+    }
+  }, [programs]);
+
+  const handleDeleteProgram = (id: string) => {
+    const target = allPrograms.find(p => p.id === id);
+    setAllPrograms(prev => prev.filter(p => p.id !== id));
+    // Also drop it from builder-created programs stored locally
+    try {
+      const raw = localStorage.getItem('createdPrograms');
+      if (raw) {
+        const list = (JSON.parse(raw) as ProgramWithStats[]).filter(p => p.id !== id);
+        localStorage.setItem('createdPrograms', JSON.stringify(list));
+      }
+    } catch {
+      // ignore storage failures in the prototype
+    }
+    showToast(`${target?.title ?? 'Program'} deleted`, 'success');
+  };
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
@@ -62,7 +93,7 @@ export default function ProgramsPageClient({ programs }: ProgramsPageClientProps
             size="medium"
             onClick={() => router.push('/programs/new')}
           >
-            New Program
+            Add Program
           </Button>
 
           {/* Ellipsis ⋯ */}
@@ -98,7 +129,7 @@ export default function ProgramsPageClient({ programs }: ProgramsPageClientProps
         </div>
       </div>
 
-      <ProgramsTable programs={programs} />
+      <ProgramsTable programs={allPrograms} onDeleteProgram={handleDeleteProgram} />
 
       {/* Scoped only to ellipsis + dropdown — no layout class names that could collide */}
       <style jsx>{`

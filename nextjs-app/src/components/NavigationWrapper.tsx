@@ -72,7 +72,7 @@ export default function NavigationWrapper({
   const isFullScreenPage =
     pathname === '/teams/manage' ||
     pathname === '/teams/assignments' ||
-    pathname === '/programs/new' ||
+    pathname === '/teams/send-invitations' ||
     pathname === '/programs/transfer';
 
   // If on a full-screen page, render children without navigation

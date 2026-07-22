@@ -746,7 +746,6 @@ const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   }, [teams]);
 
   // Filter teams by season and search
-  const draftTeams = localTeams.filter(t => t.seasonId === selectedSeasonId && t.status === 'draft');
 
   const filteredTeams = localTeams.filter(team => {
     const matchesSeason = team.seasonId === selectedSeasonId;
@@ -1099,22 +1098,6 @@ const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
         )}
       </div>
 
-      {/* Draft notice */}
-      {draftTeams.length > 0 && (
-        <div className="draft-notice">
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: 'var(--u-color-background-canvas, #eff0f0)', flexShrink: 0 }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: 'var(--u-color-base-foreground-subtle, #607081)' }}>
-              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M8 5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="8" cy="11" r="0.75" fill="currentColor" />
-            </svg>
-          </span>
-          <div>
-              You have {draftTeams.length} {draftTeams.length === 1 ? 'team' : 'teams'} in draft status. Select teams below to confirm and begin the season.
-          </div>
-        </div>
-      )}
-
       {/* Table */}
       <div className="manage-teams-table-wrapper">
         {filteredTeams.length === 0 ? (
@@ -1297,20 +1280,6 @@ const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
         .search-input input::placeholder {
           color: var(--u-color-base-foreground-subtle, #607081);
-        }
-
-        .draft-notice {
-          display: inline-flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 12px 16px;
-          background: var(--u-color-background-container, #fefefe);
-          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
-          border-radius: var(--u-border-radius-medium, 4px);
-          font-family: var(--u-font-body);
-          font-size: var(--u-font-size-200, 14px);
-          color: var(--u-color-base-foreground-subtle, #607081);
-          line-height: 1.5;
         }
 
         .manage-teams-table-wrapper {

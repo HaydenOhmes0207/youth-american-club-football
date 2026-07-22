@@ -21,9 +21,11 @@ export default async function ManageTeamsPage({ searchParams }: ManageTeamsPageP
     ? maryvilleTeams
     : organizationId ? await getAllTeams(organizationId) : [];
 
-  // Use season from URL params, fall back to active season, then first season
+  // Use season from URL params. For the club, default to the empty Fall 2026
+  // season (season-3) so Manage Teams opens on the "build teams" empty state.
   const seasonFromUrl = params.season ? seasons.find(s => s.id === params.season) : null;
-  const activeSeason = seasonFromUrl || seasons.find(s => s.isActive) || seasons[0];
+  const clubDefaultSeason = !isHighSchool ? seasons.find(s => s.id === 'season-3') : undefined;
+  const activeSeason = seasonFromUrl || clubDefaultSeason || seasons.find(s => s.isActive) || seasons[0];
 
   return (
     <ManageTeamsPageClient

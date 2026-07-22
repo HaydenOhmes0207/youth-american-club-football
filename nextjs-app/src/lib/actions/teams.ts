@@ -63,7 +63,7 @@ declare global {
 }
 
 // Bump this any time the seed data changes — forces re-init on next hot reload
-const MOCK_STORE_VERSION = 15;
+const MOCK_STORE_VERSION = 25;
 
 // Base team shapes — reused across seasons
 const BASE_TEAMS = [
@@ -104,19 +104,10 @@ function makeTeams(seasonId: string, status: string, prefix: string, seed = 0): 
   }));
 }
 
-// Elevation Volleyball Club teams — active season + archived history
+// Elevation Volleyball Club teams — clean slate. The shared store is empty so the Teams page and
+// Manage Teams read as "no teams". The Assign Athletes demo teams live in `assignmentDemoTeams` below.
 if (!global.__mockTeamStore || global.__mockTeamStoreVersion !== MOCK_STORE_VERSION) {
-global.__mockTeamStore = [
-  // Current active season (Spring 2026) — mix of active + draft to show tab control
-  ...makeTeams('season-2', 'active', 't'),
-  { id: 'td-1', title: '14 Mountain',   sport: 'volleyball', gender: 'female', grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'draft', tier: null, seasonId: 'season-2', rosterCount: 0, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 0, birthdayFrom: '01/01/2012', birthdayTo: '12/31/2012' },
-  { id: 'td-2', title: '14 Timberline', sport: 'volleyball', gender: 'male',   grades: 'Spring', avatar: null, primaryColor: null, secondaryColor: null, status: 'draft', tier: null, seasonId: 'season-2', rosterCount: 0, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 0, birthdayFrom: '01/01/2012', birthdayTo: '12/31/2012' },
-  { id: 'td-3', title: '15 Mountain',   sport: 'volleyball', gender: 'female', grades: 'Fall',   avatar: null, primaryColor: null, secondaryColor: null, status: 'draft', tier: null, seasonId: 'season-2', rosterCount: 0, maxRosterSize: 12, ageMin: null, ageMax: null, coachCount: 0, birthdayFrom: '01/01/2011', birthdayTo: '12/31/2011' },
-  // Archived past seasons — each gets a different seed for varied roster counts
-  ...makeTeams('season-active',  'archived', 'ta', 1),  // Fall 2025
-  ...makeTeams('season-current', 'archived', 'tc', 3),  // Spring 2025
-  ...makeTeams('season-1',       'archived', 't1', 5),  // Fall 2024
-];
+global.__mockTeamStore = [];
 global.__mockTeamStoreVersion = MOCK_STORE_VERSION;
 }
 const mockTeamStore = global.__mockTeamStore!;

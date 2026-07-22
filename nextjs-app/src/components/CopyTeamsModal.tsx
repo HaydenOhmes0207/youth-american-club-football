@@ -56,8 +56,11 @@ export default function CopyTeamsModal({
       if (defaultTargetSeasonId) {
         setTargetSeasonId(defaultTargetSeasonId);
       } else {
-        const otherSeason = seasons.find(s => s.id !== sourceSeasonId);
-        setTargetSeasonId(otherSeason?.id ?? sourceSeasonId);
+        // Default to the next season after the source, so transfers land in a future season
+        const sourceIdx = seasons.findIndex(s => s.id === sourceSeasonId);
+        const nextSeason = sourceIdx >= 0 ? seasons[sourceIdx + 1] : undefined;
+        const fallback = seasons.find(s => s.id !== sourceSeasonId);
+        setTargetSeasonId((nextSeason ?? fallback)?.id ?? sourceSeasonId);
       }
     }
   }, [isOpen, sourceSeasonId, seasons, defaultTargetSeasonId]);

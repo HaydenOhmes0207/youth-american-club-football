@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import type { ProgramWithStats } from '@/lib/actions/programs';
 import Toolbar from './Toolbar';
 import EmptyState from './EmptyState';
+import ConfirmDialog from './ConfirmDialog';
 import type { EmptyStateVariant } from './EmptyState';
 
 function formatDateRange(eventDates: { start?: string; end?: string }) {
@@ -69,6 +72,100 @@ function MoreOptionsIcon() {
       <circle cx="8" cy="8" r="1.5" fill="var(--u-color-base-foreground, #36485c)" />
       <circle cx="13" cy="8" r="1.5" fill="var(--u-color-base-foreground, #36485c)" />
     </svg>
+  );
+}
+
+function RowActions({ onDelete }: { onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('mousedown', onDocMouseDown);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [open]);
+
+  const toggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setPos({ top: r.bottom + 4, left: r.right - 200 });
+    setOpen(v => !v);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className="more-options-btn"
+        aria-label="More options"
+        onClick={toggle}
+      >
+        <MoreOptionsIcon />
+      </button>
+      {open && createPortal(
+        <div ref={menuRef} className="row-menu" style={{ position: 'fixed', top: pos.top, left: pos.left }}>
+          <button
+            className="row-menu-item row-menu-item--danger"
+            onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2.5 4.5h11M6 4.5V3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1.5M12.5 4.5l-.8 8a1 1 0 0 1-1 .9H5.3a1 1 0 0 1-1-.9l-.8-8" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Delete program
+          </button>
+          <style jsx>{`
+            .row-menu {
+              min-width: 200px;
+              background: var(--u-color-background-container, #fefefe);
+              border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+              border-radius: 8px;
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+              padding: 4px;
+              z-index: 3000;
+            }
+            .row-menu-item {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              width: 100%;
+              padding: 9px 12px;
+              background: none;
+              border: none;
+              border-radius: 5px;
+              font-family: var(--u-font-body);
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--u-color-base-foreground, #36485c);
+              cursor: pointer;
+              text-align: left;
+              white-space: nowrap;
+              transition: background 0.1s ease;
+            }
+            .row-menu-item--danger {
+              color: var(--u-color-alert-foreground, #bb1700);
+            }
+            .row-menu-item--danger:hover {
+              background: rgba(187, 23, 0, 0.08);
+            }
+          `}</style>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -157,7 +254,7 @@ function CreatorAvatar({ creator }: { creator: ProgramWithStats['createdBy'] }) 
   );
 }
 
-function TableContent({ programs }: { programs: ProgramWithStats[] }) {
+function TableContent({ programs, onRequestDelete, onRowClick }: { programs: ProgramWithStats[]; onRequestDelete: (program: ProgramWithStats) => void; onRowClick: (program: ProgramWithStats) => void }) {
   return (
     <div className="programs-table">
       {/* Header Row */}
@@ -193,7 +290,7 @@ function TableContent({ programs }: { programs: ProgramWithStats[] }) {
 
       {/* Data Rows */}
       {programs.map((program) => (
-        <div key={program.id} className="table-row table-data">
+        <div key={program.id} className="table-row table-data" onClick={() => onRowClick(program)}>
           <div className="table-cell cell-title emphasized">
             {program.title}
           </div>
@@ -219,9 +316,7 @@ function TableContent({ programs }: { programs: ProgramWithStats[] }) {
             {formatCurrency(program.programValue)}
           </div>
           <div className="table-cell cell-actions">
-            <button className="more-options-btn" aria-label="More options">
-              <MoreOptionsIcon />
-            </button>
+            <RowActions onDelete={() => onRequestDelete(program)} />
           </div>
         </div>
       ))}
@@ -368,9 +463,11 @@ function TableContent({ programs }: { programs: ProgramWithStats[] }) {
   );
 }
 
-export default function ProgramsTable({ programs }: { programs: ProgramWithStats[] }) {
+export default function ProgramsTable({ programs, onDeleteProgram }: { programs: ProgramWithStats[]; onDeleteProgram?: (id: string) => void }) {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('published');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<ProgramWithStats | null>(null);
 
   const segments = [
     {
@@ -419,21 +516,36 @@ export default function ProgramsTable({ programs }: { programs: ProgramWithStats
 
   return (
     <div className="programs-content">
-      <Toolbar 
+      <Toolbar
         segments={segments}
         searchPlaceholder="Search programs..."
         onSearch={(query) => setSearchQuery(query)}
         onFilter={() => console.log('Filter clicked')}
         onExport={() => console.log('Export clicked')}
       />
-      
+
       {filteredPrograms.length > 0 ? (
         <div className="table-scroll-container">
-          <TableContent programs={filteredPrograms} />
+          <TableContent
+            programs={filteredPrograms}
+            onRequestDelete={setPendingDelete}
+            onRowClick={(program) => router.push(`/programs/${program.id}`)}
+          />
         </div>
       ) : (
         <EmptyState variant={getEmptyStateVariant()} searchQuery={searchQuery} />
       )}
+
+      <ConfirmDialog
+        isOpen={pendingDelete !== null}
+        message={pendingDelete ? `Delete “${pendingDelete.title}”? This can't be undone.` : ''}
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (pendingDelete) onDeleteProgram?.(pendingDelete.id);
+          setPendingDelete(null);
+        }}
+        onCancel={() => setPendingDelete(null)}
+      />
 
       <style jsx>{`
         .programs-content {

@@ -6,21 +6,29 @@ import type { TeamWithStats, Season } from '@/lib/actions/teams';
 import { assignAthletesToTeam, unassignAthleteFromTeam } from '@/lib/actions/teams';
 import type { ProgramWithStats, Registration, RegisteredAthlete } from '@/lib/actions/programs';
 import Select from '@/components/Select';
-import ViewHeader from '@/components/ViewHeader';
 import TeamCard from '@/components/TeamCard';
 import AthleteCard from '@/components/AthleteCard';
 import { useToast } from '@/components/Toast';
 
+function AssignmentsBackIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 // Filter item component matching Figma design
 interface FilterItemProps {
   label: string;
+  subtitle?: string;
   avatar?: string | null;
   isSelected: boolean;
   onClick: (e: React.MouseEvent) => void;
   count?: number;
 }
 
-function FilterItem({ label, avatar, isSelected, onClick, count }: FilterItemProps) {
+function FilterItem({ label, subtitle, avatar, isSelected, onClick, count }: FilterItemProps) {
   // Generate initials from label for fallback
   const initials = label
     .split(' ')
@@ -32,7 +40,7 @@ function FilterItem({ label, avatar, isSelected, onClick, count }: FilterItemPro
   return (
     <button
       type="button"
-      className={`filter-item ${isSelected ? 'filter-item--selected' : ''}`}
+      className={`filter-item ${isSelected ? 'filter-item--selected' : ''} ${subtitle ? 'filter-item--has-subtitle' : ''}`}
       onClick={onClick}
     >
       <div className="filter-item-avatar">
@@ -44,7 +52,10 @@ function FilterItem({ label, avatar, isSelected, onClick, count }: FilterItemPro
           )}
         </div>
       </div>
-      <span className={`filter-item-label ${count === 0 ? 'filter-item-label--subtle' : ''}`}>{label}</span>
+      <div className="filter-item-text">
+        <span className={`filter-item-label ${count === 0 ? 'filter-item-label--subtle' : ''}`}>{label}</span>
+        {subtitle && <span className="filter-item-subtitle">{subtitle}</span>}
+      </div>
       {count !== undefined && (
         <span className="filter-item-count">{count}</span>
       )}
@@ -53,6 +64,39 @@ function FilterItem({ label, avatar, isSelected, onClick, count }: FilterItemPro
       )}
     </button>
   );
+}
+
+// Generate a demo roster for a builder-created registration so its athletes can be assigned to teams
+const GEN_FIRST_NAMES = ['Ava', 'Mia', 'Sofia', 'Emma', 'Olivia', 'Isabella', 'Riley', 'Zoe', 'Layla', 'Chloe', 'Harper', 'Nora'];
+const GEN_LAST_NAMES = ['Bennett', 'Carter', 'Diaz', 'Flores', 'Gomez', 'Hayes', 'Iverson', 'Jenkins', 'Keller', 'Lawson', 'Meyer', 'Novak'];
+function makeAthletesForRegistration(reg: Registration): RegisteredAthlete[] {
+  return Array.from({ length: 12 }, (_, i) => {
+    const first = GEN_FIRST_NAMES[i % GEN_FIRST_NAMES.length];
+    const last = GEN_LAST_NAMES[i % GEN_LAST_NAMES.length];
+    const birthYear = 2012 + (i % 4);
+    const month = String((i % 12) + 1).padStart(2, '0');
+    return {
+      submissionId: `gen-${reg.id}-${i}`,
+      registrationId: reg.id,
+      programId: reg.programId,
+      athleteId: `gen-a-${reg.id}-${i}`,
+      firstName: first,
+      lastName: last,
+      gender: 'Female',
+      birthdate: `${birthYear}-${month}-15`,
+      grade: 6 + (i % 4),
+      gradYear: birthYear + 18,
+      registrationStatus: 'active',
+      paymentMethod: 'card',
+      assignmentStatus: 'unassigned',
+      teamAssignments: [],
+      previousTeamTitle: null,
+      parentId: `gen-p-${reg.id}-${i}`,
+      parentFirstName: 'Parent',
+      parentLastName: last,
+      parentEmail: `${first.toLowerCase()}.${last.toLowerCase()}@email.com`,
+    };
+  });
 }
 
 interface AssignmentsPageClientProps {
@@ -78,7 +122,36 @@ export default function AssignmentsPageClient({
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedRegistrationId, setSelectedRegistrationId] = useState<string>('');
-  const [selectedPreviousTeamTitle, setSelectedPreviousTeamTitle] = useState<string>('');
+  // Merge in programs created through the builder (prototype: localStorage), matching the Programs page
+  const [allPrograms, setAllPrograms] = useState<ProgramWithStats[]>(programs);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('createdPrograms');
+      const created = raw ? (JSON.parse(raw) as ProgramWithStats[]) : [];
+      setAllPrograms(Array.isArray(created) && created.length ? [...created, ...programs] : programs);
+    } catch {
+      setAllPrograms(programs);
+    }
+  }, [programs]);
+  // Merge builder-created registrations and generate athletes for them (prototype: localStorage)
+  const [allRegistrations, setAllRegistrations] = useState<Registration[]>(registrations);
+  const [generatedAthletes, setGeneratedAthletes] = useState<RegisteredAthlete[]>([]);
+  const [teamConnections, setTeamConnections] = useState<Record<string, string>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('createdRegistrations');
+      const createdRegs = raw ? (JSON.parse(raw) as Registration[]) : [];
+      setAllRegistrations(createdRegs.length ? [...createdRegs, ...registrations] : registrations);
+      setGeneratedAthletes(createdRegs.flatMap(makeAthletesForRegistration));
+      const rawConn = localStorage.getItem('teamRegistrationConnections');
+      setTeamConnections(rawConn ? JSON.parse(rawConn) : {});
+    } catch {
+      setAllRegistrations(registrations);
+      setGeneratedAthletes([]);
+      setTeamConnections({});
+    }
+  }, [registrations]);
+  const allAthletes = generatedAthletes.length ? [...athletes, ...generatedAthletes] : athletes;
   const [athleteSearch, setAthleteSearch] = useState<string>('');
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
   const [lastClickedAthleteIndex, setLastClickedAthleteIndex] = useState<number | null>(null);
@@ -111,12 +184,15 @@ export default function AssignmentsPageClient({
     getSeasonAssignments(selectedSeasonId)
   );
 
-  // Reset team assignments when season changes
+  // On mount and season change, refresh assignments and auto-open the season's teams in the middle.
+  // Note: `teams` is intentionally omitted from deps — assignAthletesToTeam revalidates the route,
+  // which hands us a new `teams` array; re-running here would reset teamAssignments and drop the
+  // athlete that was just assigned. `teams` is stable within a page instance, so mount covers it.
   useEffect(() => {
     setTeamAssignments(getSeasonAssignments(selectedSeasonId));
-    // Also clear selections when season changes
-    setSelectedTeamIds([]);
+    setSelectedTeamIds(teams.filter(t => t.seasonId === selectedSeasonId).map(t => t.id));
     setSelectedAthleteIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSeasonId]);
 
   const { showToast } = useToast();
@@ -134,21 +210,19 @@ export default function AssignmentsPageClient({
 
   // Filter registrations by selected program
   const filteredRegistrations = selectedProgramId
-    ? registrations.filter(r => r.programId === selectedProgramId)
+    ? allRegistrations.filter(r => r.programId === selectedProgramId)
     : [];
 
-  const programOptions = programs.map(p => ({ value: p.id, label: p.title }));
+  const programOptions = allPrograms.map(p => ({ value: p.id, label: p.title, status: p.status }));
   const registrationOptions = filteredRegistrations.map(r => ({ value: r.id, label: r.title }));
 
   const handleProgramChange = (programId: string) => {
     setSelectedProgramId(programId);
     setSelectedRegistrationId('');
-    setSelectedPreviousTeamTitle('');
   };
 
   const handleRegistrationChange = (registrationId: string) => {
     setSelectedRegistrationId(registrationId);
-    setSelectedPreviousTeamTitle('');
   };
 
   const handleTeamSelect = (teamId: string, index: number, shiftKey: boolean) => {
@@ -198,41 +272,144 @@ export default function AssignmentsPageClient({
     router.push(`/teams?season=${selectedSeasonId}`);
   };
 
+  // Computed values hoisted so both rails can access them
+  const allAssignedIds = Object.values(teamAssignments).flat();
+  const registrationAthletes = selectedRegistrationId
+    ? allAthletes.filter(a => a.registrationId === selectedRegistrationId)
+    : [];
+  const isSearchDisabled = registrationAthletes.length === 0;
+  const filteredAthletes = registrationAthletes.filter(athlete => {
+    const fullName = `${athlete.firstName} ${athlete.lastName}`.toLowerCase();
+    return fullName.includes(athleteSearch.toLowerCase());
+  });
+
+  const handleAthleteSelect = (athleteId: string, index: number, shiftKey: boolean) => {
+    if (shiftKey && lastClickedAthleteIndex !== null) {
+      const start = Math.min(lastClickedAthleteIndex, index);
+      const end = Math.max(lastClickedAthleteIndex, index);
+      const rangeIds = filteredAthletes.slice(start, end + 1).map(a => a.submissionId);
+      const isCurrentlySelected = selectedAthleteIds.includes(athleteId);
+      if (isCurrentlySelected) {
+        setSelectedAthleteIds(prev => prev.filter(id => !rangeIds.includes(id)));
+      } else {
+        setSelectedAthleteIds(prev => Array.from(new Set([...prev, ...rangeIds])));
+      }
+    } else {
+      setSelectedAthleteIds(prev =>
+        prev.includes(athleteId)
+          ? prev.filter(id => id !== athleteId)
+          : [...prev, athleteId]
+      );
+    }
+    setLastClickedAthleteIndex(index);
+  };
+
+  const renderAthleteCard = (athlete: typeof filteredAthletes[0], index: number) => {
+    const isAssigned = allAssignedIds.includes(athlete.submissionId);
+    const athleteTeams = athlete.teamAssignments
+      .filter(ta => ta.teamSeasonId === selectedSeasonId)
+      .map(ta => {
+        const team = teams.find(t => t.id === ta.teamId);
+        return team ? { id: team.id, name: team.title, avatar: team.avatar } : null;
+      })
+      .filter((t): t is { id: string; name: string; avatar: string | null } => t !== null);
+    return (
+      <AthleteCard
+        key={athlete.submissionId}
+        name={`${athlete.firstName} ${athlete.lastName}`}
+        date={athlete.birthdate}
+        status={isAssigned ? 'assigned' : undefined}
+        isSelected={selectedAthleteIds.includes(athlete.submissionId)}
+        onSelect={(e) => handleAthleteSelect(athlete.submissionId, index, e.shiftKey)}
+        showCheckbox={true}
+        draggable={true}
+        teams={athleteTeams}
+        onDragStart={() => {
+          const athletesToDrag = selectedAthleteIds.includes(athlete.submissionId)
+            ? selectedAthleteIds
+            : [athlete.submissionId];
+          setDraggedAthleteIds(athletesToDrag);
+          setIsDragging(true);
+        }}
+        onDragEnd={() => {
+          setIsDragging(false);
+          setDraggedAthleteIds([]);
+        }}
+      />
+    );
+  };
+
   return (
     <div className="assignments-page-wrapper">
-      <ViewHeader
-        title="Team Assignments"
-        actionLabel="Done"
-        onBack={handleBack}
-        onAction={handleBack}
-      />
+      {/* Custom header with Send Invitations + Done */}
+      <div className="assignments-header">
+        <button className="assignments-header-back" onClick={handleBack} aria-label="Back">
+          <AssignmentsBackIcon />
+        </button>
+        <h2 className="assignments-header-title">Team Assignments</h2>
+        <div className="assignments-header-actions">
+          <button
+            className="assignments-header-btn assignments-header-btn--secondary"
+            onClick={() => router.push('/teams/send-invitations')}
+            disabled={allAssignedIds.length === 0}
+            title={allAssignedIds.length === 0 ? 'Assign at least one athlete to a team to send invitations' : undefined}
+          >
+            Send Invitations
+          </button>
+          <button
+            className="assignments-header-btn assignments-header-btn--primary"
+            onClick={handleBack}
+          >
+            Done
+          </button>
+        </div>
+      </div>
 
       <div className="assignments-page">
-        {/* Left Rail */}
+        {/* Left Rail — program/registration filters */}
         <div className="assignments-rail assignments-rail--left">
-          <div className="rail-header">
+          <h3 className="filter-section-header">Athletes</h3>
+          <div className="left-rail-selects">
             <Select
-              options={seasonOptions}
-              value={selectedSeasonId}
-              onChange={handleSeasonChange}
-              placeholder="Select season"
+              options={programOptions}
+              value={selectedProgramId}
+              onChange={handleProgramChange}
+              placeholder="Select Program"
               fullWidth
+              searchable
+              searchPlaceholder="Search programs..."
             />
-          </div>
-          <div className="filter-section">
-            <h3 className="filter-section-header">Teams</h3>
-            <div className="filter-list">
-              {filteredTeams.map((team, index) => (
-                <FilterItem
-                  key={team.id}
-                  label={team.title}
-                  avatar={team.avatar}
-                  isSelected={selectedTeamIds.includes(team.id)}
-                  onClick={(e) => handleTeamSelect(team.id, index, e.shiftKey)}
-                  count={teamAssignments[team.id]?.length || 0}
-                />
-              ))}
+            <Select
+              options={registrationOptions}
+              value={selectedRegistrationId}
+              onChange={handleRegistrationChange}
+              placeholder="Select Registration"
+              fullWidth
+              disabled={!selectedProgramId}
+              searchable
+              searchPlaceholder="Search registrations..."
+            />
+            <div className={`search-input ${isSearchDisabled ? 'search-input--disabled' : ''}`}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M14 14L11.1 11.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search athletes..."
+                value={athleteSearch}
+                onChange={(e) => setAthleteSearch(e.target.value)}
+                disabled={isSearchDisabled}
+              />
             </div>
+          </div>
+          <hr className="left-rail-divider" />
+          <div className="left-rail-athletes">
+            {selectedRegistrationId && (
+              <div className="athlete-list">
+                {filteredAthletes.map((athlete, index) => renderAthleteCard(athlete, index))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -240,7 +417,7 @@ export default function AssignmentsPageClient({
         <div className="assignments-main">
           {selectedTeamIds.length === 0 ? (
             <div className="empty-state">
-              <p>Select a team from the left to manage assignments</p>
+              <p>Select a team from the right to manage assignments</p>
             </div>
           ) : (
             <div className="team-cards-container">
@@ -271,7 +448,7 @@ export default function AssignmentsPageClient({
                       showToast(`${newIds.length} ${newIds.length === 1 ? 'athlete' : 'athletes'} added from ${previousSeason.name} Season`, 'success');
                     } : undefined}
                     assignedAthletes={(teamAssignments[team.id] || []).map(athleteId => {
-                      const athlete = athletes.find(a => a.submissionId === athleteId);
+                      const athlete = allAthletes.find(a => a.submissionId === athleteId);
                       return athlete ? {
                         id: athlete.submissionId,
                         name: `${athlete.firstName} ${athlete.lastName}`,
@@ -281,15 +458,10 @@ export default function AssignmentsPageClient({
                     }).filter((a): a is NonNullable<typeof a> => a !== null)}
                     isDragActive={isDragging}
                     onDrop={async (teamId) => {
-                      // Capture the IDs before clearing state
                       const idsToAssign = [...draggedAthleteIds];
                       const athleteCount = idsToAssign.length;
-                      
-                      // Update local state immediately for responsiveness
-                      // Allow athletes to be on multiple teams - just add to the new team
                       setTeamAssignments(prev => {
                         const currentTeamAthletes = prev[teamId] || [];
-                        // Only add athletes that aren't already on this team
                         const newAthletes = idsToAssign.filter(id => !currentTeamAthletes.includes(id));
                         return {
                           ...prev,
@@ -298,13 +470,10 @@ export default function AssignmentsPageClient({
                       });
                       setSelectedAthleteIds([]);
                       setDraggedAthleteIds([]);
-                      
-                      // Save to database
                       const result = await assignAthletesToTeam({
                         teamId,
                         submissionIds: idsToAssign,
                       });
-                      
                       if (result.success) {
                         const athleteText = athleteCount === 1 ? 'athlete' : 'athletes';
                         showToast(`${athleteCount} ${athleteText} assigned to ${team.title}`, 'success');
@@ -317,9 +486,7 @@ export default function AssignmentsPageClient({
                         ...prev,
                         [team.id]: (prev[team.id] || []).filter(id => id !== athleteId),
                       }));
-
                       const result = await unassignAthleteFromTeam(team.id, athleteId);
-
                       if (result.success) {
                         showToast('Athlete removed from team', 'success');
                       } else {
@@ -336,208 +503,121 @@ export default function AssignmentsPageClient({
           )}
         </div>
 
-        {/* Right Rail */}
+        {/* Right Rail — season selector + Teams section */}
         <div className="assignments-rail assignments-rail--right">
-          {(() => {
-            // Get all assigned athlete IDs
-            const allAssignedIds = Object.values(teamAssignments).flat();
-            
-            // Determine if selected program is from a previous season (already ended)
-            const selectedProgram = programs.find(p => p.id === selectedProgramId);
-            const isPreviousSeason = !!selectedProgram?.eventDates?.end && new Date(selectedProgram.eventDates.end) < new Date();
-
-            // Athletes in the selected registration
-            const registrationAthletes = selectedRegistrationId
-              ? athletes.filter(a => a.registrationId === selectedRegistrationId)
-              : [];
-
-            // Previous team options derived from registration athletes
-            const previousTeamTitles = Array.from(
-              new Set(registrationAthletes.map(a => a.previousTeamTitle).filter((t): t is string => !!t))
-            ).sort();
-            const previousTeamOptions = [
-              { value: '', label: 'All previous teams' },
-              ...previousTeamTitles.map(t => ({ value: t, label: t })),
-            ];
-
-            // Apply previous-team filter (only relevant for previous seasons)
-            const teamFilteredAthletes = isPreviousSeason && selectedPreviousTeamTitle
-              ? registrationAthletes.filter(a => a.previousTeamTitle === selectedPreviousTeamTitle)
-              : registrationAthletes;
-
-            const athleteCount = teamFilteredAthletes.length;
-            const isSearchDisabled = registrationAthletes.length === 0;
-
-            const filteredAthletes = teamFilteredAthletes.filter(athlete => {
-              const fullName = `${athlete.firstName} ${athlete.lastName}`.toLowerCase();
-              return fullName.includes(athleteSearch.toLowerCase());
-            });
-
-            const handleAthleteSelect = (athleteId: string, index: number, shiftKey: boolean) => {
-              if (shiftKey && lastClickedAthleteIndex !== null) {
-                // Shift+click: select range
-                const start = Math.min(lastClickedAthleteIndex, index);
-                const end = Math.max(lastClickedAthleteIndex, index);
-                const rangeIds = filteredAthletes.slice(start, end + 1).map(a => a.submissionId);
-                
-                // Check if we're selecting or deselecting based on the clicked item
-                const isCurrentlySelected = selectedAthleteIds.includes(athleteId);
-                
-                if (isCurrentlySelected) {
-                  // Deselect the range
-                  setSelectedAthleteIds(prev => prev.filter(id => !rangeIds.includes(id)));
-                } else {
-                  // Select the range
-                  setSelectedAthleteIds(prev => Array.from(new Set([...prev, ...rangeIds])));
-                }
-              } else {
-                // Regular click: toggle single item
-                setSelectedAthleteIds(prev =>
-                  prev.includes(athleteId)
-                    ? prev.filter(id => id !== athleteId)
-                    : [...prev, athleteId]
-                );
-              }
-              setLastClickedAthleteIndex(index);
-            };
-
-            return (
-              <>
-                <div className="right-rail-selects">
-                  <Select
-                    options={programOptions}
-                    value={selectedProgramId}
-                    onChange={handleProgramChange}
-                    placeholder="Select Program"
-                    fullWidth
-                    searchable
-                    searchPlaceholder="Search programs..."
-                  />
-                  <Select
-                    options={registrationOptions}
-                    value={selectedRegistrationId}
-                    onChange={handleRegistrationChange}
-                    placeholder="Select Registration"
-                    fullWidth
-                    disabled={!selectedProgramId}
-                    searchable
-                    searchPlaceholder="Search registrations..."
-                  />
-                  {selectedRegistrationId && isPreviousSeason && previousTeamTitles.length > 0 && (
-                    <Select
-                      options={previousTeamOptions}
-                      value={selectedPreviousTeamTitle}
-                      onChange={setSelectedPreviousTeamTitle}
-                      placeholder="Team"
-                      fullWidth
-                    />
-                  )}
-                  <div className={`search-input ${isSearchDisabled ? 'search-input--disabled' : ''}`}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M14 14L11.1 11.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Search athletes..."
-                      value={athleteSearch}
-                      onChange={(e) => setAthleteSearch(e.target.value)}
-                      disabled={isSearchDisabled}
-                    />
-                  </div>
-                </div>
-                <hr className="right-rail-divider" />
-                <div className="right-rail-athletes">
-                  {selectedRegistrationId && (
-                    <div className="athlete-list">
-                      {(() => {
-                        // Group athletes: returning players by previous team, new players last
-                        const groups: Map<string, typeof filteredAthletes> = new Map();
-                        const newPlayers: typeof filteredAthletes = [];
-
-                        filteredAthletes.forEach(athlete => {
-                          if (athlete.previousTeamTitle) {
-                            const group = groups.get(athlete.previousTeamTitle) ?? [];
-                            group.push(athlete);
-                            groups.set(athlete.previousTeamTitle, group);
-                          } else {
-                            newPlayers.push(athlete);
-                          }
-                        });
-
-                        const hasReturning = groups.size > 0;
-
-                        const renderAthleteCard = (athlete: typeof filteredAthletes[0], index: number) => {
-                          const isAssigned = allAssignedIds.includes(athlete.submissionId);
-                          const athleteTeams = athlete.teamAssignments
-                            .filter(ta => ta.teamSeasonId === selectedSeasonId)
-                            .map(ta => {
-                              const team = teams.find(t => t.id === ta.teamId);
-                              return team ? { id: team.id, name: team.title, avatar: team.avatar } : null;
-                            })
-                            .filter((t): t is { id: string; name: string; avatar: string | null } => t !== null);
-                          return (
-                            <AthleteCard
-                              key={athlete.submissionId}
-                              name={`${athlete.firstName} ${athlete.lastName}`}
-                              date={athlete.birthdate}
-                              status={isAssigned ? 'assigned' : undefined}
-                              isSelected={selectedAthleteIds.includes(athlete.submissionId)}
-                              onSelect={(e) => handleAthleteSelect(athlete.submissionId, index, e.shiftKey)}
-                              showCheckbox={true}
-                              draggable={true}
-                              teams={athleteTeams}
-                              onDragStart={() => {
-                                const athletesToDrag = selectedAthleteIds.includes(athlete.submissionId)
-                                  ? selectedAthleteIds
-                                  : [athlete.submissionId];
-                                setDraggedAthleteIds(athletesToDrag);
-                                setIsDragging(true);
-                              }}
-                              onDragEnd={() => {
-                                setIsDragging(false);
-                                setDraggedAthleteIds([]);
-                              }}
-                            />
-                          );
-                        };
-
-                        let globalIndex = 0;
-                        return (
-                          <>
-                            {hasReturning && Array.from(groups.entries()).map(([teamName, groupAthletes]) => (
-                              <div key={teamName} className="athlete-group">
-                                <div className="athlete-group-header">
-                                  <span className="athlete-group-label">2025 {teamName}</span>
-                                  <span className="athlete-group-count">{groupAthletes.length}</span>
-                                </div>
-                                {groupAthletes.map(athlete => renderAthleteCard(athlete, globalIndex++))}
-                              </div>
-                            ))}
-                            {newPlayers.length > 0 && (
-                              <div className="athlete-group">
-                                {hasReturning && (
-                                  <div className="athlete-group-header">
-                                    <span className="athlete-group-label">New Players</span>
-                                    <span className="athlete-group-count">{newPlayers.length}</span>
-                                  </div>
-                                )}
-                                {newPlayers.map(athlete => renderAthleteCard(athlete, globalIndex++))}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
-              </>
-            );
-          })()}
+          <h3 className="filter-section-header">Teams</h3>
+          <div className="rail-header">
+            <Select
+              options={seasonOptions}
+              value={selectedSeasonId}
+              onChange={handleSeasonChange}
+              placeholder="Select season"
+              fullWidth
+            />
+          </div>
+          <div className="filter-section">
+            <div className="filter-list">
+              {filteredTeams.map((team, index) => (
+                <FilterItem
+                  key={team.id}
+                  label={team.title}
+                  subtitle={teamConnections[team.id]}
+                  avatar={team.avatar}
+                  isSelected={selectedTeamIds.includes(team.id)}
+                  onClick={(e) => handleTeamSelect(team.id, index, e.shiftKey)}
+                  count={teamAssignments[team.id]?.length || 0}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       <style jsx global>{`
+        /* ── Assignments custom header ── */
+        .assignments-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 var(--u-space-one-and-half, 24px);
+          height: 48px;
+          flex-shrink: 0;
+        }
+
+        .assignments-header-back {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border: none;
+          background: transparent;
+          border-radius: var(--u-border-radius-medium, 4px);
+          cursor: pointer;
+          color: var(--u-color-base-foreground, #36485c);
+          transition: background 0.15s ease;
+        }
+        .assignments-header-back:hover {
+          background: rgba(0, 0, 0, 0.06);
+        }
+
+        .assignments-header-title {
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-default, 16px);
+          font-weight: var(--u-font-weight-bold, 700);
+          color: var(--u-color-base-foreground, #36485c);
+          margin: 0;
+        }
+
+        .assignments-header-actions {
+          display: flex;
+          align-items: center;
+          gap: var(--u-space-half, 8px);
+        }
+
+        .assignments-header-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 36px;
+          padding: 0 18px;
+          border-radius: var(--u-border-radius-medium, 4px);
+          font-family: var(--u-font-body);
+          font-size: var(--u-font-size-200, 14px);
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+
+        .assignments-header-btn--primary {
+          border: none;
+          background: var(--u-color-emphasis-background-contrast, #0273e3);
+          color: #fff;
+        }
+        .assignments-header-btn--primary:hover {
+          background: #0261c2;
+        }
+
+        .assignments-header-btn--secondary {
+          border: 1.5px solid var(--u-color-emphasis-background-contrast, #0273e3);
+          background: transparent;
+          color: var(--u-color-emphasis-background-contrast, #0273e3);
+        }
+        .assignments-header-btn--secondary:hover {
+          background: rgba(2, 115, 227, 0.06);
+        }
+
+        .assignments-header-btn:disabled {
+          border-color: var(--u-color-line-subtle, #c4c6c8);
+          background: transparent;
+          color: var(--u-color-base-foreground-subtle, #85909e);
+          cursor: not-allowed;
+        }
+        .assignments-header-btn:disabled:hover {
+          background: transparent;
+        }
+
+        /* ── Page shell ── */
         .assignments-page-wrapper {
           position: fixed;
           inset: 0;
@@ -572,32 +652,34 @@ export default function AssignmentsPageClient({
         .assignments-rail--left {
         }
 
-        .assignments-rail--right {
+        .assignments-rail--left {
           display: flex;
           flex-direction: column;
           overflow: hidden;
           padding-bottom: 0;
         }
 
-        .right-rail-selects {
+        .assignments-rail--right {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .left-rail-selects {
           display: flex;
           flex-direction: column;
           gap: var(--u-space-half, 8px);
           flex-shrink: 0;
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          background: var(--u-color-background-container, #fefefe);
         }
 
-        .right-rail-divider {
+        .left-rail-divider {
           border: none;
           border-top: 1px dashed var(--u-color-line-subtle, #c4c6c8);
           margin: var(--u-space-one, 16px) 0;
           flex-shrink: 0;
         }
 
-        .right-rail-selects .search-input {
+        .left-rail-selects .search-input {
           display: flex;
           align-items: center;
           gap: var(--u-space-half, 8px);
@@ -610,11 +692,11 @@ export default function AssignmentsPageClient({
           transition: border-color 0.15s ease;
         }
 
-        .right-rail-selects .search-input:focus-within {
+        .left-rail-selects .search-input:focus-within {
           border-color: var(--u-color-emphasis-background-contrast, #0273e3);
         }
 
-        .right-rail-selects .search-input input {
+        .left-rail-selects .search-input input {
           border: none;
           outline: none;
           background: transparent;
@@ -624,20 +706,20 @@ export default function AssignmentsPageClient({
           width: 100%;
         }
 
-        .right-rail-selects .search-input input::placeholder {
+        .left-rail-selects .search-input input::placeholder {
           color: var(--u-color-base-foreground-subtle, #607081);
         }
 
-        .right-rail-selects .search-input--disabled {
+        .left-rail-selects .search-input--disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
 
-        .right-rail-selects .search-input--disabled input {
+        .left-rail-selects .search-input--disabled input {
           cursor: not-allowed;
         }
 
-        .right-rail-athletes {
+        .left-rail-athletes {
           display: flex;
           flex-direction: column;
           gap: var(--u-space-half, 8px);
@@ -738,6 +820,11 @@ export default function AssignmentsPageClient({
           transition: background 0.15s ease;
         }
 
+        .filter-item--has-subtitle {
+          height: auto;
+          padding: 6px 8px;
+        }
+
         .filter-item:hover {
           background: var(--u-color-background-callout, #f8f8f9);
         }
@@ -792,8 +879,15 @@ export default function AssignmentsPageClient({
           line-height: 1;
         }
 
-        .filter-item-label {
+        .filter-item-text {
           flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          min-width: 0;
+        }
+
+        .filter-item-label {
           font-family: var(--u-font-body);
           font-size: var(--u-font-size-medium, 14px);
           font-weight: var(--u-font-weight-medium, 500);
@@ -801,6 +895,20 @@ export default function AssignmentsPageClient({
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .filter-item-subtitle {
+          font-family: var(--u-font-body);
+          font-size: 11px;
+          font-weight: 400;
+          color: var(--u-color-base-foreground-subtle, #607081);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .filter-item--selected .filter-item-subtitle {
+          color: var(--u-color-base-foreground, #36485c);
         }
 
         .filter-item--selected .filter-item-label {

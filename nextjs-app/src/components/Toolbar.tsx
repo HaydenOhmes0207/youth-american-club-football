@@ -24,9 +24,13 @@ interface ToolbarProps {
   onExport?: () => void;
   showFilter?: boolean;
   showExport?: boolean;
+  showSearch?: boolean;
+  filterLabel?: string;
+  filterActiveCount?: number;
   extraFilters?: React.ReactNode;
   viewMode?: 'list' | 'grid';
   onViewModeChange?: (mode: 'list' | 'grid') => void;
+  viewToggleAlign?: 'left' | 'right';
 }
 
 
@@ -39,6 +43,78 @@ function SearchIcon() {
   );
 }
 
+function ViewToggle({ viewMode, onChange }: { viewMode: 'list' | 'grid'; onChange: (mode: 'list' | 'grid') => void }) {
+  return (
+    <div className="view-toggle">
+      <button
+        className={`view-toggle-btn${viewMode === 'list' ? ' view-toggle-btn--active' : ''}`}
+        onClick={() => onChange('list')}
+        aria-label="List view"
+        aria-pressed={viewMode === 'list'}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="3.5" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="2" y="11" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+        </svg>
+      </button>
+      <button
+        className={`view-toggle-btn${viewMode === 'grid' ? ' view-toggle-btn--active' : ''}`}
+        onClick={() => onChange('grid')}
+        aria-label="Grid view"
+        aria-pressed={viewMode === 'grid'}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+      <style jsx>{`
+        .view-toggle {
+          display: flex;
+          align-items: center;
+          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+          border-radius: 4px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .view-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border: none;
+          background: var(--u-color-background-container, #fefefe);
+          color: var(--u-color-base-foreground-subtle, #607081);
+          cursor: pointer;
+          transition: background 0.12s ease, color 0.12s ease;
+          position: relative;
+        }
+        .view-toggle-btn + .view-toggle-btn::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 6px;
+          bottom: 6px;
+          width: 1px;
+          background: var(--u-color-line-subtle, #c4c6c8);
+        }
+        .view-toggle-btn:hover {
+          background: var(--u-color-background-canvas, #eff0f0);
+          color: var(--u-color-base-foreground, #36485c);
+        }
+        .view-toggle-btn--active {
+          background: var(--u-color-background-canvas, #eff0f0);
+          color: var(--u-color-base-foreground-contrast, #071c31);
+        }
+      `}</style>
+    </div>
+  );
+}
+
 
 export default function Toolbar({
   segments = [],
@@ -48,9 +124,13 @@ export default function Toolbar({
   onExport,
   showFilter = true,
   showExport = true,
+  showSearch = true,
+  filterLabel,
+  filterActiveCount = 0,
   extraFilters,
   viewMode,
   onViewModeChange,
+  viewToggleAlign = 'left',
 }: ToolbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -60,53 +140,27 @@ export default function Toolbar({
     onSearch?.(value);
   };
 
+  const viewToggle = viewMode !== undefined && onViewModeChange ? (
+    <ViewToggle viewMode={viewMode} onChange={onViewModeChange} />
+  ) : null;
+
   return (
     <div className="toolbar">
       <div className="toolbar-left">
-        {viewMode !== undefined && onViewModeChange && (
-          <div className="view-toggle">
-            <button
-              className={`view-toggle-btn${viewMode === 'list' ? ' view-toggle-btn--active' : ''}`}
-              onClick={() => onViewModeChange('list')}
-              aria-label="List view"
-              aria-pressed={viewMode === 'list'}
-            >
-              {/* List icon */}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="3.5" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-                <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-                <rect x="2" y="11" width="12" height="1.5" rx="0.75" fill="currentColor"/>
-              </svg>
-            </button>
-            <button
-              className={`view-toggle-btn${viewMode === 'grid' ? ' view-toggle-btn--active' : ''}`}
-              onClick={() => onViewModeChange('grid')}
-              aria-label="Grid view"
-              aria-pressed={viewMode === 'grid'}
-            >
-              {/* Grid icon */}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/>
-                <rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/>
-                <rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>
-                <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/>
-              </svg>
-            </button>
-          </div>
-        )}
+        {viewToggleAlign === 'left' && viewToggle}
 
         {showFilter && (
-          <>
-            <button
-              className="toolbar-icon-btn"
-              onClick={onFilter}
-              aria-label="Filter"
-            >
-              <Icon src="/icons/filter.svg" alt="Filter" width={20} height={20} />
-            </button>
-            <div className="toolbar-divider" />
-          </>
+          <button
+            className={`toolbar-icon-btn${filterLabel ? ' toolbar-filter-btn' : ''}`}
+            onClick={onFilter}
+            aria-label="Filter"
+          >
+            <Icon src="/icons/filter.svg" alt="Filter" width={20} height={20} />
+            {filterLabel && <span className="toolbar-filter-label">{filterLabel}</span>}
+            {filterActiveCount > 0 && <span className="toolbar-filter-badge">{filterActiveCount}</span>}
+          </button>
         )}
+        {showFilter && (segments.length > 0 || extraFilters) && <div className="toolbar-divider" />}
 
         <div className="toolbar-segments">
           {segments.map((segment, index) => (
@@ -123,16 +177,20 @@ export default function Toolbar({
       </div>
 
       <div className="toolbar-right">
-        <div className="search-input">
-          <SearchIcon />
-          <input
-            type="text"
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-        
+        {viewToggleAlign === 'right' && viewToggle}
+
+        {showSearch && (
+          <div className="search-input">
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+        )}
+
         {showExport && (
           <button 
             className="toolbar-icon-btn" 
@@ -159,49 +217,6 @@ export default function Toolbar({
           gap: var(--u-space-three-quarter, 12px);
         }
 
-        .view-toggle {
-          display: flex;
-          align-items: center;
-          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
-          border-radius: 4px;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-
-        .view-toggle-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          border: none;
-          background: var(--u-color-background-container, #fefefe);
-          color: var(--u-color-base-foreground-subtle, #607081);
-          cursor: pointer;
-          transition: background 0.12s ease, color 0.12s ease;
-          position: relative;
-        }
-
-        .view-toggle-btn + .view-toggle-btn::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 6px;
-          bottom: 6px;
-          width: 1px;
-          background: var(--u-color-line-subtle, #c4c6c8);
-        }
-
-        .view-toggle-btn:hover {
-          background: var(--u-color-background-canvas, #eff0f0);
-          color: var(--u-color-base-foreground, #36485c);
-        }
-
-        .view-toggle-btn--active {
-          background: var(--u-color-background-canvas, #eff0f0);
-          color: var(--u-color-base-foreground-contrast, #071c31);
-        }
-
         .toolbar-right {
           display: flex;
           align-items: center;
@@ -224,6 +239,35 @@ export default function Toolbar({
 
         .toolbar-icon-btn:hover {
           background: var(--u-color-background-subtle, #f5f6f7);
+        }
+
+        .toolbar-filter-btn {
+          width: auto;
+          gap: 8px;
+          padding: 0 14px;
+        }
+
+        .toolbar-filter-label {
+          font-family: var(--u-font-body);
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--u-color-base-foreground, #36485c);
+        }
+
+        .toolbar-filter-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          border-radius: 9999px;
+          background: var(--u-color-emphasis-background-contrast, #0273e3);
+          color: #fff;
+          font-family: var(--u-font-body);
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1;
         }
 
         .toolbar-divider {

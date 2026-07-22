@@ -1,25 +1,25 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import Button from '@/components/Button';
 import TeamsTable from '@/components/TeamsTable';
 import TeamsGrid from '@/components/TeamsGrid';
 import Toolbar from '@/components/Toolbar';
-import ActionBar from '@/components/ActionBar';
 import CopyTeamsModal from '@/components/CopyTeamsModal';
 import ArchiveTeamsModal from '@/components/ArchiveTeamsModal';
 import UpgradeModal from '@/components/UpgradeModal';
+// ActionBar removed — teams are confirmed via the draft banner, not bulk selection
 import ConfirmDialog from '@/components/ConfirmDialog';
 import NewSeasonModal from '@/components/NewSeasonModal';
 import type { TeamWithStats, Season, StaffUser, RosterAthlete } from '@/lib/actions/teams';
 import ConfirmTeamsDrawer from '@/components/ConfirmTeamsDrawer';
-import { deleteTeams, archiveTeams, updateTeam } from '@/lib/actions/teams';
+import { deleteTeams, archiveTeams } from '@/lib/actions/teams';
 import { maryvilleTeams } from '@/lib/mockHighSchoolData';
 import { type EmptyStateVariant } from '@/components/EmptyState';
-import Select from '@/components/Select';
-import StatsBar from '@/components/StatsBar';
+import TeamsFilterPanel, { type TeamsFilters, createDefaultTeamsFilters, countTeamsFilters } from '@/components/TeamsFilterPanel';
 import { useToast } from '@/components/Toast';
 
 
@@ -69,7 +69,6 @@ export default function TeamsPageClient({ teams, seasons, initialSeasonId }: Tea
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
-const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -91,12 +90,15 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   }, [teamsMenuOpen]);
 
   const [localTeams, setLocalTeams] = useState<TeamWithStats[]>(teams);
-  const [filterGender, setFilterGender] = useState('');
-  const [filterSport, setFilterSport] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterSeason, setFilterSeason] = useState(() =>
-    isHighSchool ? '' : '2026-2027'
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [teamFilters, setTeamFilters] = useState<TeamsFilters>(() =>
+    createDefaultTeamsFilters(isHighSchool ? undefined : '2026-2027')
   );
+  // The filter panel docks beside the content card (a sibling of .content-inner)
+  const [mainContentEl, setMainContentEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setMainContentEl(document.querySelector('.main-content'));
+  }, []);
 
   const selectedSeason = seasons.find(s => s.id === selectedSeasonId);
 
@@ -104,30 +106,24 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const activeTeamPool = isHighSchool ? maryvilleTeams : localTeams;
   const seasonFilteredTeams = activeTeamPool;
 
-  const STATUS_ORDER: Record<string, number> = { draft: 0, active: 1, archived: 2 };
+  const STATUS_ORDER: Record<string, number> = { draft: 0, pending: 1, active: 2, archived: 3 };
 
   const preStatusFiltered = seasonFilteredTeams.filter(team => {
     if (searchQuery.trim() && !team.title.toLowerCase().includes(searchQuery.toLowerCase()) && !team.sport.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (filterGender && team.gender !== filterGender) return false;
-    if (filterSport && team.sport !== filterSport) return false;
-    if (filterSeason) {
+    if (teamFilters.genders.length && !teamFilters.genders.includes(team.gender)) return false;
+    if (teamFilters.sports.length && !teamFilters.sports.includes(team.sport)) return false;
+    if (teamFilters.seasons.length) {
       if (isHighSchool) {
-        if (team.grades !== filterSeason) return false;
+        if (!team.grades || !teamFilters.seasons.includes(team.grades)) return false;
       } else {
         const teamSeason = seasons.find(s => s.id === team.seasonId);
-        if (!teamSeason || getAcademicYear(teamSeason.name) !== filterSeason) return false;
+        if (!teamSeason || !teamFilters.seasons.includes(getAcademicYear(teamSeason.name))) return false;
       }
     }
     return true;
   });
-  const statusCounts = {
-    active: preStatusFiltered.filter(t => t.status === 'active').length,
-    draft: preStatusFiltered.filter(t => t.status === 'draft').length,
-    archived: preStatusFiltered.filter(t => t.status === 'archived').length,
-  };
-
   const filteredTeams = preStatusFiltered.filter(team => {
-    if (filterStatus && team.status !== filterStatus) return false;
+    if (teamFilters.statuses.length && !teamFilters.statuses.includes(team.status)) return false;
     return true;
   }).sort((a, b) => (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99));
 
@@ -138,39 +134,13 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         .map(g => ({ value: g, label: g }))
     : Array.from(new Set(seasons.map(s => getAcademicYear(s.name)).filter(Boolean)))
         .map(year => ({ value: year, label: year }));
-
-  const handleTeamSelectionChange = (teamId: string, checked: boolean, index: number, shiftKey: boolean) => {
-    if (shiftKey && lastClickedIndex !== null) {
-      const startIndex = Math.min(lastClickedIndex, index);
-      const endIndex = Math.max(lastClickedIndex, index);
-      const rangeTeamIds = filteredTeams.slice(startIndex, endIndex + 1).map(team => team.id);
-      if (checked) {
-        setSelectedTeamIds(Array.from(new Set([...selectedTeamIds, ...rangeTeamIds])));
-      } else {
-        setSelectedTeamIds(selectedTeamIds.filter(id => !rangeTeamIds.includes(id)));
-      }
-    } else {
-      if (checked) {
-        setSelectedTeamIds([...selectedTeamIds, teamId]);
-      } else {
-        setSelectedTeamIds(selectedTeamIds.filter(id => id !== teamId));
-      }
-    }
-    setLastClickedIndex(index);
-  };
-
-  const handleSelectAllChange = (checked: boolean) => {
-    if (checked) {
-      setSelectedTeamIds(filteredTeams.map(team => team.id));
-    } else {
-      setSelectedTeamIds([]);
-      setLastClickedIndex(null);
-    }
-  };
+  const sportOptions = uniqueSports.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }));
+  const genderOptions = uniqueGenders.map(g => ({ value: g, label: formatGender(g) }));
+  const filterOptionSets = { seasonOptions: combinedSeasonOptions, sportOptions, genderOptions };
+  const activeFilterCount = countTeamsFilters(teamFilters, filterOptionSets);
 
   const handleClearSelection = () => {
     setSelectedTeamIds([]);
-    setLastClickedIndex(null);
   };
 
   const handleDeleteTeams = async () => {
@@ -191,42 +161,40 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const getEmptyStateVariant = (): EmptyStateVariant => {
     if (searchQuery.trim() && filteredTeams.length === 0) return 'search';
-    if (filteredTeams.length === 0 && filterSeason) return 'teams-season';
+    if (filteredTeams.length === 0 && teamFilters.seasons.length > 0) return 'teams-season';
     return 'teams';
   };
 
   const draftTeams = preStatusFiltered.filter((t: { status: string }) => t.status === 'draft');
-  const activeTeamRows = preStatusFiltered.filter((t: { status: string }) => t.status === 'active');
-  const totalAthletes = preStatusFiltered.reduce((sum: number, t: { rosterCount: number }) => sum + t.rosterCount, 0);
-  const uniqueSportsCount = new Set(preStatusFiltered.map((t: { sport: string }) => t.sport)).size;
 
   return (
     <div className="teams-page">
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', width: '100%' }}>
-        <h1 style={{
-          fontFamily: 'var(--u-font-body)',
-          fontWeight: 700,
-          fontSize: '32px',
-          lineHeight: '1.2',
-          letterSpacing: '0.25px',
-          color: 'var(--u-color-base-foreground-contrast, #071c31)',
-          margin: 0,
-        }}>
-          Teams
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
+          <h1 style={{
+            fontFamily: 'var(--u-font-body)',
+            fontWeight: 700,
+            fontSize: '32px',
+            lineHeight: '1.2',
+            letterSpacing: '0.25px',
+            color: 'var(--u-color-base-foreground-contrast, #071c31)',
+            margin: 0,
+            flexShrink: 0,
+          }}>
+            Teams
+          </h1>
+          <div className="teams-search">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: 'var(--u-color-base-foreground-subtle, #607081)' }}>
+              <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10.5 10.5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search teams..." />
+          </div>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          {isHighSchool ? (
-            <Button
-              buttonStyle="standard"
-              buttonType="primary"
-              size="medium"
-              onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}&workspace=highschool`)}
-            >
-              Add Draft Teams
-            </Button>
-          ) : (
+          {!isHighSchool && (
             <>
               <Button
                 buttonStyle="standard"
@@ -242,7 +210,7 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
                 size="medium"
                 onClick={() => router.push(`/teams/manage?season=${selectedSeasonId}`)}
               >
-                Add Draft Teams
+                Add Teams
               </Button>
             </>
           )}
@@ -280,17 +248,6 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         </div>
       </div>
 
-      <StatsBar
-        stats={isHighSchool ? [
-          { label: 'Active Teams', value: activeTeamRows.length, italic: true },
-          { label: 'Sports', value: uniqueSportsCount, italic: true },
-          { label: 'Athletes', value: totalAthletes, italic: true },
-        ] : [
-          { label: 'Teams', value: filteredTeams.length, italic: true },
-          { label: 'Athletes', value: totalAthletes, italic: true },
-        ]}
-      />
-
       <UpgradeModal
         isOpen={isUpgradeModalOpen}
         onClose={() => setIsUpgradeModalOpen(false)}
@@ -316,7 +273,14 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         sourceSeasonId={selectedSeasonId}
         seasons={seasons}
         onSuccess={(newTeams) => {
-          setLocalTeams(prev => [...prev, ...newTeams]);
+          const idsToArchive = selectedTeamIds.filter(id =>
+            localTeams.find(t => t.id === id)?.status === 'active'
+          );
+          archiveTeams(idsToArchive);
+          setLocalTeams(prev => [
+            ...prev.map(t => idsToArchive.includes(t.id) ? { ...t, status: 'archived' } : t),
+            ...newTeams,
+          ]);
           handleClearSelection();
         }}
       />
@@ -329,7 +293,14 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         seasons={seasons}
         defaultTargetSeasonId={selectedSeasonId}
         onSuccess={(newTeams) => {
-          setLocalTeams(prev => [...prev, ...newTeams]);
+          const idsToArchive = localTeams
+            .filter(t => t.seasonId === activeSeason?.id && t.status === 'active')
+            .map(t => t.id);
+          archiveTeams(idsToArchive);
+          setLocalTeams(prev => [
+            ...prev.map(t => idsToArchive.includes(t.id) ? { ...t, status: 'archived' } : t),
+            ...newTeams,
+          ]);
           setIsNewSeasonTransferOpen(false);
         }}
       />
@@ -351,9 +322,8 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
       <ConfirmTeamsDrawer
         isOpen={isConfirmDrawerOpen}
         onClose={() => setIsConfirmDrawerOpen(false)}
-        onConfirm={async () => {
-          const ids = [...selectedTeamIds];
-          setLocalTeams(prev => prev.map(t => ids.includes(t.id) ? { ...t, status: 'active' } : t));
+        onConfirm={async (ids) => {
+          setLocalTeams(prev => prev.map(t => ids.includes(t.id) && t.status === 'draft' ? { ...t, status: 'pending' } : t));
           setIsConfirmDrawerOpen(false);
           const seasonLabel = selectedSeason ? getAcademicYear(selectedSeason.name) : '';
           showToast(`${ids.length} ${ids.length === 1 ? 'team' : 'teams'} confirmed${seasonLabel ? ` for the ${seasonLabel} season` : ''}`, 'success');
@@ -376,113 +346,52 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         <div className="toolbar-wrapper">
           <Toolbar
             segments={[]}
-            searchPlaceholder="Search teams..."
-            showFilter={false}
             showExport={false}
-            onSearch={(query) => setSearchQuery(query)}
+            showSearch={false}
+            filterLabel="Filters"
+            filterActiveCount={activeFilterCount}
+            onFilter={() => setFiltersOpen(v => !v)}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
-            extraFilters={
-              <>
-                <Select
-                  options={[{ value: '', label: 'Season' }, ...combinedSeasonOptions]}
-                  value={filterSeason}
-                  onChange={setFilterSeason}
-                  placeholder="Season"
-                />
-                <Select
-                  options={[{ value: '', label: 'Sport' }, ...uniqueSports.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))]}
-                  value={filterSport}
-                  onChange={setFilterSport}
-                  placeholder="Sport"
-                />
-                <Select
-                  options={[{ value: '', label: 'Gender' }, ...uniqueGenders.map(g => ({ value: g, label: formatGender(g) }))]}
-                  value={filterGender}
-                  onChange={setFilterGender}
-                  placeholder="Gender"
-                />
-                {(filterGender || filterSport || filterSeason) && (
-                  <button className="filter-clear" onClick={() => { setFilterGender(''); setFilterSport(''); setFilterSeason(''); }}>
-                    Clear filters
-                  </button>
-                )}
-              </>
-            }
+            viewToggleAlign="right"
           />
-          {selectedTeamIds.length > 0 && (
-            <ActionBar
-              selectedCount={selectedTeamIds.length}
-              showConfirm={selectedTeamIds.some(id => activeTeamPool.find(t => t.id === id)?.status === 'draft')}
-              onConfirm={() => setIsConfirmDrawerOpen(true)}
-              onUpgrade={() => setIsUpgradeModalOpen(true)}
-              onDuplicate={() => setIsCopyModalOpen(true)}
-              onArchive={() => setIsArchiveModalOpen(true)}
-              onUnarchive={async () => {
-                const ids = [...selectedTeamIds];
-                await Promise.all(ids.map(id => updateTeam({ id, status: 'active' })));
-                setLocalTeams(prev => prev.map(t => ids.includes(t.id) ? { ...t, status: 'active' } : t));
-                showToast(`${ids.length} ${ids.length === 1 ? 'team' : 'teams'} restored`, 'success');
-                handleClearSelection();
-              }}
-              allArchived={selectedTeamIds.every(id =>
-                localTeams.find(t => t.id === id)?.status === 'archived'
-              )}
-              onDelete={() => setIsDeleteDialogOpen(true)}
-              onClose={handleClearSelection}
-              onClearSelection={handleClearSelection}
-              archiveDisabled={selectedTeamIds.every(id =>
-                localTeams.find(t => t.id === id)?.status === 'draft'
-              )}
-              upgradeDisabled={selectedTeamIds.some(id =>
-                localTeams.find(t => t.id === id)?.status === 'draft'
-              )}
-              duplicateDisabled={selectedTeamIds.some(id =>
-                localTeams.find(t => t.id === id)?.status === 'draft'
-              )}
-              deleteDisabled={false}
-            />
-          )}
         </div>
-        <div className="status-tabs">
-          {[
-            { value: '', label: 'All' },
-            { value: 'active', label: 'Active' },
-            { value: 'draft', label: 'Draft' },
-            { value: 'archived', label: 'Archived' },
-          ].map(tab => (
-            <button
-              key={tab.value}
-              className={`status-tab ${filterStatus === tab.value ? 'status-tab--selected' : ''}`}
-              onClick={() => setFilterStatus(tab.value)}
-            >
-              {tab.label}
-              <span className="status-tab-count">
-                {tab.value === '' ? preStatusFiltered.length : statusCounts[tab.value as keyof typeof statusCounts]}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {draftTeams.length > 0 && (
+        {draftTeams.length > 0 && (teamFilters.statuses.length === 0 || teamFilters.statuses.includes('draft')) && (
           <div className="draft-notice">
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: 'var(--u-color-background-canvas, #eff0f0)', flexShrink: 0, marginTop: 1 }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: 'var(--u-color-base-foreground-subtle, #607081)' }}>
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M8 5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="8" cy="11" r="0.75" fill="currentColor" />
-              </svg>
-            </span>
-            <div>
-              You have {draftTeams.length} {draftTeams.length === 1 ? 'team' : 'teams'} in draft status. Select teams below to confirm and begin the season.
+            <div className="draft-notice-main">
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: 'var(--u-color-background-canvas, #eff0f0)', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: 'var(--u-color-base-foreground-subtle, #607081)' }}>
+                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M8 5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <circle cx="8" cy="11" r="0.75" fill="currentColor" />
+                </svg>
+              </span>
+              <div>
+                You have {draftTeams.length} {draftTeams.length === 1 ? 'team' : 'teams'} in draft status.{' '}
+                Review and confirm {draftTeams.length === 1 ? 'it' : 'them'} to begin the season.
+              </div>
             </div>
+            <Button
+              buttonStyle="standard"
+              buttonType="primary"
+              size="small"
+              onClick={() => {
+                setSelectedTeamIds(draftTeams.map(t => t.id));
+                setIsConfirmDrawerOpen(true);
+              }}
+            >
+              Confirm {draftTeams.length} {draftTeams.length === 1 ? 'Team' : 'Teams'}
+            </Button>
           </div>
         )}
         {viewMode === 'grid' ? (
           <TeamsGrid
             teams={filteredTeams}
             seasons={seasons}
-            onTeamClick={(teamId) => router.push(`/teams/${teamId}`)}
+            onTeamClick={(teamId) => {
+              const team = filteredTeams.find(t => t.id === teamId);
+              router.push(team?.status === 'draft' ? '/teams/assignments' : `/teams/${teamId}`);
+            }}
           />
         ) : (
           <TeamsTable
@@ -492,25 +401,73 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
             emptyStateSeasonName={selectedSeason?.name}
             emptyStateAction={undefined}
             searchQuery={searchQuery}
-            copyMode={true}
-            selectedTeamIds={selectedTeamIds}
-            onTeamSelectionChange={handleTeamSelectionChange}
-            onSelectAllChange={handleSelectAllChange}
-            onSelectAllChangeWithReset={() => {
-              setLastClickedIndex(null);
-              setSelectedTeamIds(filteredTeams.map(team => team.id));
+            copyMode={false}
+            onTeamClick={(teamId) => {
+              const team = filteredTeams.find(t => t.id === teamId);
+              router.push(team?.status === 'draft' ? '/teams/assignments' : `/teams/${teamId}`);
             }}
-            onTeamClick={(teamId) => router.push(`/teams/${teamId}`)}
           />
         )}
-      </div>
+        </div>
+      {mainContentEl && createPortal(
+        <div
+          style={{
+            order: -1,
+            flexShrink: 0,
+            overflow: 'hidden',
+            width: filtersOpen ? 288 : 0,
+            alignSelf: 'stretch',
+            display: 'flex',
+            transition: 'width 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
+          }}
+        >
+          <TeamsFilterPanel
+            isOpen={filtersOpen}
+            filters={teamFilters}
+            setFilters={setTeamFilters}
+            seasonOptions={combinedSeasonOptions}
+            sportOptions={sportOptions}
+            genderOptions={genderOptions}
+            onClose={() => setFiltersOpen(false)}
+          />
+        </div>,
+        mainContentEl
+      )}
 
       <style jsx>{`
         .teams-page {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 24px;
           width: 100%;
+        }
+
+        .teams-search {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          height: 40px;
+          flex: 1;
+          padding: 0 12px;
+          border: 1px solid var(--u-color-line-subtle, #c4c6c8);
+          border-radius: 4px;
+          background: var(--u-color-background-container, #fefefe);
+        }
+        .teams-search:focus-within {
+          border-color: var(--u-color-emphasis-background-contrast, #0273e3);
+        }
+        .teams-search input {
+          flex: 1;
+          min-width: 0;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-family: var(--u-font-body);
+          font-size: 14px;
+          color: var(--u-color-base-foreground-contrast, #071c31);
+        }
+        .teams-search input::placeholder {
+          color: var(--u-color-base-foreground-subtle, #607081);
         }
 
 
@@ -580,9 +537,9 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
         }
 
         .draft-notice {
-          display: inline-flex;
-          align-items: flex-start;
-          gap: 10px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
           padding: 12px 16px;
           background: var(--u-color-background-container, #fefefe);
           border: 1px solid var(--u-color-line-subtle, #c4c6c8);
@@ -591,6 +548,15 @@ const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
           font-size: var(--u-font-size-200, 14px);
           color: var(--u-color-base-foreground-subtle, #607081);
           line-height: 1.5;
+          align-self: flex-start;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        .draft-notice-main {
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
 
         .toolbar-wrapper {

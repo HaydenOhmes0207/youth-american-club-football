@@ -7,12 +7,12 @@ import Select from '@/components/Select';
 
 // ─── Step indicator ────────────────────────────────────────────────────────
 
-const STEPS = ['Details', 'Questions', 'Registrations', 'Summary'];
+const STEPS = ['Program Details', 'Questions', 'Registrations', 'Summary', 'Next Steps'];
 
-function StepIndicator({ currentStep }: { currentStep: number }) {
+function StepIndicator({ currentStep, steps = STEPS }: { currentStep: number; steps?: string[] }) {
   return (
     <div className="steps-row">
-      {STEPS.map((label, i) => {
+      {steps.map((label, i) => {
         const isActive = i === currentStep;
         const isComplete = i < currentStep;
 
@@ -24,13 +24,11 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                ) : (
-                  <div className="step-inner-dot" />
-                )}
+                ) : null}
               </div>
               <span className={`step-label ${isActive ? 'step-label--active' : ''}`}>{label}</span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div className={`step-connector ${i < currentStep ? 'step-connector--complete' : ''}`} />
             )}
           </React.Fragment>
@@ -53,9 +51,9 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
         }
 
         .step-circle {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
+          width: 18px;
+          height: 18px;
+          border-radius: 3px;
           border: 2px solid var(--u-color-line-subtle, #c4c6c8);
           background: var(--u-color-background-container, #fefefe);
           display: flex;
@@ -66,23 +64,12 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 
         .step-circle--active {
           border-color: var(--u-color-emphasis-background-contrast, #0273e3);
-          background: var(--u-color-emphasis-background-contrast, #0273e3);
+          background: var(--u-color-background-container, #fefefe);
         }
 
         .step-circle--complete {
           border-color: var(--u-color-emphasis-background-contrast, #0273e3);
           background: var(--u-color-emphasis-background-contrast, #0273e3);
-        }
-
-        .step-inner-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--u-color-line-subtle, #c4c6c8);
-        }
-
-        .step-circle--active .step-inner-dot {
-          background: white;
         }
 
         .step-label {
@@ -471,12 +458,10 @@ function SectionHeader({
 // ─── Main component ────────────────────────────────────────────────────────
 
 const PROGRAM_TYPE_OPTIONS = [
+  { value: 'tryout', label: 'Tryout' },
+  { value: 'team-dues', label: 'Team Dues' },
   { value: 'camp', label: 'Camp' },
   { value: 'clinic', label: 'Clinic' },
-  { value: 'league', label: 'League' },
-  { value: 'tournament', label: 'Tournament' },
-  { value: 'tryout', label: 'Tryout' },
-  { value: 'training', label: 'Training' },
 ];
 
 export default function NewProgramPageClient() {
@@ -486,10 +471,9 @@ export default function NewProgramPageClient() {
   const [title, setTitle] = useState('');
   const [programType, setProgramType] = useState('');
   const [description, setDescription] = useState('');
-  const [seasonStartDate, setSeasonStartDate] = useState('');
-  const [seasonEndDate, setSeasonEndDate] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [tryoutDate, setTryoutDate] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'public'>('private');
   const [feesCoveredBy, setFeesCoveredBy] = useState<'registrants' | 'organization'>('registrants');
 
@@ -497,25 +481,17 @@ export default function NewProgramPageClient() {
 
   return (
     <div className="new-program-page">
-      {/* ── Top bar ────────────────────────────────────────────────── */}
-      <header className="page-topbar">
-        <button className="back-link" onClick={handleCancel}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Programs
-        </button>
-      </header>
+
+      {/* ── Stepper bar ────────────────────────────────────────────── */}
+      <div className="stepper-bar">
+        <StepIndicator currentStep={0} />
+      </div>
 
       {/* ── Content ────────────────────────────────────────────────── */}
       <div className="page-content">
         <div className="content-inner">
 
-          {/* Step indicator + page heading */}
-          <div className="page-heading-area">
-            <StepIndicator currentStep={0} />
-            <h1 className="page-title">Details</h1>
-          </div>
+          <h1 className="page-title">Program Details</h1>
 
           {/* Scrollable form body */}
           <div className="form-scroll">
@@ -580,25 +556,21 @@ export default function NewProgramPageClient() {
                   <FieldHint text="Define your program's start and end dates. This is typically the total duration of your program." />
                 </div>
 
-                {/* Season Dates row */}
-                <div className="field-group">
-                  <div className="field-row">
-                    <DateInput
-                      id="season-start-date"
-                      label="Season Start Date"
-                      required
-                      value={seasonStartDate}
-                      onChange={setSeasonStartDate}
-                    />
-                    <DateInput
-                      id="season-end-date"
-                      label="Season End Date"
-                      required
-                      value={seasonEndDate}
-                      onChange={setSeasonEndDate}
-                    />
+                {/* Tryout Date — only for Tryout programs */}
+                {programType === 'tryout' && (
+                  <div className="field-group">
+                    <div className="field-row">
+                      <DateInput
+                        id="tryout-date"
+                        label="Tryout Date"
+                        required
+                        value={tryoutDate}
+                        onChange={setTryoutDate}
+                      />
+                    </div>
+                    <FieldHint text="The date athletes will attend the tryout." />
                   </div>
-                </div>
+                )}
               </div>
 
               <SectionDivider />
@@ -681,14 +653,26 @@ export default function NewProgramPageClient() {
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="page-footer">
-        <Button buttonStyle="standard" buttonType="subtle" size="medium">
-          Save as Draft
-        </Button>
         <div className="footer-actions">
           <Button buttonStyle="minimal" buttonType="secondary" size="medium" onClick={handleCancel}>
-            Cancel
+            Done
           </Button>
-          <Button buttonStyle="standard" buttonType="primary" size="medium">
+          <Button buttonStyle="standard" buttonType="primary" size="medium" onClick={() => {
+            const details = {
+              title,
+              programType,
+              typeLabel: PROGRAM_TYPE_OPTIONS.find(o => o.value === programType)?.label ?? '',
+              description,
+              startDate,
+              endDate,
+              tryoutDate,
+              visibility,
+              feesCoveredBy,
+            };
+            sessionStorage.setItem('programType', programType);
+            sessionStorage.setItem('programDetails', JSON.stringify(details));
+            router.push('/programs/new/registrations');
+          }}>
             Continue
           </Button>
         </div>
@@ -699,67 +683,32 @@ export default function NewProgramPageClient() {
         .new-program-page {
           display: flex;
           flex-direction: column;
-          height: 100vh;
-          background: var(--u-color-background-canvas, #eff0f0);
-          overflow: hidden;
-        }
-
-        /* Top bar */
-        .page-topbar {
-          height: 48px;
+          min-height: calc(100vh - 72px);
           background: var(--u-color-background-container, #fefefe);
-          border-bottom: 1px solid var(--u-color-line-subtle, #c4c6c8);
-          display: flex;
-          align-items: center;
-          padding: 0 var(--u-space-one-and-half, 24px);
-          flex-shrink: 0;
-        }
-
-        .back-link {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: var(--u-font-body);
-          font-size: var(--u-font-size-small, 14px);
-          font-weight: 500;
-          color: var(--u-color-base-foreground, #36485c);
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 0;
-          transition: color 0.15s ease;
-          border-radius: 4px;
-        }
-
-        .back-link:hover {
-          color: var(--u-color-base-foreground-contrast, #071c31);
+          margin: -32px -64px 0;
+          width: calc(100% + 128px);
         }
 
         /* Content area */
         .page-content {
           flex: 1;
-          overflow: hidden;
           display: flex;
           flex-direction: column;
-          align-items: center;
         }
 
         .content-inner {
           width: 100%;
-          max-width: 1080px;
-          padding: var(--u-space-two, 32px) var(--u-space-three, 48px) 0;
+          padding: var(--u-space-two, 32px) var(--u-space-one-and-half, 24px) 0;
           display: flex;
           flex-direction: column;
           gap: var(--u-space-two, 32px);
-          height: 100%;
-          overflow: hidden;
         }
 
-        /* Heading area: steps + title */
-        .page-heading-area {
-          display: flex;
-          flex-direction: column;
-          gap: var(--u-space-one-and-half, 24px);
+        /* Full-width stepper bar */
+        .stepper-bar {
+          width: 100%;
+          padding: 40px var(--u-space-one-and-half, 24px) 20px;
+          background: var(--u-color-background-container, #fefefe);
           flex-shrink: 0;
         }
 
@@ -771,19 +720,20 @@ export default function NewProgramPageClient() {
           letter-spacing: 0.25px;
           color: var(--u-color-base-foreground-contrast, #071c31);
           margin: 0;
+          text-align: left;
+          align-self: flex-start;
         }
 
-        /* Scrollable form body */
+        /* Form body */
         .form-scroll {
-          flex: 1;
-          overflow-y: auto;
-          padding-bottom: var(--u-space-three, 48px);
+          width: 100%;
         }
 
         .form-body {
           display: flex;
           flex-direction: column;
           gap: var(--u-space-two, 32px);
+          padding-bottom: var(--u-space-three, 48px);
         }
 
         /* Form sections */
@@ -826,14 +776,16 @@ export default function NewProgramPageClient() {
 
         /* Footer */
         .page-footer {
-          height: 72px;
+          position: sticky;
+          bottom: 0;
           background: var(--u-color-background-container, #fefefe);
           border-top: 1px solid var(--u-color-line-subtle, #c4c6c8);
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding: 0 var(--u-space-one-and-half, 24px);
+          justify-content: flex-end;
+          padding: 12px var(--u-space-one-and-half, 24px);
           flex-shrink: 0;
+          z-index: 10;
         }
 
         .footer-actions {
